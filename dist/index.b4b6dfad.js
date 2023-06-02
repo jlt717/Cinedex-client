@@ -2972,7 +2972,7 @@ $RefreshReg$(_c, "CinedexApplication");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react-dom/client":"lOjBx","./index.scss":"lJZlQ","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"2DlVT","./components/main-view/main-view":"4gflv"}],"iTorj":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react-dom/client":"lOjBx","./components/main-view/main-view":"4gflv","./index.scss":"lJZlQ","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"2DlVT"}],"iTorj":[function(require,module,exports) {
 "use strict";
 module.exports = require("ee51401569654d91");
 
@@ -27157,7 +27157,177 @@ module.exports = require("ef03b89c8fe2794e");
     /* global __REACT_DEVTOOLS_GLOBAL_HOOK__ */ if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop === "function") __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(new Error());
 })();
 
-},{}],"lJZlQ":[function() {},{}],"2DlVT":[function(require,module,exports) {
+},{}],"4gflv":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$f7a6 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$f7a6.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "MainView", ()=>MainView);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _movieCard = require("../movie-card/movie-card");
+var _movieView = require("../movie-view/movie-view");
+var _s = $RefreshSig$();
+const MainView = ()=>{
+    _s();
+    const [movies, setMovies] = (0, _react.useState)([
+        {
+            id: 1,
+            image: "https://m.media-amazon.com/images/M/MV5BMTY4NzcwODg3Nl5BMl5BanBnXkFtZTcwNTEwOTMyMw@@._V1_.jpg",
+            title: "Eternal Sunshine of the Spotless Mind",
+            released: 2004,
+            description: "After a fight, Joel Barish discovers that his girlfriend, Clementine Kruczynski, has had her memories of him erased by the New York City firm Lacuna. Heartbroken, he decides to undergo the same procedure. In preparation, he records a tape for Lacuna, recounting his memories of their volatile relationship. ",
+            director: "Michel Gondry",
+            genre: "Drama"
+        },
+        {
+            id: 2,
+            image: "https://m.media-amazon.com/images/M/MV5BNmJjNTQzMjctMmE2NS00ZmYxLWE1NjYtYmRmNjNiMzljOTc3XkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_FMjpg_UX1000_.jpg",
+            title: "Hook",
+            released: 1991,
+            description: "When Captain James Hook kidnaps his children, an adult Peter Pan must return to Neverland and reclaim his youthful spirit in order to challenge his old enemy. This is a sequel to Peter Pan.",
+            director: "Steven Spielberg",
+            genre: "Adventure"
+        },
+        {
+            id: 3,
+            image: "https://m.media-amazon.com/images/M/MV5BMjM2MDE4OTQwOV5BMl5BanBnXkFtZTgwNjgxMTg2NzE@._V1_FMjpg_UX1000_.jpg",
+            title: "Labyrinth",
+            released: 1986,
+            description: "The film stars Jennifer Connelly as 16-year-old Sarah and David Bowie as Jareth, the Goblin King. In Labyrinth, Sarah embarks on a quest to reach the center of an enormous, otherworldly maze to rescue her infant half-brother Toby, whom she wished away to Jareth during a moment of frustration while babysitting.",
+            director: "Jim Henson",
+            genre: "Fantasy"
+        },
+        {
+            id: 4,
+            image: "https://m.media-amazon.com/images/M/MV5BNmQ0ODBhMjUtNDRhOC00MGQzLTk5MTAtZDliODg5NmU5MjZhXkEyXkFqcGdeQXVyNDUyOTg3Njg@._V1_.jpg",
+            title: "Harry Potter and the Sorcerer's Stone",
+            released: 2001,
+            description: "This story introduces Harry Potter and follows his first year at Hogwarts School of Witchcraft and Wizardry as he discovers that he is a famous wizard and begins his formal wizarding education.",
+            director: "Chris Columbus",
+            genre: "Fantasy"
+        },
+        {
+            id: 5,
+            image: "https://m.media-amazon.com/images/I/81PmlArGyfS._AC_UF894,1000_QL80_.jpg",
+            title: "Stand by Me",
+            released: 1986,
+            description: "Based on Stephen King's novel, this film revolves around four small-town 12-year-old boys who set out on a trek to find a dead body. They overcome oncoming trains, a disgusting bout with leeches, and the rival advances of a competing gang to collect the prize of locating the body.",
+            director: "Rob Reiner",
+            genre: "Adventure"
+        }
+    ]);
+    const [selectedMovie, setSelectedMovie] = (0, _react.useState)(null);
+    if (selectedMovie) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _movieView.MovieView), {
+        movie: selectedMovie,
+        onBackClick: ()=>setSelectedMovie(null)
+    }, void 0, false, {
+        fileName: "src/components/main-view/main-view.jsx",
+        lineNumber: 68,
+        columnNumber: 7
+    }, undefined);
+    if (movies.length === 0) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+        children: "The list is empty!"
+    }, void 0, false, {
+        fileName: "src/components/main-view/main-view.jsx",
+        lineNumber: 76,
+        columnNumber: 12
+    }, undefined);
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+        children: movies.map((movie)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _movieCard.MovieCard), {
+                movie: movie,
+                onMovieClick: (newSelectedMovie)=>{
+                    setSelectedMovie(newSelectedMovie);
+                }
+            }, movie.id, false, {
+                fileName: "src/components/main-view/main-view.jsx",
+                lineNumber: 81,
+                columnNumber: 9
+            }, undefined))
+    }, void 0, false, {
+        fileName: "src/components/main-view/main-view.jsx",
+        lineNumber: 79,
+        columnNumber: 5
+    }, undefined);
+};
+_s(MainView, "CALR9uqJmDmQGGsMBg/3I4UWpqw=");
+_c = MainView;
+var _c;
+$RefreshReg$(_c, "MainView");
+
+  $parcel$ReactRefreshHelpers$f7a6.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","../movie-card/movie-card":"bwuIu","../movie-view/movie-view":"ggaUx","@parcel/transformer-js/src/esmodule-helpers.js":"ajieg","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"2DlVT"}],"bwuIu":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$67b2 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$67b2.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "MovieCard", ()=>MovieCard);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+const MovieCard = ({ movie , onMovieClick  })=>{
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+        onClick: ()=>{
+            onMovieClick(movie);
+        },
+        children: movie.title
+    }, void 0, false, {
+        fileName: "src/components/movie-card/movie-card.jsx",
+        lineNumber: 3,
+        columnNumber: 5
+    }, undefined);
+};
+_c = MovieCard;
+var _c;
+$RefreshReg$(_c, "MovieCard");
+
+  $parcel$ReactRefreshHelpers$67b2.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","@parcel/transformer-js/src/esmodule-helpers.js":"ajieg","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"2DlVT"}],"ajieg":[function(require,module,exports) {
+exports.interopDefault = function(a) {
+    return a && a.__esModule ? a : {
+        default: a
+    };
+};
+exports.defineInteropFlag = function(a) {
+    Object.defineProperty(a, "__esModule", {
+        value: true
+    });
+};
+exports.exportAll = function(source, dest) {
+    Object.keys(source).forEach(function(key) {
+        if (key === "default" || key === "__esModule" || dest.hasOwnProperty(key)) return;
+        Object.defineProperty(dest, key, {
+            enumerable: true,
+            get: function() {
+                return source[key];
+            }
+        });
+    });
+    return dest;
+};
+exports.export = function(dest, destName, get) {
+    Object.defineProperty(dest, destName, {
+        enumerable: true,
+        get: get
+    });
+};
+
+},{}],"2DlVT":[function(require,module,exports) {
 "use strict";
 var Refresh = require("f49c07d3f7913792");
 function debounce(func, delay) {
@@ -27295,177 +27465,7 @@ function registerExportsForReactRefresh(module1) {
     }
 }
 
-},{"f49c07d3f7913792":"ad8oL"}],"4gflv":[function(require,module,exports) {
-var $parcel$ReactRefreshHelpers$f7a6 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
-var prevRefreshReg = window.$RefreshReg$;
-var prevRefreshSig = window.$RefreshSig$;
-$parcel$ReactRefreshHelpers$f7a6.prelude(module);
-
-try {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "MainView", ()=>MainView);
-var _jsxDevRuntime = require("react/jsx-dev-runtime");
-var _react = require("react");
-var _reactDefault = parcelHelpers.interopDefault(_react);
-var _movieCard = require("../movie-card/movie-card");
-var _movieView = require("../movie-view/movie-view");
-var _s = $RefreshSig$();
-const MainView = ()=>{
-    _s();
-    const [movies, setMovies] = (0, _react.useState)([
-        {
-            id: 1,
-            image: "https://m.media-amazon.com/images/M/MV5BMTY4NzcwODg3Nl5BMl5BanBnXkFtZTcwNTEwOTMyMw@@._V1_.jpg",
-            title: "Eternal Sunshine of the Spotless Mind",
-            released: 2004,
-            description: "After a fight, Joel Barish discovers that his girlfriend, Clementine Kruczynski, has had her memories of him erased by the New York City firm Lacuna. Heartbroken, he decides to undergo the same procedure. In preparation, he records a tape for Lacuna, recounting his memories of their volatile relationship. ",
-            director: "Michel Gondry",
-            genre: "Drama"
-        },
-        {
-            id: 2,
-            image: "https://m.media-amazon.com/images/M/MV5BNmJjNTQzMjctMmE2NS00ZmYxLWE1NjYtYmRmNjNiMzljOTc3XkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_FMjpg_UX1000_.jpg",
-            title: "Hook",
-            released: 1991,
-            description: "When Captain James Hook kidnaps his children, an adult Peter Pan must return to Neverland and reclaim his youthful spirit in order to challenge his old enemy. This is a sequel to Peter Pan.",
-            director: "Steven Spielberg",
-            genre: "Adventure"
-        },
-        {
-            id: 3,
-            image: "https://m.media-amazon.com/images/M/MV5BMjM2MDE4OTQwOV5BMl5BanBnXkFtZTgwNjgxMTg2NzE@._V1_FMjpg_UX1000_.jpg",
-            title: "Labyrinth",
-            released: 1986,
-            description: "The film stars Jennifer Connelly as 16-year-old Sarah and David Bowie as Jareth, the Goblin King. In Labyrinth, Sarah embarks on a quest to reach the center of an enormous, otherworldly maze to rescue her infant half-brother Toby, whom she wished away to Jareth during a moment of frustration while babysitting.",
-            director: "Jim Henson",
-            genre: "Fantasy"
-        },
-        {
-            id: 4,
-            image: "https://m.media-amazon.com/images/M/MV5BNmQ0ODBhMjUtNDRhOC00MGQzLTk5MTAtZDliODg5NmU5MjZhXkEyXkFqcGdeQXVyNDUyOTg3Njg@._V1_.jpg",
-            title: "Harry Potter and the Sorcerer's Stone",
-            released: 2001,
-            description: "This story introduces Harry Potter and follows his first year at Hogwarts School of Witchcraft and Wizardry as he discovers that he is a famous wizard and begins his formal wizarding education.",
-            director: "Chris Columbus",
-            genre: "Fantasy"
-        },
-        {
-            id: 5,
-            image: "https://m.media-amazon.com/images/I/81PmlArGyfS._AC_UF894,1000_QL80_.jpg",
-            title: "Stand by Me",
-            released: 1986,
-            description: "Based on Stephen King's novel, this film revolves around four small-town 12-year-old boys who set out on a trek to find a dead body. They overcome oncoming trains, a disgusting bout with leeches, and the rival advances of a competing gang to collect the prize of locating the body.",
-            director: "Rob Reiner",
-            genre: "Adventure"
-        }
-    ]);
-    const [selectedMovie, setSelectedMovie] = (0, _react.useState)(null);
-    if (selectedMovie) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _movieView.MovieView), {
-        movie: selectedMovie,
-        onBackClick: ()=>setSelectedMovie(null)
-    }, void 0, false, {
-        fileName: "src/components/main-view/main-view.jsx",
-        lineNumber: 68,
-        columnNumber: 7
-    }, undefined);
-    if (movies.length === 0) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-        children: "The list is empty!"
-    }, void 0, false, {
-        fileName: "src/components/main-view/main-view.jsx",
-        lineNumber: 76,
-        columnNumber: 12
-    }, undefined);
-    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-        children: movies.map((movie)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _movieCard.MovieCard), {
-                movie: movie,
-                onMovieClick: (newSelectedMovie)=>{
-                    setSelectedMovie(newSelectedMovie);
-                }
-            }, movie.id, false, {
-                fileName: "src/components/main-view/main-view.jsx",
-                lineNumber: 81,
-                columnNumber: 9
-            }, undefined))
-    }, void 0, false, {
-        fileName: "src/components/main-view/main-view.jsx",
-        lineNumber: 79,
-        columnNumber: 5
-    }, undefined);
-};
-_s(MainView, "CALR9uqJmDmQGGsMBg/3I4UWpqw=");
-_c = MainView;
-var _c;
-$RefreshReg$(_c, "MainView");
-
-  $parcel$ReactRefreshHelpers$f7a6.postlude(module);
-} finally {
-  window.$RefreshReg$ = prevRefreshReg;
-  window.$RefreshSig$ = prevRefreshSig;
-}
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@parcel/transformer-js/src/esmodule-helpers.js":"ajieg","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"2DlVT","../movie-card/movie-card":"bwuIu","../movie-view/movie-view":"ggaUx"}],"ajieg":[function(require,module,exports) {
-exports.interopDefault = function(a) {
-    return a && a.__esModule ? a : {
-        default: a
-    };
-};
-exports.defineInteropFlag = function(a) {
-    Object.defineProperty(a, "__esModule", {
-        value: true
-    });
-};
-exports.exportAll = function(source, dest) {
-    Object.keys(source).forEach(function(key) {
-        if (key === "default" || key === "__esModule" || dest.hasOwnProperty(key)) return;
-        Object.defineProperty(dest, key, {
-            enumerable: true,
-            get: function() {
-                return source[key];
-            }
-        });
-    });
-    return dest;
-};
-exports.export = function(dest, destName, get) {
-    Object.defineProperty(dest, destName, {
-        enumerable: true,
-        get: get
-    });
-};
-
-},{}],"bwuIu":[function(require,module,exports) {
-var $parcel$ReactRefreshHelpers$67b2 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
-var prevRefreshReg = window.$RefreshReg$;
-var prevRefreshSig = window.$RefreshSig$;
-$parcel$ReactRefreshHelpers$67b2.prelude(module);
-
-try {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "MovieCard", ()=>MovieCard);
-var _jsxDevRuntime = require("react/jsx-dev-runtime");
-const MovieCard = ({ movie , onMovieClick  })=>{
-    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-        onClick: ()=>{
-            onMovieClick(movie);
-        },
-        children: movie.title
-    }, void 0, false, {
-        fileName: "src/components/movie-card/movie-card.jsx",
-        lineNumber: 3,
-        columnNumber: 5
-    }, undefined);
-};
-_c = MovieCard;
-var _c;
-$RefreshReg$(_c, "MovieCard");
-
-  $parcel$ReactRefreshHelpers$67b2.postlude(module);
-} finally {
-  window.$RefreshReg$ = prevRefreshReg;
-  window.$RefreshSig$ = prevRefreshSig;
-}
-},{"react/jsx-dev-runtime":"iTorj","@parcel/transformer-js/src/esmodule-helpers.js":"ajieg","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"2DlVT"}],"ggaUx":[function(require,module,exports) {
+},{"f49c07d3f7913792":"ad8oL"}],"ggaUx":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$e9f6 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -27626,6 +27626,6 @@ $RefreshReg$(_c, "MovieView");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","@parcel/transformer-js/src/esmodule-helpers.js":"ajieg","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"2DlVT"}]},["hI4jj","1Vjte","d8Dch"], "d8Dch", "parcelRequire74ce")
+},{"react/jsx-dev-runtime":"iTorj","@parcel/transformer-js/src/esmodule-helpers.js":"ajieg","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"2DlVT"}],"lJZlQ":[function() {},{}]},["hI4jj","1Vjte","d8Dch"], "d8Dch", "parcelRequire74ce")
 
 //# sourceMappingURL=index.b4b6dfad.js.map
