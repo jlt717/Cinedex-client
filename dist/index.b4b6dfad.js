@@ -27179,20 +27179,20 @@ const MainView = ()=>{
     const [selectedMovie, setSelectedMovie] = (0, _react.useState)(null);
     (0, _react.useEffect)(()=>{
         fetch("https://cinedex.herokuapp.com/movies").then((response)=>response.json()).then((data)=>{
-            console.log(data);
-            const moviesFromApi = data.map((movie)=>{
-                return {
-                    _id: movie.id,
-                    ImagePath: movie.ImagePath,
-                    Title: movie.Title,
-                    Released: movie.Released,
-                    Description: movie.Description,
-                    Genre: movie.Genre,
-                    Director: movie.Director,
-                    Featured: movie.Featured.toString()
-                };
-            });
-            setMovies(moviesFromApi);
+            setMovies(data);
+        // const moviesFromApi = data.map((movie) => {
+        //   return {
+        //     _id: movie.id,
+        //     ImagePath: movie.ImagePath,
+        //     Title: movie.Title,
+        //     Released: movie.Released,
+        //     Description: movie.Description,
+        //     Genre: movie.Genre,
+        //     Director: movie.Director,
+        //     Featured: movie.Featured.toString(),
+        //   };
+        // });
+        //setMovies(moviesFromApi);
         });
     }, []);
     if (selectedMovie) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _movieView.MovieView), {
