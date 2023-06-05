@@ -1,33 +1,45 @@
-//import React from "react";
 import { useState, useEffect } from "react";
 import { MovieCard } from "../movie-card/movie-card";
 import { MovieView } from "../movie-view/movie-view";
+import { LoginView } from "../login-view/login-view";
+import { SignupView } from "../signup-view/signup-view";
 
 export const MainView = () => {
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const storedToken = localStorage.getItem("token");
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
   const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
 
   useEffect(() => {
-    fetch("https://cinedex.herokuapp.com/movies")
+    if (!token) {
+      return;
+    }
+    fetch("https://cinedex.herokuapp.com/movies", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then((response) => response.json())
       .then((data) => {
+        console.log(data);
         setMovies(data);
-        // const moviesFromApi = data.map((movie) => {
-        //   return {
-        //     _id: movie.id,
-        //     ImagePath: movie.ImagePath,
-        //     Title: movie.Title,
-        //     Released: movie.Released,
-        //     Description: movie.Description,
-        //     Genre: movie.Genre,
-        //     Director: movie.Director,
-        //     Featured: movie.Featured.toString(),
-        //   };
-        // });
-
-        //setMovies(moviesFromApi);
       });
-  }, []);
+  }, [token]);
+
+  if (!user) {
+    return (
+      <>
+        <LoginView
+          onLoggedIn={(user, token) => {
+            setUser(user);
+            setToken(token);
+          }}
+        />
+        or
+        <SignupView />
+      </>
+    );
+  }
 
   if (selectedMovie) {
     return (
@@ -52,6 +64,15 @@ export const MainView = () => {
           }}
         />
       ))}
+      <button
+        onClick={() => {
+          setUser(null);
+          setToken(null);
+          localStorage.clear();
+        }}
+      >
+        Logout
+      </button>
     </div>
   );
 };
