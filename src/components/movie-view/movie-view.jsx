@@ -3,7 +3,7 @@ export const MovieView = ({ movie, onBackClick }) => {
   return (
     <div>
       <div>
-        <img src={movie.ImageURL} />
+        <img className="w-100" src={movie.ImageURL} />
       </div>
       <div>
         <span>Title: </span>
