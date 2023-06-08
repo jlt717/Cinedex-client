@@ -1,8 +1,8 @@
-$color: steelblue;
+$primary: Navy;
+$body-bg: LightSteelBlue;
 
-.my-flix {
-  color: $color;
-}
+// @import "~bootstrap/scss/bootstrap.scss";
+// @import "~bootstrap/scss/maps";
 
 img {
   width: 200px;
