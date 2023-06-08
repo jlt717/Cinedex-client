@@ -1,11 +1,11 @@
 $primary: Navy;
 $body-bg: LightSteelBlue;
 
-@import "~bootstrap/scss/bootstrap.scss";
-@import "~bootstrap/scss/maps";
+// @import "~bootstrap/scss/bootstrap.scss";
+// @import "~bootstrap/scss/maps";
 
-// img {
-//   width: 200px;
-//   height: 300px;
-//   object-fit: contain;
-// }
+img {
+  width: 200px;
+  height: 300px;
+  object-fit: contain;
+}
