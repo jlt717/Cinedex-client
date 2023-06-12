@@ -1,5 +1,6 @@
 import { Navbar, Container, Nav } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { ProfileView } from "../profile-view/profile-view";
 
 export const NavigationBar = ({ user, onLoggedOut }) => {
   return (
@@ -25,6 +26,9 @@ export const NavigationBar = ({ user, onLoggedOut }) => {
               <>
                 <Nav.Link as={Link} to="/">
                   Home
+                </Nav.Link>
+                <Nav.Link as={Link} to="/users">
+                  Profile
                 </Nav.Link>
                 <Nav.Link onClick={onLoggedOut}>Logout</Nav.Link>
               </>
