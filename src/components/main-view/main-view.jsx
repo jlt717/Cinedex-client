@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
+import { Container, Row, Col } from "react-bootstrap";
 import { MovieCard } from "../movie-card/movie-card";
 import { MovieView } from "../movie-view/movie-view";
 import { LoginView } from "../login-view/login-view";
 import { SignupView } from "../signup-view/signup-view";
-import { Row, Col } from "react-bootstrap";
 import { NavigationBar } from "../navigation-bar/navigation-bar";
+import ProfileView from "../profile-view/profile-view";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 export const MainView = () => {
@@ -14,13 +15,18 @@ export const MainView = () => {
   const [token, setToken] = useState(null);
   const [movies, setMovies] = useState([]);
   //const [selectedMovie, setSelectedMovie] = useState(null);
-
+//if (!user) {
+  setFavoriteMovie(user.FavoriteMovies)
+}
+if (user) {
+  let favoriteMovieList = movies.filter((m) => favoriteMovieList.includes(m._id));
+}
   useEffect(() => {
     // if (!token) {
     //   return;
     // }
     fetch("https://cinedex.herokuapp.com/movies", {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` }
     })
       .then((response) => response.json())
       .then((data) => {
@@ -91,10 +97,6 @@ export const MainView = () => {
               </>
             }
           />
-          {/* ) : movies.length === 0 ? (
-        <div>The list is empty!</div>
-      ) : (
-        <> */}
           <Route
             path="/"
             element={
@@ -120,6 +122,10 @@ export const MainView = () => {
     </BrowserRouter>
   );
 };
+
+const addToFavorites = movies.find((movie) => movie.id === movieId);
+console.log("addToFavorites:", addToFavorites);
+const user = JSON.parse(localStorage.getItem("user"));
 
 //           {movies.map((movie) => (
 //             <Col className="mb-5" key={movie.Title} md={3}>
