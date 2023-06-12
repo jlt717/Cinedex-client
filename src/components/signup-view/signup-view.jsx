@@ -43,7 +43,6 @@ export const SignupView = () => {
           onChange={(e) => setUsername(e.target.value)}
           required
           minLength="3"
-          placeholder="Please enter a username"
         />
       </Form.Group>
 
@@ -54,8 +53,6 @@ export const SignupView = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          minLength="7"
-          placeholder="Your password must be at least 7 characters"
         />
       </Form.Group>
       <Form.Group controlId="formEmail">
@@ -65,7 +62,6 @@ export const SignupView = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          placeholder="Please enter your email address"
         />
       </Form.Group>
       <Form.Group controlId="formBirthday">
