@@ -2,10 +2,10 @@ import React, { useState, useEffect} from "react";
 import { Link } from "react-router-dom";
 import Button from "react-bootstrap";
 
-export const FavoriteMovies({ movies, onAddFavorite, onRemoveFavorite }) {
+export const FavoriteMovies ({ movies, onAddFavorite, onRemoveFavorite }) => {
 
-  
   let favorites = JSON.parse(localStorage.getItem("user")).FavoriteMovies;
+  //let user = 
   return (
     <div>
       <h2>Favorite Movies</h2>
