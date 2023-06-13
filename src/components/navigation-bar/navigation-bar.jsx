@@ -1,6 +1,5 @@
 import { Navbar, Container, Nav } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { ProfileView } from "../profile-view/profile-view";
 
 export const NavigationBar = ({ user, onLoggedOut }) => {
   return (

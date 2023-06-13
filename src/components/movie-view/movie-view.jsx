@@ -1,13 +1,30 @@
 import React from "react";
-//import PropTypes from "prop-types";
-import { useParams } from "react-router";
-import { Link } from "react-router-dom";
-import "./movie-view.scss";
+import PropTypes from "prop-types";
+import { useParams } from "react-router-dom";
 
-export const MovieView = ({ movies }) => {
-  const { movieId } = useParams();
+export const MovieView = () => {
+  const { movieTitle } = useParams();
+  const [movie, setMovie] = React.useState(undefined);
 
-  const movie = movies.find((m) => m.id === movieId);
+  React.useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+
+    if (!storedToken) {
+      return;
+    }
+
+    fetch(`https://cinedex.herokuapp.com/movies/${movieTitle}`, {
+      headers: { Authorization: `Bearer ${storedToken}` },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setMovie(data);
+      });
+  }, [movieTitle]);
+
+  if (!movie) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>
@@ -38,27 +55,24 @@ export const MovieView = ({ movies }) => {
         <span>Featured: </span>
         <span>{movie.Featured}</span>
       </div>
-      <Link to={`/`}>
-        <button className="back-button">Back</button>
-      </Link>
+
+      <button onClick={() => {}}>Back</button>
     </div>
-    //   <button onClick={onBackClick}>Back</button>
-    // </div>
   );
 };
-// MovieView.propTypes = {
-//   movie: PropTypes.shape({
-//     ImageURL: PropTypes.string.isRequired,
-//     Title: PropTypes.string.isRequired,
-//     Released: PropTypes.string.isRequired,
-//     Description: PropTypes.string.isRequired,
-//     Genre: PropTypes.shape({
-//       Name: PropTypes.string.isRequired
-//     }),
-//     Director: PropTypes.shape({
-//       Name: PropTypes.string.isRequired
-//     }),
-//     Featured: PropTypes.string.isRequired
-//   }).isRequired,
-//   onBackClick: PropTypes.func.isRequired
-// };
+MovieView.propTypes = {
+  // movie: PropTypes.shape({
+  //   ImageURL: PropTypes.string.isRequired,
+  //   Title: PropTypes.string.isRequired,
+  //   Released: PropTypes.string.isRequired,
+  //   Description: PropTypes.string.isRequired,
+  //   Genre: PropTypes.shape({
+  //     Name: PropTypes.string.isRequired,
+  //   }),
+  //   Director: PropTypes.shape({
+  //     Name: PropTypes.string.isRequired,
+  //   }),
+  //   Featured: PropTypes.string.isRequired,
+  // }).isRequired,
+  // onBackClick: PropTypes.func.isRequired,
+};
