@@ -20,6 +20,10 @@ export const MainView = () => {
     if (!token) {
       return;
     }
+    getMovies();
+  }, [token]);
+
+  function getMovies() {
     fetch("https://cinedex.herokuapp.com/movies", {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -28,7 +32,78 @@ export const MainView = () => {
         console.log(data);
         setMovies(data);
       });
-  }, [token]);
+  }
+
+  function getUser() {
+    fetch(`https://cinedex.herokuapp.com/users/${user._id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setUser(data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
+      });
+  }
+
+  function addToFavorites(movieId) {
+    console.log(token);
+    fetch(
+      `https://cinedex.herokuapp.com/users/${user.Username}/movies/${movieId}`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
+      .then((response) => {
+        if (response.ok) {
+          alert("Movie added to favorites list");
+        } else {
+          alert("Movie was not added to favorites list");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }
+  //     .then((response) => {
+  //       return response.json();
+  //     })
+  //     .then((data) => {
+  //       getUser();
+  //       getMovies();
+  //     });
+  // }
+
+  function deleteFromFavorites(movieId) {
+    fetch(
+      `https://cinedex.herokuapp.com/users/${user.Username}/movies/${movieId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((response) => {
+        if (response.ok) {
+          alert("Movie deleted from favorites list");
+        } else {
+          alert("Movie was not deleted from favorites list");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }
+  //     .then((response) => {
+  //       return response.json();
+  //     })
+  //     .then((data) => {
+  //       getUser();
+  //       getMovies();
+  //     });
+  // }
 
   return (
     <BrowserRouter>
@@ -92,7 +167,10 @@ export const MainView = () => {
               ) : movies.length === 0 ? (
                 <Col>The list is empty!</Col>
               ) : (
-                <ProfileView movies={movies} />
+                <ProfileView
+                  movies={movies}
+                  deleteFromFavorites={deleteFromFavorites}
+                />
               )}
             </>
           }
@@ -109,7 +187,11 @@ export const MainView = () => {
                 <Row>
                   {movies.map((movie) => (
                     <Col className="mb-4" key={movie._id} md={3}>
-                      <MovieCard movie={movie} />
+                      <MovieCard
+                        movie={movie}
+                        addMovieToFavorites={addToFavorites}
+                        deleteFromFavorites={deleteFromFavorites}
+                      />
                     </Col>
                   ))}
                 </Row>
