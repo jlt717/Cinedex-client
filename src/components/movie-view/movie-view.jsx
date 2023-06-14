@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
+import { Button } from "react-bootstrap";
 
 export const MovieView = () => {
   const { movieTitle } = useParams();
@@ -51,12 +52,15 @@ export const MovieView = () => {
         <span>Director: </span>
         <span>{movie.Director.Name}</span>
       </div>
-      <div>
-        <span>Featured: </span>
-        <span>{movie.Featured}</span>
-      </div>
-
-      <button onClick={() => {}}>Back</button>
+      {movie.Featured && (
+        <div>
+          <span>Featured: </span>
+          <span>Is Featured</span>
+        </div>
+      )}
+      <Link to={`/`}>
+        <Button variant="link">Back</Button>
+      </Link>
     </div>
   );
 };
