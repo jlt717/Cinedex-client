@@ -1,5 +1,4 @@
 import React from "react";
-import { useState } from "react";
 import {
   Form,
   Button,
@@ -11,9 +10,8 @@ import {
 } from "react-bootstrap";
 
 export const UpdateUser = ({ handleSubmit, onHandleChange, user }) => {
-  const [data, setData] = useState(user);
-  //function updateUser({})
   const onChange = (event) => {
+    console.log("called", event.target.value);
     onHandleChange((prevState) => ({
       ...prevState,
       [event.target.name]: event.target.value,
@@ -26,37 +24,44 @@ export const UpdateUser = ({ handleSubmit, onHandleChange, user }) => {
         <Col>
           <CardGroup>
             <Card>
-              <Form className="profile-form" onSubmit={(e) => handleSubmit(e)}>
-                <h2> Want to change your info?</h2>
-                <label>Username:</label>
-                <input
-                  type="text"
-                  name="Username"
-                  defaultValue={user.Username}
-                  onChange={onChange}
-                />
-
-                <label>Password</label>
-                <input type="password" name="password" onChange={onChange} />
-
-                <label>Email address</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={user.Email}
-                  onChange={onChange}
-                />
-                <label>Birthdate</label>
-                <input
-                  type="date"
-                  name="birthday"
-                  value={user.Birthday}
-                  onChange={onChange}
-                />
-                <Button variant="primary" type="submit">
-                  Edit
-                </Button>
-              </Form>
+              <Card.Body>
+                <Form className="profile-form" onSubmit={handleSubmit}>
+                  <h2> Want to change your info?</h2>
+                  <div className="mb-3">
+                    <label>Username:</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      name="Username"
+                      defaultValue={user.Username}
+                      onChange={onChange}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label>Email address</label>
+                    <input
+                      className="form-control"
+                      type="email"
+                      name="email"
+                      value={user.Email}
+                      onChange={onChange}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label>Birthday</label>
+                    <input
+                      className="form-control"
+                      type="date"
+                      name="Birthday"
+                      value={user.Birthday}
+                      onChange={onChange}
+                    />
+                  </div>
+                  <Button variant="primary" type="submit">
+                    Edit
+                  </Button>
+                </Form>
+              </Card.Body>
             </Card>
           </CardGroup>
         </Col>

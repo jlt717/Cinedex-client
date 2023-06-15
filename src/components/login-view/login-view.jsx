@@ -3,6 +3,7 @@ import { Form, Button } from "react-bootstrap";
 import { Container } from "react-bootstrap";
 import { Row, Col } from "react-bootstrap";
 import { Card, CardGroup } from "react-bootstrap";
+import { DateTime } from "luxon";
 
 export const LoginView = ({ onLoggedIn }) => {
   const [username, setUsername] = useState("");
@@ -27,9 +28,15 @@ export const LoginView = ({ onLoggedIn }) => {
       .then((data) => {
         console.log("Login response: ", data);
         if (data.user) {
-          localStorage.setItem("user", JSON.stringify(data.user));
+          const user = {
+            ...data.user,
+            Birthday: DateTime.fromISO(data.user.Birthday).toFormat(
+              "yyyy-MM-dd"
+            ),
+          };
+          localStorage.setItem("user", JSON.stringify(user));
           localStorage.setItem("token", data.token);
-          onLoggedIn(data.user, data.token);
+          onLoggedIn(user, data.token);
         } else {
           alert("No such user");
         }

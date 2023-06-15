@@ -1,7 +1,7 @@
 import React from "react";
-import { Container, Row, Col, CardGroup, Card } from "react-bootstrap";
+import { Container, Row, Col, CardGroup, Card, Button } from "react-bootstrap";
 
-export const UserInfo = ({ user }) => {
+export const UserInfo = ({ user, deleteUser }) => {
   return (
     <>
       <Container>
@@ -9,9 +9,15 @@ export const UserInfo = ({ user }) => {
           <Col>
             <CardGroup>
               <Card>
-                <p>User: {user.Username}</p>
-                <p>Email: {user.Email}</p>
-                <p>Birthday: {user.Birthday}</p>
+                <Card.Body>
+                  <p>User: {user.Username}</p>
+                  <p>Email: {user.Email}</p>
+                  <p>Birthday: {user.Birthday}</p>
+
+                  <Button variant={"danger"} onClick={deleteUser}>
+                    Delete
+                  </Button>
+                </Card.Body>
               </Card>
             </CardGroup>
           </Col>
