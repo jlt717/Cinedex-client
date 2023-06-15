@@ -8,7 +8,12 @@ import { UserInfo } from "./user-info";
 import { FavoriteMovies } from "./favorite-movies";
 import { UpdateUser } from "./update-user";
 
-export const ProfileView = ({ user, getUser, deleteFromFavorites }) => {
+export const ProfileView = ({
+  user,
+  getUser,
+  deleteFromFavorites,
+  onLoggedOut,
+}) => {
   const [userToUpdate, setUserToUpdate] = useState({
     Username: user.Username || "",
     Email: user.Email || "",
@@ -19,6 +24,7 @@ export const ProfileView = ({ user, getUser, deleteFromFavorites }) => {
     e.preventDefault();
     const data = {
       Username: userToUpdate.Username,
+      Password: userToUpdate.Password,
       Email: userToUpdate.Email,
       Birthday: userToUpdate.Birthday,
     };
@@ -45,11 +51,12 @@ export const ProfileView = ({ user, getUser, deleteFromFavorites }) => {
     })
       .then((res) => res.json())
       .then((result) => {
-        alert("User was deleted");
+        alert("User account was deleted");
+        onLoggedOut();
         window.location.reload();
       })
       .catch(() => {
-        alert("User was not deleted");
+        alert("User account was not deleted");
       });
   }
 

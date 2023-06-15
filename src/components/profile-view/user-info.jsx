@@ -10,12 +10,13 @@ export const UserInfo = ({ user, deleteUser }) => {
             <CardGroup>
               <Card>
                 <Card.Body>
+                  <h2>User Info</h2>
                   <p>User: {user.Username}</p>
                   <p>Email: {user.Email}</p>
                   <p>Birthday: {user.Birthday}</p>
 
                   <Button variant={"danger"} onClick={deleteUser}>
-                    Delete
+                    Delete User Account
                   </Button>
                 </Card.Body>
               </Card>

@@ -24,6 +24,32 @@ export const MainView = () => {
     getMovies();
   }, [token]);
 
+  function search() {
+    const [filteredSearchMovieResults, movies] = useState("");
+    const [query, setQuery] = useState("");
+    console
+      .log(query)(filteredSearchMovieResults || movies)
+      .map((movie) => {
+        movie.Title.toLowerCase();
+      });
+
+    return (
+      <div>
+        <input
+          type="text"
+          placeholder="Search..."
+          className="search"
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        {Movies.filter((movie) =>
+          movie.Title.toLowerCase().includes(query)
+        ).map((movie) => {
+          movie.Title;
+        })}{" "}
+      </div>
+    );
+  }
+
   function getMovies() {
     fetch("https://cinedex.herokuapp.com/movies", {
       headers: { Authorization: `Bearer ${token}` },
@@ -137,6 +163,12 @@ export const MainView = () => {
             </>
           }
         />
+        <input
+          type="text"
+          placeholder="Search..."
+          className="search"
+          onChange={(e) => filteredSearchMovieResults(e.target.value)}
+        />
         <Route
           path="/movies/:movieTitle"
           element={
@@ -165,6 +197,7 @@ export const MainView = () => {
                 <ProfileView
                   user={user}
                   getUser={getUser}
+                  onLoggedOut={onLoggedOut}
                   deleteFromFavorites={deleteFromFavorites}
                 />
               )}

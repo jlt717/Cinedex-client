@@ -38,6 +38,16 @@ export const UpdateUser = ({ handleSubmit, onHandleChange, user }) => {
                     />
                   </div>
                   <div className="mb-3">
+                    <label>Password</label>
+                    <input
+                      className="form-control"
+                      type="password"
+                      name="password"
+                      value={user.Password}
+                      onChange={onChange}
+                    />
+                  </div>
+                  <div className="mb-3">
                     <label>Email address</label>
                     <input
                       className="form-control"
@@ -57,7 +67,14 @@ export const UpdateUser = ({ handleSubmit, onHandleChange, user }) => {
                       onChange={onChange}
                     />
                   </div>
-                  <Button variant="primary" type="submit">
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    onClick={() => {
+                      onHandleChange(user);
+                      alert("User has been updated");
+                    }}
+                  >
                     Edit
                   </Button>
                 </Form>
