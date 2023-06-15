@@ -3,13 +3,11 @@ import { Button, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 export const MovieCard = ({
+  isFavorite,
   movie,
   addMovieToFavorites,
   deleteFromFavorites,
 }) => {
-  const storedUser = JSON.parse(localStorage.getItem("user"));
-  const isUserFavorite = (storedUser?.FavoriteMovies || []).includes(movie._id);
-
   return (
     <Card className="h-100">
       <Card.Img variant="top" src={movie.ImageURL} />
@@ -19,11 +17,11 @@ export const MovieCard = ({
         <Link to={`/movies/${encodeURIComponent(movie.Title)}`}>
           <Button variant="link">Open</Button>
         </Link>
-        {isUserFavorite ? (
+        {isFavorite ? (
           <Button
             variant="danger"
             onClick={() => {
-              deleteFromFavorites(movie._id)
+              deleteFromFavorites(movie._id);
               alert("Remove from favorites");
             }}
           >

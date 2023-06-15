@@ -4,6 +4,7 @@ import { MovieView } from "../movie-view/movie-view";
 import { LoginView } from "../login-view/login-view";
 import { SignupView } from "../signup-view/signup-view";
 import { Row, Col } from "react-bootstrap";
+import { DateTime } from "luxon";
 import { NavigationBar } from "../navigation-bar/navigation-bar";
 import { ProfileView } from "../profile-view/profile-view";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -14,12 +15,12 @@ export const MainView = () => {
   const [user, setUser] = useState(storedUser);
   const [token, setToken] = useState(storedToken);
   const [movies, setMovies] = useState([]);
-  const [selectedMovie, setSelectedMovie] = useState(null);
 
   useEffect(() => {
     if (!token) {
       return;
     }
+    getUser();
     getMovies();
   }, [token]);
 
@@ -29,24 +30,26 @@ export const MainView = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         setMovies(data);
       });
   }
 
   function getUser() {
-    fetch(`https://cinedex.herokuapp.com/users/${user._id}`, {
+    fetch(`https://cinedex.herokuapp.com/users/`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((response) => response.json())
-      .then((data) => {
-        setUser(data.user);
-        localStorage.setItem("user", JSON.stringify(data.user));
+      .then((user) => {
+        console.log("getuser: ", user);
+        setUser({
+          ...user,
+          Birthday: DateTime.fromISO(user.Birthday).toFormat("yyyy-MM-dd"),
+        });
+        localStorage.setItem("user", JSON.stringify(user));
       });
   }
 
   function addToFavorites(movieId) {
-    console.log(token);
     fetch(
       `https://cinedex.herokuapp.com/users/${user.Username}/movies/${movieId}`,
       {
@@ -56,6 +59,7 @@ export const MainView = () => {
     )
       .then((response) => {
         if (response.ok) {
+          getUser();
           alert("Movie added to favorites list");
         } else {
           alert("Movie was not added to favorites list");
@@ -65,14 +69,6 @@ export const MainView = () => {
         console.error("Error:", error);
       });
   }
-  //     .then((response) => {
-  //       return response.json();
-  //     })
-  //     .then((data) => {
-  //       getUser();
-  //       getMovies();
-  //     });
-  // }
 
   function deleteFromFavorites(movieId) {
     fetch(
@@ -87,6 +83,7 @@ export const MainView = () => {
     )
       .then((response) => {
         if (response.ok) {
+          getUser();
           alert("Movie deleted from favorites list");
         } else {
           alert("Movie was not deleted from favorites list");
@@ -96,23 +93,21 @@ export const MainView = () => {
         console.error("Error:", error);
       });
   }
-  //     .then((response) => {
-  //       return response.json();
-  //     })
-  //     .then((data) => {
-  //       getUser();
-  //       getMovies();
-  //     });
-  // }
+
+  function onLoggedIn(user, token) {
+    setToken(token);
+    setUser(user);
+  }
+
+  function onLoggedOut() {
+    setUser(null);
+    setToken(null);
+    localStorage.clear();
+  }
 
   return (
     <BrowserRouter>
-      <NavigationBar
-        user={user}
-        onLoggedOut={() => {
-          setUser(null);
-        }}
-      />
+      <NavigationBar user={user} onLoggedOut={onLoggedOut} />
       <Routes>
         <Route
           path="/signup"
@@ -136,7 +131,7 @@ export const MainView = () => {
                 <Navigate to="/" />
               ) : (
                 <Col md={5}>
-                  <LoginView onLoggedIn={(user) => setUser(user)} />
+                  <LoginView onLoggedIn={onLoggedIn} />
                 </Col>
               )}
             </>
@@ -168,7 +163,8 @@ export const MainView = () => {
                 <Col>The list is empty!</Col>
               ) : (
                 <ProfileView
-                  movies={movies}
+                  user={user}
+                  getUser={getUser}
                   deleteFromFavorites={deleteFromFavorites}
                 />
               )}
@@ -189,6 +185,9 @@ export const MainView = () => {
                     <Col className="mb-4" key={movie._id} md={3}>
                       <MovieCard
                         movie={movie}
+                        isFavorite={(user?.FavoriteMovies).find(
+                          (mov) => mov._id === movie._id
+                        )}
                         addMovieToFavorites={addToFavorites}
                         deleteFromFavorites={deleteFromFavorites}
                       />
