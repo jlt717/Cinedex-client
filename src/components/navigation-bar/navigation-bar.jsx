@@ -1,10 +1,12 @@
-import { Navbar, Container, Nav } from "react-bootstrap";
+import { Navbar, Container, Nav, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-
-  
-
-export const NavigationBar = ({ user, onLoggedOut }) => {
+export const NavigationBar = ({
+  user,
+  onLoggedOut,
+  onSearch,
+  onEnterKeyword,
+}) => {
   return (
     <Navbar bg="light" expand="lg">
       <Container>
@@ -36,6 +38,13 @@ export const NavigationBar = ({ user, onLoggedOut }) => {
               </>
             )}
           </Nav>
+          <input
+            className="form-control"
+            type="text"
+            placeholder="Search..."
+            onChange={(e) => onEnterKeyword(e.target.value)}
+          />
+          <Button onClick={onSearch}>Search</Button>
         </Navbar.Collapse>
       </Container>
     </Navbar>
