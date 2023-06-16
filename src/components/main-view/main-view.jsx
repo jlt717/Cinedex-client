@@ -15,6 +15,14 @@ export const MainView = () => {
   const [user, setUser] = useState(storedUser);
   const [token, setToken] = useState(storedToken);
   const [movies, setMovies] = useState([]);
+  //this stores the result of the onSearch function
+  const [filteredSearchMovieResults, setFilteredSearchMovieResults] = useState(
+    []
+  );
+  //This stores what the user is typing
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const movieList =
+    filteredSearchMovieResults.length > 0 ? filteredSearchMovieResults : movies;
 
   useEffect(() => {
     if (!token) {
@@ -24,30 +32,42 @@ export const MainView = () => {
     getMovies();
   }, [token]);
 
-  function search() {
-    const [filteredSearchMovieResults, movies] = useState("");
-    const [query, setQuery] = useState("");
-    console
-      .log(query)(filteredSearchMovieResults || movies)
-      .map((movie) => {
-        movie.Title.toLowerCase();
-      });
+  useEffect(() => {
+    //This listens for when the input field is
+    // empty and sets filtered to and empty array
+    // to enable render of all movies.
+    if (searchKeyword.trim().length === 0) {
+      setFilteredSearchMovieResults([]);
+    }
+    //the [searchKeyword] is the listener
+  }, [searchKeyword]);
 
-    return (
-      <div>
-        <input
-          type="text"
-          placeholder="Search..."
-          className="search"
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        {Movies.filter((movie) =>
-          movie.Title.toLowerCase().includes(query)
-        ).map((movie) => {
-          movie.Title;
-        })}{" "}
-      </div>
-    );
+  function onSearch() {
+    //Check if the input field is empty and
+    //sets the filtered to an empty array so
+    // the full movies can show
+    if (searchKeyword.trim().length === 0) {
+      setFilteredSearchMovieResults([]);
+      return;
+    }
+
+    //filters the movie array by checking if
+    // the keywords is what the movie title starts with or ends with
+    const foundMovies = movies.filter((movie) => {
+      return (
+        movie.Title.toLowerCase().startsWith(searchKeyword.toLowerCase()) ||
+        movie.Title.toLowerCase().endsWith(searchKeyword.toLowerCase())
+      );
+    });
+
+    //if foundmovies has an item in it then we add it to the
+    // filtered array
+    if (foundMovies.length > 0) {
+      setFilteredSearchMovieResults(foundMovies);
+      return;
+    }
+
+    setFilteredSearchMovieResults([]);
   }
 
   function getMovies() {
@@ -133,7 +153,12 @@ export const MainView = () => {
 
   return (
     <BrowserRouter>
-      <NavigationBar user={user} onLoggedOut={onLoggedOut} />
+      <NavigationBar
+        onSearch={onSearch}
+        onEnterKeyword={setSearchKeyword}
+        user={user}
+        onLoggedOut={onLoggedOut}
+      />
       <Routes>
         <Route
           path="/signup"
@@ -163,20 +188,12 @@ export const MainView = () => {
             </>
           }
         />
-        <input
-          type="text"
-          placeholder="Search..."
-          className="search"
-          onChange={(e) => filteredSearchMovieResults(e.target.value)}
-        />
         <Route
           path="/movies/:movieTitle"
           element={
             <>
               {!user ? (
                 <Navigate to="/login" replace />
-              ) : movies.length === 0 ? (
-                <Col>The list is empty!</Col>
               ) : (
                 <Col md={8}>
                   <MovieView />
@@ -191,8 +208,6 @@ export const MainView = () => {
             <>
               {!user ? (
                 <Navigate to="/login" replace />
-              ) : movies.length === 0 ? (
-                <Col>The list is empty!</Col>
               ) : (
                 <ProfileView
                   user={user}
@@ -213,20 +228,22 @@ export const MainView = () => {
               ) : movies.length === 0 ? (
                 <Col>The list is empty!</Col>
               ) : (
-                <Row>
-                  {movies.map((movie) => (
-                    <Col className="mb-4" key={movie._id} md={3}>
-                      <MovieCard
-                        movie={movie}
-                        isFavorite={(user?.FavoriteMovies).find(
-                          (mov) => mov._id === movie._id
-                        )}
-                        addMovieToFavorites={addToFavorites}
-                        deleteFromFavorites={deleteFromFavorites}
-                      />
-                    </Col>
-                  ))}
-                </Row>
+                <>
+                  <Row>
+                    {movieList.map((movie) => (
+                      <Col className="mb-4" key={movie._id} md={3}>
+                        <MovieCard
+                          movie={movie}
+                          isFavorite={(user?.FavoriteMovies).find(
+                            (mov) => mov._id === movie._id
+                          )}
+                          addMovieToFavorites={addToFavorites}
+                          deleteFromFavorites={deleteFromFavorites}
+                        />
+                      </Col>
+                    ))}
+                  </Row>
+                </>
               )}
             </>
           }
