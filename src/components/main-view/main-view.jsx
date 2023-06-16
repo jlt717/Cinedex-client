@@ -15,6 +15,8 @@ export const MainView = () => {
   const [user, setUser] = useState(storedUser);
   const [token, setToken] = useState(storedToken);
   const [movies, setMovies] = useState([]);
+  const [filteredMovies, setFilteredMovies] = useState([]);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     if (!token) {
@@ -23,32 +25,6 @@ export const MainView = () => {
     getUser();
     getMovies();
   }, [token]);
-
-  function search() {
-    const [filteredSearchMovieResults, movies] = useState("");
-    const [query, setQuery] = useState("");
-    console
-      .log(query)(filteredSearchMovieResults || movies)
-      .map((movie) => {
-        movie.Title.toLowerCase();
-      });
-
-    return (
-      <div>
-        <input
-          type="text"
-          placeholder="Search..."
-          className="search"
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        {Movies.filter((movie) =>
-          movie.Title.toLowerCase().includes(query)
-        ).map((movie) => {
-          movie.Title;
-        })}{" "}
-      </div>
-    );
-  }
 
   function getMovies() {
     fetch("https://cinedex.herokuapp.com/movies", {
@@ -59,6 +35,20 @@ export const MainView = () => {
         setMovies(data);
       });
   }
+
+  useEffect(() => {
+    setFilteredMovies(movies);
+  }, [movies]);
+
+  const handleSearchInput = (e) => {
+    console.log(e.target.value);
+    const searchWord = e.target.value.toLowerCase();
+
+    let tempArray = movies.filter((m) =>
+      m.Title.toLowerCase().includes(searchWord)
+    );
+    setFilteredMovies(tempArray);
+  };
 
   function getUser() {
     fetch(`https://cinedex.herokuapp.com/users/`, {
@@ -133,7 +123,11 @@ export const MainView = () => {
 
   return (
     <BrowserRouter>
-      <NavigationBar user={user} onLoggedOut={onLoggedOut} />
+      <NavigationBar
+        user={user}
+        onLoggedOut={onLoggedOut}
+        handleSearchInput={handleSearchInput}
+      />
       <Routes>
         <Route
           path="/signup"
@@ -163,12 +157,7 @@ export const MainView = () => {
             </>
           }
         />
-        <input
-          type="text"
-          placeholder="Search..."
-          className="search"
-          onChange={(e) => filteredSearchMovieResults(e.target.value)}
-        />
+
         <Route
           path="/movies/:movieTitle"
           element={
@@ -214,7 +203,7 @@ export const MainView = () => {
                 <Col>The list is empty!</Col>
               ) : (
                 <Row>
-                  {movies.map((movie) => (
+                  {filteredMovies.map((movie) => (
                     <Col className="mb-4" key={movie._id} md={3}>
                       <MovieCard
                         movie={movie}
