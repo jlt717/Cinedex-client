@@ -9,13 +9,17 @@ export const UserInfo = ({ user, deleteUser }) => {
           <Col>
             <CardGroup>
               <Card>
-                <Card.Body>
-                  <h2>User Info</h2>
-                  <p>User: {user.Username}</p>
+                <Card.Body style={{ color: "#C5C6C7" }}>
+                  <h2 style={{ color: "#66FCF1" }}>User Info</h2>
+                  <p >User: {user.Username}</p>
                   <p>Email: {user.Email}</p>
                   <p>Birthday: {user.Birthday}</p>
 
-                  <Button variant={"danger"} onClick={deleteUser}>
+                  <Button
+                  className="my-3"
+                    variant={"light"}
+                    onClick={deleteUser}
+                  >
                     Delete User Account
                   </Button>
                 </Card.Body>

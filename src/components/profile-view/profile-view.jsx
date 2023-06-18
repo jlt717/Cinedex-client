@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import PropTypes from "prop-types";
-//import { MainView } from "../main-view/main-view";
 import { Form, Button, Card, Row, Col } from "react-bootstrap";
 import { Link } from "react-router-dom";
 // import "./profile-view.scss";
@@ -62,10 +60,10 @@ export const ProfileView = ({
 
   return (
     <div>
-      <Row className="mt-3">
+      <Row className="mt-5">
         <Col>
           <UserInfo user={user} deleteUser={deleteUser} />
-          <FavoriteMovies
+          <FavoriteMovies 
             favoriteMovies={user.FavoriteMovies}
             onRemoveFavorite={deleteFromFavorites}
           />

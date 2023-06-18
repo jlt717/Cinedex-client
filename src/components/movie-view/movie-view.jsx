@@ -52,31 +52,16 @@ export const MovieView = () => {
         <span>Director: </span>
         <span>{movie.Director.Name}</span>
       </div>
-      {movie.Featured && (
+      {/* {movie.Featured && (
         <div>
           <span>Featured: </span>
           <span>Is Featured</span>
         </div>
-      )}
+      )} */}
       <Link to={`/`}>
-        <Button variant="link">Back</Button>
+        <Button variant="tertiary">Back</Button>
       </Link>
     </div>
   );
 };
-MovieView.propTypes = {
-  // movie: PropTypes.shape({
-  //   ImageURL: PropTypes.string.isRequired,
-  //   Title: PropTypes.string.isRequired,
-  //   Released: PropTypes.string.isRequired,
-  //   Description: PropTypes.string.isRequired,
-  //   Genre: PropTypes.shape({
-  //     Name: PropTypes.string.isRequired,
-  //   }),
-  //   Director: PropTypes.shape({
-  //     Name: PropTypes.string.isRequired,
-  //   }),
-  //   Featured: PropTypes.string.isRequired,
-  // }).isRequired,
-  // onBackClick: PropTypes.func.isRequired,
-};
+MovieView.propTypes = {};

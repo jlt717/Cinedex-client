@@ -25,12 +25,20 @@ export const UpdateUser = ({ handleSubmit, onHandleChange, user }) => {
           <CardGroup>
             <Card>
               <Card.Body>
-                <Form className="profile-form" onSubmit={handleSubmit}>
-                  <h2> Want to change your info?</h2>
+                <Form
+                  className="profile-form"
+                  style={{ color: "#C5C6C7" }}
+                  onSubmit={handleSubmit}
+                >
+                  <h2 style={{ color: "#66FCF1" }}>
+                    {" "}
+                    Want to change your info?
+                  </h2>
                   <div className="mb-3">
                     <label>Username:</label>
                     <input
                       className="form-control"
+                      style={{ color: "#C5C6C7" }}
                       type="text"
                       name="Username"
                       defaultValue={user.Username}
@@ -41,6 +49,7 @@ export const UpdateUser = ({ handleSubmit, onHandleChange, user }) => {
                     <label>Password</label>
                     <input
                       className="form-control"
+                      style={{ color: "#C5C6C7" }}
                       type="password"
                       name="password"
                       value={user.Password}
@@ -51,6 +60,7 @@ export const UpdateUser = ({ handleSubmit, onHandleChange, user }) => {
                     <label>Email address</label>
                     <input
                       className="form-control"
+                      style={{ color: "#C5C6C7" }}
                       type="email"
                       name="email"
                       value={user.Email}
@@ -61,6 +71,7 @@ export const UpdateUser = ({ handleSubmit, onHandleChange, user }) => {
                     <label>Birthday</label>
                     <input
                       className="form-control"
+                      style={{ color: "#C5C6C7" }}
                       type="date"
                       name="Birthday"
                       value={user.Birthday}

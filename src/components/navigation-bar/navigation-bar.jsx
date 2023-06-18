@@ -3,10 +3,15 @@ import { Link } from "react-router-dom";
 
 export const NavigationBar = ({ user, onLoggedOut, handleSearchInput }) => {
   return (
-    <Navbar bg="light" expand="lg">
+    <Navbar style={{ backgroundColor: "#66FCF1", width: "100%" }} expand="lg">
       <Container>
-        <Navbar.Brand as={Link} to="/">
-          Cinedex App
+        <Navbar.Brand
+        //className="align-left"
+          style={{ color: "#1F2833", fontSize: "30px", textAlign: "left" }}
+          as={Link}
+          to="/"
+        >
+          CineDEX
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar=nav">
@@ -17,7 +22,7 @@ export const NavigationBar = ({ user, onLoggedOut, handleSearchInput }) => {
                   Login
                 </Nav.Link>
                 <Nav.Link as={Link} to="/signup">
-                  Signup
+                  Register
                 </Nav.Link>
               </>
             )}
@@ -37,6 +42,7 @@ export const NavigationBar = ({ user, onLoggedOut, handleSearchInput }) => {
             <Form>
               <Form.Control
                 id="search-bar"
+                style={{ backgroundColor: "#0B0C10", color: "#C5C6C7" }}
                 type="text"
                 placeholder="Search..."
                 className="mr-sm-2 mx-2"

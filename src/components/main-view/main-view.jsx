@@ -35,7 +35,7 @@ export const MainView = () => {
         setMovies(data);
       });
   }
-
+  //search bar
   useEffect(() => {
     setFilteredMovies(movies);
   }, [movies]);
@@ -128,99 +128,99 @@ export const MainView = () => {
         onLoggedOut={onLoggedOut}
         handleSearchInput={handleSearchInput}
       />
-      <Routes>
-        <Route
-          path="/signup"
-          element={
-            <>
-              {user ? (
-                <Navigate to="/" />
-              ) : (
-                <Col md={5}>
-                  <SignupView />
-                </Col>
-              )}
-            </>
-          }
-        />
-        <Route
-          path="/login"
-          element={
-            <>
-              {user ? (
-                <Navigate to="/" />
-              ) : (
-                <Col md={5}>
-                  <LoginView onLoggedIn={onLoggedIn} />
-                </Col>
-              )}
-            </>
-          }
-        />
-
-        <Route
-          path="/movies/:movieTitle"
-          element={
-            <>
-              {!user ? (
-                <Navigate to="/login" replace />
-              ) : movies.length === 0 ? (
-                <Col>The list is empty!</Col>
-              ) : (
-                <Col md={8}>
-                  <MovieView />
-                </Col>
-              )}
-            </>
-          }
-        />
-        <Route
-          path="/users"
-          element={
-            <>
-              {!user ? (
-                <Navigate to="/login" replace />
-              ) : movies.length === 0 ? (
-                <Col>The list is empty!</Col>
-              ) : (
-                <ProfileView
-                  user={user}
-                  getUser={getUser}
-                  onLoggedOut={onLoggedOut}
-                  deleteFromFavorites={deleteFromFavorites}
-                />
-              )}
-            </>
-          }
-        />
-        <Route
-          path="/"
-          element={
-            <>
-              {!user ? (
-                <Navigate to="/login" replace />
-              ) : movies.length === 0 ? (
-                <Col>The list is empty!</Col>
-              ) : (
-                <Row>
-                  {filteredMovies.map((movie) => (
-                    <Col className="mb-4" key={movie._id} md={3}>
-                      <MovieCard
-                        movie={movie}
-                        isFavorite={(user?.FavoriteMovies).find(
-                          (mov) => mov._id === movie._id
-                        )}
-                        addMovieToFavorites={addToFavorites}
-                        deleteFromFavorites={deleteFromFavorites}
-                      />
+          <Routes>
+            <Route
+              path="/signup"
+              element={
+                <>
+                  {user ? (
+                    <Navigate to="/" />
+                  ) : (
+                    <Col md={5}>
+                      <SignupView />
                     </Col>
-                  ))}
-                </Row>
-              )}
-            </>
-          }
-        />
-      </Routes>
+                  )}
+                </>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <>
+                  {user ? (
+                    <Navigate to="/" />
+                  ) : (
+                    <Col md={5}>
+                      <LoginView onLoggedIn={onLoggedIn} />
+                    </Col>
+                  )}
+                </>
+              }
+            />
+
+            <Route
+              path="/movies/:movieTitle"
+              element={
+                <>
+                  {!user ? (
+                    <Navigate to="/login" replace />
+                  ) : movies.length === 0 ? (
+                    <Col>The list is empty!</Col>
+                  ) : (
+                    <Col md={8}>
+                      <MovieView />
+                    </Col>
+                  )}
+                </>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <>
+                  {!user ? (
+                    <Navigate to="/login" replace />
+                  ) : movies.length === 0 ? (
+                    <Col>The list is empty!</Col>
+                  ) : (
+                    <ProfileView
+                      user={user}
+                      getUser={getUser}
+                      onLoggedOut={onLoggedOut}
+                      deleteFromFavorites={deleteFromFavorites}
+                    />
+                  )}
+                </>
+              }
+            />
+            <Route
+              path="/"
+              element={
+                <>
+                  {!user ? (
+                    <Navigate to="/login" replace />
+                  ) : movies.length === 0 ? (
+                    <Col>The list is empty!</Col>
+                  ) : (
+                    <Row>
+                      {filteredMovies.map((movie) => (
+                        <Col className="mb-4" key={movie._id} md={3}>
+                          <MovieCard
+                            movie={movie}
+                            isFavorite={(user?.FavoriteMovies).find(
+                              (mov) => mov._id === movie._id
+                            )}
+                            addMovieToFavorites={addToFavorites}
+                            deleteFromFavorites={deleteFromFavorites}
+                          />
+                        </Col>
+                      ))}
+                    </Row>
+                  )}
+                </>
+              }
+            />
+          </Routes>
     </BrowserRouter>
   );
 };
