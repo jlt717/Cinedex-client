@@ -179,10 +179,11 @@ export const MainView = () => {
               element={
                 <>
                   {!user ? (
-                    <Navigate to="/login" replace />
-                  ) : movies.length === 0 ? (
-                    <Col>The list is empty!</Col>
-                  ) : (
+                    <Navigate to="/login" replace />) 
+                  //   : movies.length === 0 ? (
+                  //   <Col>The list is empty!</Col>
+                  // ) 
+                  : (
                     <ProfileView
                       user={user}
                       getUser={getUser}
