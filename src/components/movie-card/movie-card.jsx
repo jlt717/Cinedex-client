@@ -11,8 +11,9 @@ export const MovieCard = ({
   return (
     <Container>
       <Card
-        className="h-100"
-        style={{
+
+        className="mt-5"
+        style={{ height:"100",
           backgroundColor: "#1F2833",
           color: "#C5C6C7",
           border: "none",
