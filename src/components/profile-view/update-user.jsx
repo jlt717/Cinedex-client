@@ -30,7 +30,7 @@ export const UpdateUser = ({ handleSubmit, onHandleChange, user }) => {
                   style={{ color: "#C5C6C7" }}
                   onSubmit={handleSubmit}
                 >
-                  <h2 style={{ color: "#66FCF1" }}>
+                  <h2 style={{ color: "#66FCF1", paddingBottom:"10px" }}>
                     {" "}
                     Want to change your info?
                   </h2>

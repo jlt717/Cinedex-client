@@ -10,7 +10,7 @@ export const UserInfo = ({ user, deleteUser }) => {
             <CardGroup>
               <Card>
                 <Card.Body style={{ color: "#C5C6C7" }}>
-                  <h2 style={{ color: "#66FCF1" }}>User Info</h2>
+                  <h2 style={{ color: "#66FCF1", paddingBottom:"10px" }}>User Info</h2>
                   <p >User: {user.Username}</p>
                   <p>Email: {user.Email}</p>
                   <p>Birthday: {user.Birthday}</p>

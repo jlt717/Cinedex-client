@@ -1,4 +1,4 @@
-import { Navbar, Container, Nav, Form } from "react-bootstrap";
+import { Navbar, Container, Nav, Form, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 export const NavigationBar = ({ user, onLoggedOut, handleSearchInput }) => {
@@ -6,7 +6,6 @@ export const NavigationBar = ({ user, onLoggedOut, handleSearchInput }) => {
     <Navbar style={{ backgroundColor: "#66FCF1", width: "100%" }} expand="lg">
       <Container>
         <Navbar.Brand
-        //className="align-left"
           style={{ color: "#1F2833", fontSize: "30px", textAlign: "left" }}
           as={Link}
           to="/"
@@ -47,7 +46,7 @@ export const NavigationBar = ({ user, onLoggedOut, handleSearchInput }) => {
                 placeholder="Search..."
                 className="mr-sm-2 mx-2"
                 onChange={handleSearchInput}
-              />
+                />
             </Form>
           )}
         </Navbar.Collapse>

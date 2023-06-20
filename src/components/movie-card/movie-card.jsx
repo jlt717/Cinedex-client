@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { Container, Button, Card } from "react-bootstrap";
+import { Container, Button, Card, Row, Col } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 export const MovieCard = ({
@@ -11,9 +11,9 @@ export const MovieCard = ({
   return (
     <Container>
       <Card
-
         className="mt-5"
-        style={{ height:"100",
+        style={{
+          height: "100",
           backgroundColor: "#1F2833",
           color: "#C5C6C7",
           border: "none",
@@ -24,9 +24,13 @@ export const MovieCard = ({
           className="img-thumbnail"
           src={movie.ImageURL}
         />
-        <Card.Body className="h-100" d-flex flex-column>
+        <Card.Body className="h-100">
           <Card.Title
-            style={{ color: "#66FCF1", fontSize: "24px", textAlign: "center" }}
+            style={{
+              color: "#66FCF1",
+              fontSize: "24px",
+              textAlign: "center",
+            }}
           >
             {movie.Title}{" "}
           </Card.Title>

@@ -52,12 +52,6 @@ export const MovieView = () => {
         <span>Director: </span>
         <span>{movie.Director.Name}</span>
       </div>
-      {/* {movie.Featured && (
-        <div>
-          <span>Featured: </span>
-          <span>Is Featured</span>
-        </div>
-      )} */}
       <Link to={`/`}>
         <Button variant="tertiary">Back</Button>
       </Link>

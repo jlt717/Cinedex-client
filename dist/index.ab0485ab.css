@@ -15615,7 +15615,7 @@ progress {
 }
 
 .form-control::placeholder {
-  color: var(--bs-secondary-color);
+  color: #fff;
   opacity: 1;
 }
 
