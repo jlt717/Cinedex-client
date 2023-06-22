@@ -1,5 +1,32 @@
+import React from "react";
 import PropTypes from "prop-types";
-export const MovieView = ({ movie, onBackClick }) => {
+import { useParams, Link } from "react-router-dom";
+import { Button } from "react-bootstrap";
+
+export const MovieView = () => {
+  const { movieTitle } = useParams();
+  const [movie, setMovie] = React.useState(undefined);
+
+  React.useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+
+    if (!storedToken) {
+      return;
+    }
+
+    fetch(`https://cinedex.herokuapp.com/movies/${movieTitle}`, {
+      headers: { Authorization: `Bearer ${storedToken}` },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setMovie(data);
+      });
+  }, [movieTitle]);
+
+  if (!movie) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div>
       <div>
@@ -25,28 +52,10 @@ export const MovieView = ({ movie, onBackClick }) => {
         <span>Director: </span>
         <span>{movie.Director.Name}</span>
       </div>
-      <div>
-        <span>Featured: </span>
-        <span>{movie.Featured}</span>
-      </div>
-
-      <button onClick={onBackClick}>Back</button>
+      <Link to={`/`}>
+        <Button variant="tertiary">Back</Button>
+      </Link>
     </div>
   );
 };
-MovieView.propTypes = {
-  movie: PropTypes.shape({
-    ImageURL: PropTypes.string.isRequired,
-    Title: PropTypes.string.isRequired,
-    Released: PropTypes.string.isRequired,
-    Description: PropTypes.string.isRequired,
-    Genre: PropTypes.shape({
-      Name: PropTypes.string.isRequired,
-    }),
-    Director: PropTypes.shape({
-      Name: PropTypes.string.isRequired,
-    }),
-    Featured: PropTypes.string.isRequired,
-  }).isRequired,
-  onBackClick: PropTypes.func.isRequired,
-};
+MovieView.propTypes = {};

@@ -3,6 +3,7 @@ import { Form, Button } from "react-bootstrap";
 import { Container } from "react-bootstrap";
 import { Row, Col } from "react-bootstrap";
 import { Card, CardGroup } from "react-bootstrap";
+import { DateTime } from "luxon";
 
 export const LoginView = ({ onLoggedIn }) => {
   const [username, setUsername] = useState("");
@@ -27,9 +28,15 @@ export const LoginView = ({ onLoggedIn }) => {
       .then((data) => {
         console.log("Login response: ", data);
         if (data.user) {
-          localStorage.setItem("user", JSON.stringify(data.user));
+          const user = {
+            ...data.user,
+            Birthday: DateTime.fromISO(data.user.Birthday).toFormat(
+              "yyyy-MM-dd"
+            ),
+          };
+          localStorage.setItem("user", JSON.stringify(user));
           localStorage.setItem("token", data.token);
-          onLoggedIn(data.user, data.token);
+          onLoggedIn(user, data.token);
         } else {
           alert("No such user");
         }
@@ -45,12 +52,13 @@ export const LoginView = ({ onLoggedIn }) => {
         <Col>
           <CardGroup>
             <Card>
-              <Card.Body>
+              <Card.Body style={{ color: "#C5C6C7" }}>
                 <Card.Title>Login</Card.Title>
                 <form onSubmit={handleSubmit}>
                   <Form.Group controlId="formUsername">
                     <Form.Label>Username:</Form.Label>
                     <Form.Control
+                      style={{ color: "#C5C6C7" }}
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
@@ -62,13 +70,18 @@ export const LoginView = ({ onLoggedIn }) => {
                   <Form.Group controlId="formPassword">
                     <Form.Label>Password:</Form.Label>
                     <Form.Control
+                      style={{ color: "#C5C6C7" }}
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
                     />
                   </Form.Group>
-                  <Button variant="primary" type="submit">
+                  <Button
+                    className="mt-4"
+                    variant="primary"
+                    type="submit"
+                  >
                     Submit
                   </Button>
                 </form>
