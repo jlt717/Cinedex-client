@@ -1,52 +1,67 @@
+import React from "react";
 import PropTypes from "prop-types";
-export const MovieView = ({ movie, onBackClick }) => {
+import { useParams, Link } from "react-router-dom";
+import { Button } from "react-bootstrap";
+
+export const MovieView = () => {
+  const { movieTitle } = useParams();
+  const [movie, setMovie] = React.useState(undefined);
+
+  React.useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+
+    if (!storedToken) {
+      return;
+    }
+
+    fetch(`https://cinedex.herokuapp.com/movies/${movieTitle}`, {
+      headers: { Authorization: `Bearer ${storedToken}` },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setMovie(data);
+      });
+  }, [movieTitle]);
+
+  if (!movie) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div>
       <div>
-        <img className="w-100" src={movie.ImageURL} />
+        <img
+          className="w-50"
+          style={{ alignItem: "center" }}
+          src={movie.ImageURL}
+        />
       </div>
       <div>
-        <span>Title: </span>
-        <span>{movie.Title}</span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>Title: </span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>
+          {movie.Title}
+        </span>
       </div>
       <div>
-        <span>Released: </span>
-        <span>{movie.Released}</span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>Released: </span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>{movie.Released}</span>
       </div>
       <div>
-        <span>Description: </span>
-        <span>{movie.Description}</span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>Description: </span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>{movie.Description}</span>
       </div>
       <div>
-        <span>Genre: </span>
-        <span>{movie.Genre.Name}</span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>Genre: </span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>{movie.Genre.Name}</span>
       </div>
       <div>
-        <span>Director: </span>
-        <span>{movie.Director.Name}</span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>Director: </span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>{movie.Director.Name}</span>
       </div>
-      <div>
-        <span>Featured: </span>
-        <span>{movie.Featured}</span>
-      </div>
-
-      <button onClick={onBackClick}>Back</button>
+      <Link to={`/`}>
+        <Button className="mt-4" variant="primary">Back</Button>
+      </Link>
     </div>
   );
 };
-MovieView.propTypes = {
-  movie: PropTypes.shape({
-    ImageURL: PropTypes.string.isRequired,
-    Title: PropTypes.string.isRequired,
-    Released: PropTypes.string.isRequired,
-    Description: PropTypes.string.isRequired,
-    Genre: PropTypes.shape({
-      Name: PropTypes.string.isRequired,
-    }),
-    Director: PropTypes.shape({
-      Name: PropTypes.string.isRequired,
-    }),
-    Featured: PropTypes.string.isRequired,
-  }).isRequired,
-  onBackClick: PropTypes.func.isRequired,
-};
+MovieView.propTypes = {};

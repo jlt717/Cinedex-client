@@ -2953,17 +2953,12 @@ var _reactBootstrap = require("react-bootstrap");
 var _indexScss = require("./index.scss");
 // Main component (will eventually use all the others)
 const CinedexApplication = ()=>{
-    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Container), {
-        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _mainView.MainView), {}, void 0, false, {
-            fileName: "src/index.jsx",
-            lineNumber: 14,
-            columnNumber: 7
-        }, undefined)
-    }, void 0, false, {
+    return(//<Container className="container-fluid">
+    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _mainView.MainView), {}, void 0, false, {
         fileName: "src/index.jsx",
-        lineNumber: 13,
-        columnNumber: 5
-    }, undefined);
+        lineNumber: 14,
+        columnNumber: 7
+    }, undefined));
 };
 _c = CinedexApplication;
 // Finds the root of your app
@@ -27185,116 +27180,223 @@ var _movieView = require("../movie-view/movie-view");
 var _loginView = require("../login-view/login-view");
 var _signupView = require("../signup-view/signup-view");
 var _reactBootstrap = require("react-bootstrap");
+var _luxon = require("luxon");
+var _navigationBar = require("../navigation-bar/navigation-bar");
+var _profileView = require("../profile-view/profile-view");
+var _reactRouterDom = require("react-router-dom");
 var _s = $RefreshSig$();
 const MainView = ()=>{
     _s();
     const storedUser = JSON.parse(localStorage.getItem("user"));
     const storedToken = localStorage.getItem("token");
-    const [user, setUser] = (0, _react.useState)(null);
-    const [token, setToken] = (0, _react.useState)(null);
+    const [user, setUser] = (0, _react.useState)(storedUser);
+    const [token, setToken] = (0, _react.useState)(storedToken);
     const [movies, setMovies] = (0, _react.useState)([]);
-    const [selectedMovie, setSelectedMovie] = (0, _react.useState)(null);
+    const [filteredMovies, setFilteredMovies] = (0, _react.useState)([]);
+    const [query, setQuery] = (0, _react.useState)("");
     (0, _react.useEffect)(()=>{
-        // if (!token) {
-        //   return;
-        // }
+        if (!token) return;
+        getUser();
+        getMovies();
+    }, [
+        token
+    ]);
+    function getMovies() {
         fetch("https://cinedex.herokuapp.com/movies", {
             headers: {
                 Authorization: `Bearer ${token}`
             }
         }).then((response)=>response.json()).then((data)=>{
-            console.log(data);
             setMovies(data);
         });
-    }, []);
-    // }, [token]);
-    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Row), {
-        className: "justify-content-md-center",
+    }
+    //search bar
+    (0, _react.useEffect)(()=>{
+        setFilteredMovies(movies);
+    }, [
+        movies
+    ]);
+    const handleSearchInput = (e)=>{
+        console.log(e.target.value);
+        const searchWord = e.target.value.toLowerCase();
+        let tempArray = movies.filter((m)=>m.Title.toLowerCase().includes(searchWord));
+        setFilteredMovies(tempArray);
+    };
+    function getUser() {
+        fetch(`https://cinedex.herokuapp.com/users/`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }).then((response)=>response.json()).then((user)=>{
+            console.log("getuser: ", user);
+            setUser({
+                ...user,
+                Birthday: (0, _luxon.DateTime).fromISO(user.Birthday).toFormat("yyyy-MM-dd")
+            });
+            localStorage.setItem("user", JSON.stringify(user));
+        });
+    }
+    function addToFavorites(movieId) {
+        fetch(`https://cinedex.herokuapp.com/users/${user.Username}/movies/${movieId}`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }).then((response)=>{
+            if (response.ok) {
+                getUser();
+                alert("Movie added to favorites list");
+            } else alert("Movie was not added to favorites list");
+        }).catch((error)=>{
+            console.error("Error:", error);
+        });
+    }
+    function deleteFromFavorites(movieId) {
+        fetch(`https://cinedex.herokuapp.com/users/${user.Username}/movies/${movieId}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        }).then((response)=>{
+            if (response.ok) {
+                getUser();
+                alert("Movie deleted from favorites list");
+            } else alert("Movie was not deleted from favorites list");
+        }).catch((error)=>{
+            console.error("Error:", error);
+        });
+    }
+    function onLoggedIn(user, token) {
+        setToken(token);
+        setUser(user);
+    }
+    function onLoggedOut() {
+        setUser(null);
+        setToken(null);
+        localStorage.clear();
+    }
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.BrowserRouter), {
         children: [
-            !user ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
-                md: 5,
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _navigationBar.NavigationBar), {
+                user: user,
+                onLoggedOut: onLoggedOut,
+                handleSearchInput: handleSearchInput
+            }, void 0, false, {
+                fileName: "src/components/main-view/main-view.jsx",
+                lineNumber: 126,
+                columnNumber: 7
+            }, undefined),
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Routes), {
                 children: [
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _loginView.LoginView), {
-                        onLoggedIn: (user)=>setUser(user)
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
+                        path: "/signup",
+                        element: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
+                            children: user ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Navigate), {
+                                to: "/"
+                            }, void 0, false, void 0, void 0) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                                md: 5,
+                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _signupView.SignupView), {}, void 0, false, void 0, void 0)
+                            }, void 0, false, void 0, void 0)
+                        }, void 0, false)
                     }, void 0, false, {
                         fileName: "src/components/main-view/main-view.jsx",
-                        lineNumber: 35,
-                        columnNumber: 11
+                        lineNumber: 132,
+                        columnNumber: 9
                     }, undefined),
-                    "or",
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _signupView.SignupView), {}, void 0, false, {
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
+                        path: "/login",
+                        element: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
+                            children: user ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Navigate), {
+                                to: "/"
+                            }, void 0, false, void 0, void 0) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                                md: 5,
+                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _loginView.LoginView), {
+                                    onLoggedIn: onLoggedIn
+                                }, void 0, false, void 0, void 0)
+                            }, void 0, false, void 0, void 0)
+                        }, void 0, false)
+                    }, void 0, false, {
                         fileName: "src/components/main-view/main-view.jsx",
-                        lineNumber: 37,
-                        columnNumber: 11
+                        lineNumber: 146,
+                        columnNumber: 9
+                    }, undefined),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
+                        path: "/movies/:movieTitle",
+                        element: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
+                            children: !user ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Navigate), {
+                                to: "/login",
+                                replace: true
+                            }, void 0, false, void 0, void 0) : movies.length === 0 ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                                children: "The list is empty!"
+                            }, void 0, false, void 0, void 0) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                                md: 8,
+                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _movieView.MovieView), {}, void 0, false, void 0, void 0)
+                            }, void 0, false, void 0, void 0)
+                        }, void 0, false)
+                    }, void 0, false, {
+                        fileName: "src/components/main-view/main-view.jsx",
+                        lineNumber: 161,
+                        columnNumber: 9
+                    }, undefined),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
+                        path: "/users",
+                        element: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
+                            children: !user ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Navigate), {
+                                to: "/login",
+                                replace: true
+                            }, void 0, false, void 0, void 0) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _profileView.ProfileView), {
+                                user: user,
+                                getUser: getUser,
+                                onLoggedOut: onLoggedOut,
+                                deleteFromFavorites: deleteFromFavorites
+                            }, void 0, false, void 0, void 0)
+                        }, void 0, false)
+                    }, void 0, false, {
+                        fileName: "src/components/main-view/main-view.jsx",
+                        lineNumber: 177,
+                        columnNumber: 9
+                    }, undefined),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
+                        path: "/",
+                        element: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
+                            children: !user ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Navigate), {
+                                to: "/login",
+                                replace: true
+                            }, void 0, false, void 0, void 0) : movies.length === 0 ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                                children: "The list is empty!"
+                            }, void 0, false, void 0, void 0) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Row), {
+                                children: filteredMovies.map((movie)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                                        className: "mb-4",
+                                        md: 3,
+                                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _movieCard.MovieCard), {
+                                            movie: movie,
+                                            isFavorite: user?.FavoriteMovies.find((mov)=>mov._id === movie._id),
+                                            addMovieToFavorites: addToFavorites,
+                                            deleteFromFavorites: deleteFromFavorites
+                                        }, void 0, false, void 0, void 0)
+                                    }, movie._id, false, void 0, void 0))
+                            }, void 0, false, void 0, void 0)
+                        }, void 0, false)
+                    }, void 0, false, {
+                        fileName: "src/components/main-view/main-view.jsx",
+                        lineNumber: 194,
+                        columnNumber: 9
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/main-view/main-view.jsx",
-                lineNumber: 34,
-                columnNumber: 9
-            }, undefined) : selectedMovie ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
-                md: 8,
-                style: {
-                    border: "1px solid black"
-                },
-                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _movieView.MovieView), {
-                    movie: selectedMovie,
-                    onBackClick: ()=>setSelectedMovie(null)
-                }, void 0, false, {
-                    fileName: "src/components/main-view/main-view.jsx",
-                    lineNumber: 41,
-                    columnNumber: 11
-                }, undefined)
-            }, void 0, false, {
-                fileName: "src/components/main-view/main-view.jsx",
-                lineNumber: 40,
-                columnNumber: 9
-            }, undefined) : movies.length === 0 ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                children: "The list is empty!"
-            }, void 0, false, {
-                fileName: "src/components/main-view/main-view.jsx",
-                lineNumber: 47,
-                columnNumber: 9
-            }, undefined) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
-                children: movies.map((movie)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
-                        className: "mb-5",
-                        md: 3,
-                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _movieCard.MovieCard), {
-                            movie: movie,
-                            onMovieClick: (newSelectedMovie)=>{
-                                setSelectedMovie(newSelectedMovie);
-                            }
-                        }, void 0, false, {
-                            fileName: "src/components/main-view/main-view.jsx",
-                            lineNumber: 52,
-                            columnNumber: 15
-                        }, undefined)
-                    }, movie.Title, false, {
-                        fileName: "src/components/main-view/main-view.jsx",
-                        lineNumber: 51,
-                        columnNumber: 13
-                    }, undefined))
-            }, void 0, false),
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
-                onClick: ()=>{
-                    setUser(null);
-                    setToken(null);
-                    localStorage.clear();
-                },
-                children: "Logout"
-            }, void 0, false, {
-                fileName: "src/components/main-view/main-view.jsx",
-                lineNumber: 62,
+                lineNumber: 131,
                 columnNumber: 7
             }, undefined)
         ]
     }, void 0, true, {
         fileName: "src/components/main-view/main-view.jsx",
-        lineNumber: 32,
+        lineNumber: 125,
         columnNumber: 5
     }, undefined);
 };
-_s(MainView, "qXlxSr1HRHFcq0wZllxU017V8qo=");
+_s(MainView, "oZU6+5vBywClHAUDL3m7iceA7Dw=");
 _c = MainView;
 var _c;
 $RefreshReg$(_c, "MainView");
@@ -27304,7 +27406,7 @@ $RefreshReg$(_c, "MainView");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","../movie-card/movie-card":"bwuIu","../movie-view/movie-view":"ggaUx","../login-view/login-view":"9YtA0","../signup-view/signup-view":"4OGiN","react-bootstrap":"3AD9A","@parcel/transformer-js/src/esmodule-helpers.js":"9FYyo","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"bwuIu":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","../movie-card/movie-card":"bwuIu","../movie-view/movie-view":"ggaUx","../login-view/login-view":"9YtA0","../signup-view/signup-view":"4OGiN","react-bootstrap":"3AD9A","@parcel/transformer-js/src/esmodule-helpers.js":"9FYyo","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","luxon":"dpK6X","../navigation-bar/navigation-bar":"bsPVM","../profile-view/profile-view":"2vVqf","react-router-dom":"9xmpe"}],"bwuIu":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$67b2 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -27318,53 +27420,109 @@ var _jsxDevRuntime = require("react/jsx-dev-runtime");
 var _propTypes = require("prop-types");
 var _propTypesDefault = parcelHelpers.interopDefault(_propTypes);
 var _reactBootstrap = require("react-bootstrap");
-const MovieCard = ({ movie , onMovieClick  })=>{
-    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card), {
-        className: "h-100",
-        children: [
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Img, {
-                variant: "top",
-                src: movie.ImageURL
-            }, void 0, false, {
-                fileName: "src/components/movie-card/movie-card.jsx",
-                lineNumber: 6,
-                columnNumber: 7
-            }, undefined),
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Body, {
-                children: [
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Title, {
-                        children: movie.Title
-                    }, void 0, false, {
-                        fileName: "src/components/movie-card/movie-card.jsx",
-                        lineNumber: 8,
-                        columnNumber: 9
-                    }, undefined),
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Text, {
-                        children: movie.Released
-                    }, void 0, false, {
-                        fileName: "src/components/movie-card/movie-card.jsx",
-                        lineNumber: 9,
-                        columnNumber: 9
-                    }, undefined),
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
-                        onClick: ()=>onMovieClick(movie),
-                        variant: "link",
-                        children: "Open"
-                    }, void 0, false, {
-                        fileName: "src/components/movie-card/movie-card.jsx",
-                        lineNumber: 10,
-                        columnNumber: 9
-                    }, undefined)
-                ]
-            }, void 0, true, {
-                fileName: "src/components/movie-card/movie-card.jsx",
-                lineNumber: 7,
-                columnNumber: 7
-            }, undefined)
-        ]
-    }, void 0, true, {
+var _reactRouterDom = require("react-router-dom");
+const MovieCard = ({ isFavorite , movie , addMovieToFavorites , deleteFromFavorites  })=>{
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Container), {
+        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card), {
+            className: "mt-5",
+            style: {
+                height: "100",
+                backgroundColor: "#1F2833",
+                color: "#C5C6C7",
+                border: "none"
+            },
+            children: [
+                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Img, {
+                    variant: "top",
+                    className: "img-thumbnail",
+                    src: movie.ImageURL
+                }, void 0, false, {
+                    fileName: "src/components/movie-card/movie-card.jsx",
+                    lineNumber: 22,
+                    columnNumber: 9
+                }, undefined),
+                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Body, {
+                    className: "h-100",
+                    children: [
+                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Title, {
+                            style: {
+                                color: "#66FCF1",
+                                fontSize: "24px",
+                                textAlign: "center"
+                            },
+                            children: [
+                                movie.Title,
+                                " "
+                            ]
+                        }, void 0, true, {
+                            fileName: "src/components/movie-card/movie-card.jsx",
+                            lineNumber: 28,
+                            columnNumber: 11
+                        }, undefined),
+                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Text, {
+                            style: {
+                                fontSize: "14px",
+                                textAlign: "center"
+                            },
+                            children: movie.Description
+                        }, void 0, false, {
+                            fileName: "src/components/movie-card/movie-card.jsx",
+                            lineNumber: 37,
+                            columnNumber: 11
+                        }, undefined),
+                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Link), {
+                            to: `/movies/${encodeURIComponent(movie.Title)}`,
+                            children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
+                                variant: "primary",
+                                children: "Details"
+                            }, void 0, false, {
+                                fileName: "src/components/movie-card/movie-card.jsx",
+                                lineNumber: 41,
+                                columnNumber: 13
+                            }, undefined)
+                        }, void 0, false, {
+                            fileName: "src/components/movie-card/movie-card.jsx",
+                            lineNumber: 40,
+                            columnNumber: 11
+                        }, undefined),
+                        isFavorite ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
+                            style: {
+                                backgroundColor: "#1F2833",
+                                color: "#66FCF1"
+                            },
+                            onClick: ()=>{
+                                deleteFromFavorites(movie._id);
+                                alert("Remove from favorites");
+                            },
+                            children: "Remove from Favorites"
+                        }, void 0, false, {
+                            fileName: "src/components/movie-card/movie-card.jsx",
+                            lineNumber: 44,
+                            columnNumber: 13
+                        }, undefined) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
+                            variant: "secondary",
+                            onClick: ()=>addMovieToFavorites(movie._id),
+                            children: "Add to Favorites"
+                        }, void 0, false, {
+                            fileName: "src/components/movie-card/movie-card.jsx",
+                            lineNumber: 54,
+                            columnNumber: 13
+                        }, undefined)
+                    ]
+                }, void 0, true, {
+                    fileName: "src/components/movie-card/movie-card.jsx",
+                    lineNumber: 27,
+                    columnNumber: 9
+                }, undefined)
+            ]
+        }, void 0, true, {
+            fileName: "src/components/movie-card/movie-card.jsx",
+            lineNumber: 13,
+            columnNumber: 7
+        }, undefined)
+    }, void 0, false, {
         fileName: "src/components/movie-card/movie-card.jsx",
-        lineNumber: 5,
+        lineNumber: 12,
         columnNumber: 5
     }, undefined);
 };
@@ -27374,7 +27532,7 @@ MovieCard.propTypes = {
         ImageURL: (0, _propTypesDefault.default).string.isRequired,
         Title: (0, _propTypesDefault.default).string.isRequired
     }).isRequired,
-    onMovieClick: (0, _propTypesDefault.default).func.isRequired
+    addMovieToFavorites: (0, _propTypesDefault.default).func.isRequired
 };
 var _c;
 $RefreshReg$(_c, "MovieCard");
@@ -27384,7 +27542,7 @@ $RefreshReg$(_c, "MovieCard");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","prop-types":"7wKI2","react-bootstrap":"3AD9A","@parcel/transformer-js/src/esmodule-helpers.js":"9FYyo","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"7wKI2":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","prop-types":"7wKI2","react-bootstrap":"3AD9A","@parcel/transformer-js/src/esmodule-helpers.js":"9FYyo","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","react-router-dom":"9xmpe"}],"7wKI2":[function(require,module,exports) {
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -40851,7 +41009,5510 @@ function registerExportsForReactRefresh(module1) {
     }
 }
 
-},{"7422ead32dcc1e6b":"786KC"}],"ggaUx":[function(require,module,exports) {
+},{"7422ead32dcc1e6b":"786KC"}],"9xmpe":[function(require,module,exports) {
+/**
+ * React Router DOM v6.12.1
+ *
+ * Copyright (c) Remix Software Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE.md file in the root directory of this source tree.
+ *
+ * @license MIT
+ */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "AbortedDeferredError", ()=>(0, _reactRouter.AbortedDeferredError));
+parcelHelpers.export(exports, "Await", ()=>(0, _reactRouter.Await));
+parcelHelpers.export(exports, "MemoryRouter", ()=>(0, _reactRouter.MemoryRouter));
+parcelHelpers.export(exports, "Navigate", ()=>(0, _reactRouter.Navigate));
+parcelHelpers.export(exports, "NavigationType", ()=>(0, _reactRouter.NavigationType));
+parcelHelpers.export(exports, "Outlet", ()=>(0, _reactRouter.Outlet));
+parcelHelpers.export(exports, "Route", ()=>(0, _reactRouter.Route));
+parcelHelpers.export(exports, "Router", ()=>(0, _reactRouter.Router));
+parcelHelpers.export(exports, "RouterProvider", ()=>(0, _reactRouter.RouterProvider));
+parcelHelpers.export(exports, "Routes", ()=>(0, _reactRouter.Routes));
+parcelHelpers.export(exports, "UNSAFE_DataRouterContext", ()=>(0, _reactRouter.UNSAFE_DataRouterContext));
+parcelHelpers.export(exports, "UNSAFE_DataRouterStateContext", ()=>(0, _reactRouter.UNSAFE_DataRouterStateContext));
+parcelHelpers.export(exports, "UNSAFE_LocationContext", ()=>(0, _reactRouter.UNSAFE_LocationContext));
+parcelHelpers.export(exports, "UNSAFE_NavigationContext", ()=>(0, _reactRouter.UNSAFE_NavigationContext));
+parcelHelpers.export(exports, "UNSAFE_RouteContext", ()=>(0, _reactRouter.UNSAFE_RouteContext));
+parcelHelpers.export(exports, "UNSAFE_useRouteId", ()=>(0, _reactRouter.UNSAFE_useRouteId));
+parcelHelpers.export(exports, "createMemoryRouter", ()=>(0, _reactRouter.createMemoryRouter));
+parcelHelpers.export(exports, "createPath", ()=>(0, _reactRouter.createPath));
+parcelHelpers.export(exports, "createRoutesFromChildren", ()=>(0, _reactRouter.createRoutesFromChildren));
+parcelHelpers.export(exports, "createRoutesFromElements", ()=>(0, _reactRouter.createRoutesFromElements));
+parcelHelpers.export(exports, "defer", ()=>(0, _reactRouter.defer));
+parcelHelpers.export(exports, "generatePath", ()=>(0, _reactRouter.generatePath));
+parcelHelpers.export(exports, "isRouteErrorResponse", ()=>(0, _reactRouter.isRouteErrorResponse));
+parcelHelpers.export(exports, "json", ()=>(0, _reactRouter.json));
+parcelHelpers.export(exports, "matchPath", ()=>(0, _reactRouter.matchPath));
+parcelHelpers.export(exports, "matchRoutes", ()=>(0, _reactRouter.matchRoutes));
+parcelHelpers.export(exports, "parsePath", ()=>(0, _reactRouter.parsePath));
+parcelHelpers.export(exports, "redirect", ()=>(0, _reactRouter.redirect));
+parcelHelpers.export(exports, "renderMatches", ()=>(0, _reactRouter.renderMatches));
+parcelHelpers.export(exports, "resolvePath", ()=>(0, _reactRouter.resolvePath));
+parcelHelpers.export(exports, "unstable_useBlocker", ()=>(0, _reactRouter.unstable_useBlocker));
+parcelHelpers.export(exports, "useActionData", ()=>(0, _reactRouter.useActionData));
+parcelHelpers.export(exports, "useAsyncError", ()=>(0, _reactRouter.useAsyncError));
+parcelHelpers.export(exports, "useAsyncValue", ()=>(0, _reactRouter.useAsyncValue));
+parcelHelpers.export(exports, "useHref", ()=>(0, _reactRouter.useHref));
+parcelHelpers.export(exports, "useInRouterContext", ()=>(0, _reactRouter.useInRouterContext));
+parcelHelpers.export(exports, "useLoaderData", ()=>(0, _reactRouter.useLoaderData));
+parcelHelpers.export(exports, "useLocation", ()=>(0, _reactRouter.useLocation));
+parcelHelpers.export(exports, "useMatch", ()=>(0, _reactRouter.useMatch));
+parcelHelpers.export(exports, "useMatches", ()=>(0, _reactRouter.useMatches));
+parcelHelpers.export(exports, "useNavigate", ()=>(0, _reactRouter.useNavigate));
+parcelHelpers.export(exports, "useNavigation", ()=>(0, _reactRouter.useNavigation));
+parcelHelpers.export(exports, "useNavigationType", ()=>(0, _reactRouter.useNavigationType));
+parcelHelpers.export(exports, "useOutlet", ()=>(0, _reactRouter.useOutlet));
+parcelHelpers.export(exports, "useOutletContext", ()=>(0, _reactRouter.useOutletContext));
+parcelHelpers.export(exports, "useParams", ()=>(0, _reactRouter.useParams));
+parcelHelpers.export(exports, "useResolvedPath", ()=>(0, _reactRouter.useResolvedPath));
+parcelHelpers.export(exports, "useRevalidator", ()=>(0, _reactRouter.useRevalidator));
+parcelHelpers.export(exports, "useRouteError", ()=>(0, _reactRouter.useRouteError));
+parcelHelpers.export(exports, "useRouteLoaderData", ()=>(0, _reactRouter.useRouteLoaderData));
+parcelHelpers.export(exports, "useRoutes", ()=>(0, _reactRouter.useRoutes));
+//#endregion
+parcelHelpers.export(exports, "BrowserRouter", ()=>BrowserRouter);
+parcelHelpers.export(exports, "Form", ()=>Form);
+parcelHelpers.export(exports, "HashRouter", ()=>HashRouter);
+parcelHelpers.export(exports, "Link", ()=>Link);
+parcelHelpers.export(exports, "NavLink", ()=>NavLink);
+parcelHelpers.export(exports, "ScrollRestoration", ()=>ScrollRestoration);
+parcelHelpers.export(exports, "UNSAFE_useScrollRestoration", ()=>useScrollRestoration);
+parcelHelpers.export(exports, "createBrowserRouter", ()=>createBrowserRouter);
+parcelHelpers.export(exports, "createHashRouter", ()=>createHashRouter);
+parcelHelpers.export(exports, "createSearchParams", ()=>createSearchParams);
+parcelHelpers.export(exports, "unstable_HistoryRouter", ()=>HistoryRouter);
+parcelHelpers.export(exports, "unstable_usePrompt", ()=>usePrompt);
+parcelHelpers.export(exports, "useBeforeUnload", ()=>useBeforeUnload);
+parcelHelpers.export(exports, "useFetcher", ()=>useFetcher);
+parcelHelpers.export(exports, "useFetchers", ()=>useFetchers);
+parcelHelpers.export(exports, "useFormAction", ()=>useFormAction);
+parcelHelpers.export(exports, "useLinkClickHandler", ()=>useLinkClickHandler);
+parcelHelpers.export(exports, "useSearchParams", ()=>useSearchParams);
+parcelHelpers.export(exports, "useSubmit", ()=>useSubmit);
+var _react = require("react");
+var _reactRouter = require("react-router");
+var _router = require("@remix-run/router");
+function _extends() {
+    _extends = Object.assign ? Object.assign.bind() : function(target) {
+        for(var i = 1; i < arguments.length; i++){
+            var source = arguments[i];
+            for(var key in source)if (Object.prototype.hasOwnProperty.call(source, key)) target[key] = source[key];
+        }
+        return target;
+    };
+    return _extends.apply(this, arguments);
+}
+function _objectWithoutPropertiesLoose(source, excluded) {
+    if (source == null) return {};
+    var target = {};
+    var sourceKeys = Object.keys(source);
+    var key, i;
+    for(i = 0; i < sourceKeys.length; i++){
+        key = sourceKeys[i];
+        if (excluded.indexOf(key) >= 0) continue;
+        target[key] = source[key];
+    }
+    return target;
+}
+const defaultMethod = "get";
+const defaultEncType = "application/x-www-form-urlencoded";
+function isHtmlElement(object) {
+    return object != null && typeof object.tagName === "string";
+}
+function isButtonElement(object) {
+    return isHtmlElement(object) && object.tagName.toLowerCase() === "button";
+}
+function isFormElement(object) {
+    return isHtmlElement(object) && object.tagName.toLowerCase() === "form";
+}
+function isInputElement(object) {
+    return isHtmlElement(object) && object.tagName.toLowerCase() === "input";
+}
+function isModifiedEvent(event) {
+    return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
+}
+function shouldProcessLinkClick(event, target) {
+    return event.button === 0 && // Ignore everything but left clicks
+    (!target || target === "_self") && // Let browser handle "target=_blank" etc.
+    !isModifiedEvent(event) // Ignore clicks with modifier keys
+    ;
+}
+/**
+ * Creates a URLSearchParams object using the given initializer.
+ *
+ * This is identical to `new URLSearchParams(init)` except it also
+ * supports arrays as values in the object form of the initializer
+ * instead of just strings. This is convenient when you need multiple
+ * values for a given key, but don't want to use an array initializer.
+ *
+ * For example, instead of:
+ *
+ *   let searchParams = new URLSearchParams([
+ *     ['sort', 'name'],
+ *     ['sort', 'price']
+ *   ]);
+ *
+ * you can do:
+ *
+ *   let searchParams = createSearchParams({
+ *     sort: ['name', 'price']
+ *   });
+ */ function createSearchParams(init) {
+    if (init === void 0) init = "";
+    return new URLSearchParams(typeof init === "string" || Array.isArray(init) || init instanceof URLSearchParams ? init : Object.keys(init).reduce((memo, key)=>{
+        let value = init[key];
+        return memo.concat(Array.isArray(value) ? value.map((v)=>[
+                key,
+                v
+            ]) : [
+            [
+                key,
+                value
+            ]
+        ]);
+    }, []));
+}
+function getSearchParamsForLocation(locationSearch, defaultSearchParams) {
+    let searchParams = createSearchParams(locationSearch);
+    if (defaultSearchParams) {
+        for (let key of defaultSearchParams.keys())if (!searchParams.has(key)) defaultSearchParams.getAll(key).forEach((value)=>{
+            searchParams.append(key, value);
+        });
+    }
+    return searchParams;
+}
+function getFormSubmissionInfo(target, options, basename) {
+    let method;
+    let action = null;
+    let encType;
+    let formData;
+    if (isFormElement(target)) {
+        let submissionTrigger = options.submissionTrigger;
+        if (options.action) action = options.action;
+        else {
+            // When grabbing the action from the element, it will have had the basename
+            // prefixed to ensure non-JS scenarios work, so strip it since we'll
+            // re-prefix in the router
+            let attr = target.getAttribute("action");
+            action = attr ? (0, _router.stripBasename)(attr, basename) : null;
+        }
+        method = options.method || target.getAttribute("method") || defaultMethod;
+        encType = options.encType || target.getAttribute("enctype") || defaultEncType;
+        formData = new FormData(target);
+        if (submissionTrigger && submissionTrigger.name) formData.append(submissionTrigger.name, submissionTrigger.value);
+    } else if (isButtonElement(target) || isInputElement(target) && (target.type === "submit" || target.type === "image")) {
+        let form = target.form;
+        if (form == null) throw new Error('Cannot submit a <button> or <input type="submit"> without a <form>');
+        // <button>/<input type="submit"> may override attributes of <form>
+        if (options.action) action = options.action;
+        else {
+            // When grabbing the action from the element, it will have had the basename
+            // prefixed to ensure non-JS scenarios work, so strip it since we'll
+            // re-prefix in the router
+            let attr = target.getAttribute("formaction") || form.getAttribute("action");
+            action = attr ? (0, _router.stripBasename)(attr, basename) : null;
+        }
+        method = options.method || target.getAttribute("formmethod") || form.getAttribute("method") || defaultMethod;
+        encType = options.encType || target.getAttribute("formenctype") || form.getAttribute("enctype") || defaultEncType;
+        formData = new FormData(form);
+        // Include name + value from a <button>, appending in case the button name
+        // matches an existing input name
+        if (target.name) formData.append(target.name, target.value);
+    } else if (isHtmlElement(target)) throw new Error('Cannot submit element that is not <form>, <button>, or <input type="submit|image">');
+    else {
+        method = options.method || defaultMethod;
+        action = options.action || null;
+        encType = options.encType || defaultEncType;
+        if (target instanceof FormData) formData = target;
+        else {
+            formData = new FormData();
+            if (target instanceof URLSearchParams) for (let [name, value] of target)formData.append(name, value);
+            else if (target != null) for (let name of Object.keys(target))formData.append(name, target[name]);
+        }
+    }
+    return {
+        action,
+        method: method.toLowerCase(),
+        encType,
+        formData
+    };
+}
+const _excluded = [
+    "onClick",
+    "relative",
+    "reloadDocument",
+    "replace",
+    "state",
+    "target",
+    "to",
+    "preventScrollReset"
+], _excluded2 = [
+    "aria-current",
+    "caseSensitive",
+    "className",
+    "end",
+    "style",
+    "to",
+    "children"
+], _excluded3 = [
+    "reloadDocument",
+    "replace",
+    "method",
+    "action",
+    "onSubmit",
+    "fetcherKey",
+    "routeId",
+    "relative",
+    "preventScrollReset"
+];
+function createBrowserRouter(routes, opts) {
+    return (0, _router.createRouter)({
+        basename: opts == null ? void 0 : opts.basename,
+        future: _extends({}, opts == null ? void 0 : opts.future, {
+            v7_prependBasename: true
+        }),
+        history: (0, _router.createBrowserHistory)({
+            window: opts == null ? void 0 : opts.window
+        }),
+        hydrationData: (opts == null ? void 0 : opts.hydrationData) || parseHydrationData(),
+        routes,
+        mapRouteProperties: (0, _reactRouter.UNSAFE_mapRouteProperties)
+    }).initialize();
+}
+function createHashRouter(routes, opts) {
+    return (0, _router.createRouter)({
+        basename: opts == null ? void 0 : opts.basename,
+        future: _extends({}, opts == null ? void 0 : opts.future, {
+            v7_prependBasename: true
+        }),
+        history: (0, _router.createHashHistory)({
+            window: opts == null ? void 0 : opts.window
+        }),
+        hydrationData: (opts == null ? void 0 : opts.hydrationData) || parseHydrationData(),
+        routes,
+        mapRouteProperties: (0, _reactRouter.UNSAFE_mapRouteProperties)
+    }).initialize();
+}
+function parseHydrationData() {
+    var _window;
+    let state = (_window = window) == null ? void 0 : _window.__staticRouterHydrationData;
+    if (state && state.errors) state = _extends({}, state, {
+        errors: deserializeErrors(state.errors)
+    });
+    return state;
+}
+function deserializeErrors(errors) {
+    if (!errors) return null;
+    let entries = Object.entries(errors);
+    let serialized = {};
+    for (let [key, val] of entries){
+        // Hey you!  If you change this, please change the corresponding logic in
+        // serializeErrors in react-router-dom/server.tsx :)
+        if (val && val.__type === "RouteErrorResponse") serialized[key] = new (0, _router.ErrorResponse)(val.status, val.statusText, val.data, val.internal === true);
+        else if (val && val.__type === "Error") {
+            let error = new Error(val.message);
+            // Wipe away the client-side stack trace.  Nothing to fill it in with
+            // because we don't serialize SSR stack traces for security reasons
+            error.stack = "";
+            serialized[key] = error;
+        } else serialized[key] = val;
+    }
+    return serialized;
+}
+// Webpack + React 17 fails to compile on the usage of `React.startTransition` or
+// `React["startTransition"]` even if it's behind a feature detection of
+// `"startTransition" in React`. Moving this to a constant avoids the issue :/
+const START_TRANSITION = "startTransition";
+/**
+ * A `<Router>` for use in web browsers. Provides the cleanest URLs.
+ */ function BrowserRouter(_ref) {
+    let { basename , children , window: window1  } = _ref;
+    let historyRef = _react.useRef();
+    if (historyRef.current == null) historyRef.current = (0, _router.createBrowserHistory)({
+        window: window1,
+        v5Compat: true
+    });
+    let history = historyRef.current;
+    let [state, setStateImpl] = _react.useState({
+        action: history.action,
+        location: history.location
+    });
+    let setState = _react.useCallback((newState)=>{
+        START_TRANSITION in _react ? _react[START_TRANSITION](()=>setStateImpl(newState)) : setStateImpl(newState);
+    }, [
+        setStateImpl
+    ]);
+    _react.useLayoutEffect(()=>history.listen(setState), [
+        history,
+        setState
+    ]);
+    return /*#__PURE__*/ _react.createElement((0, _reactRouter.Router), {
+        basename: basename,
+        children: children,
+        location: state.location,
+        navigationType: state.action,
+        navigator: history
+    });
+}
+/**
+ * A `<Router>` for use in web browsers. Stores the location in the hash
+ * portion of the URL so it is not sent to the server.
+ */ function HashRouter(_ref2) {
+    let { basename , children , window: window1  } = _ref2;
+    let historyRef = _react.useRef();
+    if (historyRef.current == null) historyRef.current = (0, _router.createHashHistory)({
+        window: window1,
+        v5Compat: true
+    });
+    let history = historyRef.current;
+    let [state, setStateImpl] = _react.useState({
+        action: history.action,
+        location: history.location
+    });
+    let setState = _react.useCallback((newState)=>{
+        START_TRANSITION in _react ? _react[START_TRANSITION](()=>setStateImpl(newState)) : setStateImpl(newState);
+    }, [
+        setStateImpl
+    ]);
+    _react.useLayoutEffect(()=>history.listen(setState), [
+        history,
+        setState
+    ]);
+    return /*#__PURE__*/ _react.createElement((0, _reactRouter.Router), {
+        basename: basename,
+        children: children,
+        location: state.location,
+        navigationType: state.action,
+        navigator: history
+    });
+}
+/**
+ * A `<Router>` that accepts a pre-instantiated history object. It's important
+ * to note that using your own history object is highly discouraged and may add
+ * two versions of the history library to your bundles unless you use the same
+ * version of the history library that React Router uses internally.
+ */ function HistoryRouter(_ref3) {
+    let { basename , children , history  } = _ref3;
+    let [state, setStateImpl] = _react.useState({
+        action: history.action,
+        location: history.location
+    });
+    let setState = _react.useCallback((newState)=>{
+        START_TRANSITION in _react ? _react[START_TRANSITION](()=>setStateImpl(newState)) : setStateImpl(newState);
+    }, [
+        setStateImpl
+    ]);
+    _react.useLayoutEffect(()=>history.listen(setState), [
+        history,
+        setState
+    ]);
+    return /*#__PURE__*/ _react.createElement((0, _reactRouter.Router), {
+        basename: basename,
+        children: children,
+        location: state.location,
+        navigationType: state.action,
+        navigator: history
+    });
+}
+HistoryRouter.displayName = "unstable_HistoryRouter";
+const isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined" && typeof window.document.createElement !== "undefined";
+const ABSOLUTE_URL_REGEX = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
+/**
+ * The public API for rendering a history-aware <a>.
+ */ const Link = /*#__PURE__*/ _react.forwardRef(function LinkWithRef(_ref4, ref) {
+    let { onClick , relative , reloadDocument , replace , state , target , to , preventScrollReset  } = _ref4, rest = _objectWithoutPropertiesLoose(_ref4, _excluded);
+    let { basename  } = _react.useContext((0, _reactRouter.UNSAFE_NavigationContext));
+    // Rendered into <a href> for absolute URLs
+    let absoluteHref;
+    let isExternal = false;
+    if (typeof to === "string" && ABSOLUTE_URL_REGEX.test(to)) {
+        // Render the absolute href server- and client-side
+        absoluteHref = to;
+        // Only check for external origins client-side
+        if (isBrowser) try {
+            let currentUrl = new URL(window.location.href);
+            let targetUrl = to.startsWith("//") ? new URL(currentUrl.protocol + to) : new URL(to);
+            let path = (0, _router.stripBasename)(targetUrl.pathname, basename);
+            if (targetUrl.origin === currentUrl.origin && path != null) // Strip the protocol/origin/basename for same-origin absolute URLs
+            to = path + targetUrl.search + targetUrl.hash;
+            else isExternal = true;
+        } catch (e) {
+            (0, _router.UNSAFE_warning)(false, '<Link to="' + to + '"> contains an invalid URL which will probably break ' + "when clicked - please update to a valid URL path.");
+        }
+    }
+    // Rendered into <a href> for relative URLs
+    let href = (0, _reactRouter.useHref)(to, {
+        relative
+    });
+    let internalOnClick = useLinkClickHandler(to, {
+        replace,
+        state,
+        target,
+        preventScrollReset,
+        relative
+    });
+    function handleClick(event) {
+        if (onClick) onClick(event);
+        if (!event.defaultPrevented) internalOnClick(event);
+    }
+    return(/*#__PURE__*/ // eslint-disable-next-line jsx-a11y/anchor-has-content
+    _react.createElement("a", _extends({}, rest, {
+        href: absoluteHref || href,
+        onClick: isExternal || reloadDocument ? onClick : handleClick,
+        ref: ref,
+        target: target
+    })));
+});
+Link.displayName = "Link";
+/**
+ * A <Link> wrapper that knows if it's "active" or not.
+ */ const NavLink = /*#__PURE__*/ _react.forwardRef(function NavLinkWithRef(_ref5, ref) {
+    let { "aria-current": ariaCurrentProp = "page" , caseSensitive =false , className: classNameProp = "" , end =false , style: styleProp , to , children  } = _ref5, rest = _objectWithoutPropertiesLoose(_ref5, _excluded2);
+    let path = (0, _reactRouter.useResolvedPath)(to, {
+        relative: rest.relative
+    });
+    let location = (0, _reactRouter.useLocation)();
+    let routerState = _react.useContext((0, _reactRouter.UNSAFE_DataRouterStateContext));
+    let { navigator  } = _react.useContext((0, _reactRouter.UNSAFE_NavigationContext));
+    let toPathname = navigator.encodeLocation ? navigator.encodeLocation(path).pathname : path.pathname;
+    let locationPathname = location.pathname;
+    let nextLocationPathname = routerState && routerState.navigation && routerState.navigation.location ? routerState.navigation.location.pathname : null;
+    if (!caseSensitive) {
+        locationPathname = locationPathname.toLowerCase();
+        nextLocationPathname = nextLocationPathname ? nextLocationPathname.toLowerCase() : null;
+        toPathname = toPathname.toLowerCase();
+    }
+    let isActive = locationPathname === toPathname || !end && locationPathname.startsWith(toPathname) && locationPathname.charAt(toPathname.length) === "/";
+    let isPending = nextLocationPathname != null && (nextLocationPathname === toPathname || !end && nextLocationPathname.startsWith(toPathname) && nextLocationPathname.charAt(toPathname.length) === "/");
+    let ariaCurrent = isActive ? ariaCurrentProp : undefined;
+    let className;
+    if (typeof classNameProp === "function") className = classNameProp({
+        isActive,
+        isPending
+    });
+    else // If the className prop is not a function, we use a default `active`
+    // class for <NavLink />s that are active. In v5 `active` was the default
+    // value for `activeClassName`, but we are removing that API and can still
+    // use the old default behavior for a cleaner upgrade path and keep the
+    // simple styling rules working as they currently do.
+    className = [
+        classNameProp,
+        isActive ? "active" : null,
+        isPending ? "pending" : null
+    ].filter(Boolean).join(" ");
+    let style = typeof styleProp === "function" ? styleProp({
+        isActive,
+        isPending
+    }) : styleProp;
+    return /*#__PURE__*/ _react.createElement(Link, _extends({}, rest, {
+        "aria-current": ariaCurrent,
+        className: className,
+        ref: ref,
+        style: style,
+        to: to
+    }), typeof children === "function" ? children({
+        isActive,
+        isPending
+    }) : children);
+});
+NavLink.displayName = "NavLink";
+/**
+ * A `@remix-run/router`-aware `<form>`. It behaves like a normal form except
+ * that the interaction with the server is with `fetch` instead of new document
+ * requests, allowing components to add nicer UX to the page as the form is
+ * submitted and returns with data.
+ */ const Form = /*#__PURE__*/ _react.forwardRef((props, ref)=>{
+    return /*#__PURE__*/ _react.createElement(FormImpl, _extends({}, props, {
+        ref: ref
+    }));
+});
+Form.displayName = "Form";
+const FormImpl = /*#__PURE__*/ _react.forwardRef((_ref6, forwardedRef)=>{
+    let { reloadDocument , replace , method =defaultMethod , action , onSubmit , fetcherKey , routeId , relative , preventScrollReset  } = _ref6, props = _objectWithoutPropertiesLoose(_ref6, _excluded3);
+    let submit = useSubmitImpl(fetcherKey, routeId);
+    let formMethod = method.toLowerCase() === "get" ? "get" : "post";
+    let formAction = useFormAction(action, {
+        relative
+    });
+    let submitHandler = (event)=>{
+        onSubmit && onSubmit(event);
+        if (event.defaultPrevented) return;
+        event.preventDefault();
+        let submitter = event.nativeEvent.submitter;
+        let submitMethod = (submitter == null ? void 0 : submitter.getAttribute("formmethod")) || method;
+        submit(submitter || event.currentTarget, {
+            method: submitMethod,
+            replace,
+            relative,
+            preventScrollReset
+        });
+    };
+    return /*#__PURE__*/ _react.createElement("form", _extends({
+        ref: forwardedRef,
+        method: formMethod,
+        action: formAction,
+        onSubmit: reloadDocument ? onSubmit : submitHandler
+    }, props));
+});
+FormImpl.displayName = "FormImpl";
+/**
+ * This component will emulate the browser's scroll restoration on location
+ * changes.
+ */ function ScrollRestoration(_ref7) {
+    let { getKey , storageKey  } = _ref7;
+    useScrollRestoration({
+        getKey,
+        storageKey
+    });
+    return null;
+}
+ScrollRestoration.displayName = "ScrollRestoration";
+//#endregion
+////////////////////////////////////////////////////////////////////////////////
+//#region Hooks
+////////////////////////////////////////////////////////////////////////////////
+var DataRouterHook;
+(function(DataRouterHook) {
+    DataRouterHook["UseScrollRestoration"] = "useScrollRestoration";
+    DataRouterHook["UseSubmitImpl"] = "useSubmitImpl";
+    DataRouterHook["UseFetcher"] = "useFetcher";
+})(DataRouterHook || (DataRouterHook = {}));
+var DataRouterStateHook;
+(function(DataRouterStateHook) {
+    DataRouterStateHook["UseFetchers"] = "useFetchers";
+    DataRouterStateHook["UseScrollRestoration"] = "useScrollRestoration";
+})(DataRouterStateHook || (DataRouterStateHook = {}));
+function getDataRouterConsoleError(hookName) {
+    return hookName + " must be used within a data router.  See https://reactrouter.com/routers/picking-a-router.";
+}
+function useDataRouterContext(hookName) {
+    let ctx = _react.useContext((0, _reactRouter.UNSAFE_DataRouterContext));
+    !ctx && (0, _router.UNSAFE_invariant)(false, getDataRouterConsoleError(hookName));
+    return ctx;
+}
+function useDataRouterState(hookName) {
+    let state = _react.useContext((0, _reactRouter.UNSAFE_DataRouterStateContext));
+    !state && (0, _router.UNSAFE_invariant)(false, getDataRouterConsoleError(hookName));
+    return state;
+}
+/**
+ * Handles the click behavior for router `<Link>` components. This is useful if
+ * you need to create custom `<Link>` components with the same click behavior we
+ * use in our exported `<Link>`.
+ */ function useLinkClickHandler(to, _temp) {
+    let { target , replace: replaceProp , state , preventScrollReset , relative  } = _temp === void 0 ? {} : _temp;
+    let navigate = (0, _reactRouter.useNavigate)();
+    let location = (0, _reactRouter.useLocation)();
+    let path = (0, _reactRouter.useResolvedPath)(to, {
+        relative
+    });
+    return _react.useCallback((event)=>{
+        if (shouldProcessLinkClick(event, target)) {
+            event.preventDefault();
+            // If the URL hasn't changed, a regular <a> will do a replace instead of
+            // a push, so do the same here unless the replace prop is explicitly set
+            let replace = replaceProp !== undefined ? replaceProp : (0, _reactRouter.createPath)(location) === (0, _reactRouter.createPath)(path);
+            navigate(to, {
+                replace,
+                state,
+                preventScrollReset,
+                relative
+            });
+        }
+    }, [
+        location,
+        navigate,
+        path,
+        replaceProp,
+        state,
+        target,
+        to,
+        preventScrollReset,
+        relative
+    ]);
+}
+/**
+ * A convenient wrapper for reading and writing search parameters via the
+ * URLSearchParams interface.
+ */ function useSearchParams(defaultInit) {
+    (0, _router.UNSAFE_warning)(typeof URLSearchParams !== "undefined", "You cannot use the `useSearchParams` hook in a browser that does not support the URLSearchParams API. If you need to support Internet Explorer 11, we recommend you load a polyfill such as https://github.com/ungap/url-search-params\n\nIf you're unsure how to load polyfills, we recommend you check out https://polyfill.io/v3/ which provides some recommendations about how to load polyfills only for users that need them, instead of for every user.");
+    let defaultSearchParamsRef = _react.useRef(createSearchParams(defaultInit));
+    let hasSetSearchParamsRef = _react.useRef(false);
+    let location = (0, _reactRouter.useLocation)();
+    let searchParams = _react.useMemo(()=>// Only merge in the defaults if we haven't yet called setSearchParams.
+        // Once we call that we want those to take precedence, otherwise you can't
+        // remove a param with setSearchParams({}) if it has an initial value
+        getSearchParamsForLocation(location.search, hasSetSearchParamsRef.current ? null : defaultSearchParamsRef.current), [
+        location.search
+    ]);
+    let navigate = (0, _reactRouter.useNavigate)();
+    let setSearchParams = _react.useCallback((nextInit, navigateOptions)=>{
+        const newSearchParams = createSearchParams(typeof nextInit === "function" ? nextInit(searchParams) : nextInit);
+        hasSetSearchParamsRef.current = true;
+        navigate("?" + newSearchParams, navigateOptions);
+    }, [
+        navigate,
+        searchParams
+    ]);
+    return [
+        searchParams,
+        setSearchParams
+    ];
+}
+/**
+ * Returns a function that may be used to programmatically submit a form (or
+ * some arbitrary data) to the server.
+ */ function useSubmit() {
+    return useSubmitImpl();
+}
+function useSubmitImpl(fetcherKey, fetcherRouteId) {
+    let { router  } = useDataRouterContext(DataRouterHook.UseSubmitImpl);
+    let { basename  } = _react.useContext((0, _reactRouter.UNSAFE_NavigationContext));
+    let currentRouteId = (0, _reactRouter.UNSAFE_useRouteId)();
+    return _react.useCallback(function(target, options) {
+        if (options === void 0) options = {};
+        if (typeof document === "undefined") throw new Error("You are calling submit during the server render. Try calling submit within a `useEffect` or callback instead.");
+        let { action , method , encType , formData  } = getFormSubmissionInfo(target, options, basename);
+        // Base options shared between fetch() and navigate()
+        let opts = {
+            preventScrollReset: options.preventScrollReset,
+            formData,
+            formMethod: method,
+            formEncType: encType
+        };
+        if (fetcherKey) {
+            !(fetcherRouteId != null) && (0, _router.UNSAFE_invariant)(false, "No routeId available for useFetcher()");
+            router.fetch(fetcherKey, fetcherRouteId, action, opts);
+        } else router.navigate(action, _extends({}, opts, {
+            replace: options.replace,
+            fromRouteId: currentRouteId
+        }));
+    }, [
+        router,
+        basename,
+        fetcherKey,
+        fetcherRouteId,
+        currentRouteId
+    ]);
+}
+// v7: Eventually we should deprecate this entirely in favor of using the
+// router method directly?
+function useFormAction(action, _temp2) {
+    let { relative  } = _temp2 === void 0 ? {} : _temp2;
+    let { basename  } = _react.useContext((0, _reactRouter.UNSAFE_NavigationContext));
+    let routeContext = _react.useContext((0, _reactRouter.UNSAFE_RouteContext));
+    !routeContext && (0, _router.UNSAFE_invariant)(false, "useFormAction must be used inside a RouteContext");
+    let [match] = routeContext.matches.slice(-1);
+    // Shallow clone path so we can modify it below, otherwise we modify the
+    // object referenced by useMemo inside useResolvedPath
+    let path = _extends({}, (0, _reactRouter.useResolvedPath)(action ? action : ".", {
+        relative
+    }));
+    // Previously we set the default action to ".". The problem with this is that
+    // `useResolvedPath(".")` excludes search params and the hash of the resolved
+    // URL. This is the intended behavior of when "." is specifically provided as
+    // the form action, but inconsistent w/ browsers when the action is omitted.
+    // https://github.com/remix-run/remix/issues/927
+    let location = (0, _reactRouter.useLocation)();
+    if (action == null) {
+        // Safe to write to these directly here since if action was undefined, we
+        // would have called useResolvedPath(".") which will never include a search
+        // or hash
+        path.search = location.search;
+        path.hash = location.hash;
+        // When grabbing search params from the URL, remove the automatically
+        // inserted ?index param so we match the useResolvedPath search behavior
+        // which would not include ?index
+        if (match.route.index) {
+            let params = new URLSearchParams(path.search);
+            params.delete("index");
+            path.search = params.toString() ? "?" + params.toString() : "";
+        }
+    }
+    if ((!action || action === ".") && match.route.index) path.search = path.search ? path.search.replace(/^\?/, "?index&") : "?index";
+    // If we're operating within a basename, prepend it to the pathname prior
+    // to creating the form action.  If this is a root navigation, then just use
+    // the raw basename which allows the basename to have full control over the
+    // presence of a trailing slash on root actions
+    if (basename !== "/") path.pathname = path.pathname === "/" ? basename : (0, _router.joinPaths)([
+        basename,
+        path.pathname
+    ]);
+    return (0, _reactRouter.createPath)(path);
+}
+function createFetcherForm(fetcherKey, routeId) {
+    let FetcherForm = /*#__PURE__*/ _react.forwardRef((props, ref)=>{
+        return /*#__PURE__*/ _react.createElement(FormImpl, _extends({}, props, {
+            ref: ref,
+            fetcherKey: fetcherKey,
+            routeId: routeId
+        }));
+    });
+    FetcherForm.displayName = "fetcher.Form";
+    return FetcherForm;
+}
+let fetcherId = 0;
+/**
+ * Interacts with route loaders and actions without causing a navigation. Great
+ * for any interaction that stays on the same page.
+ */ function useFetcher() {
+    var _route$matches;
+    let { router  } = useDataRouterContext(DataRouterHook.UseFetcher);
+    let route = _react.useContext((0, _reactRouter.UNSAFE_RouteContext));
+    !route && (0, _router.UNSAFE_invariant)(false, "useFetcher must be used inside a RouteContext");
+    let routeId = (_route$matches = route.matches[route.matches.length - 1]) == null ? void 0 : _route$matches.route.id;
+    !(routeId != null) && (0, _router.UNSAFE_invariant)(false, 'useFetcher can only be used on routes that contain a unique "id"');
+    let [fetcherKey] = _react.useState(()=>String(++fetcherId));
+    let [Form] = _react.useState(()=>{
+        !routeId && (0, _router.UNSAFE_invariant)(false, "No routeId available for fetcher.Form()");
+        return createFetcherForm(fetcherKey, routeId);
+    });
+    let [load] = _react.useState(()=>(href)=>{
+            !router && (0, _router.UNSAFE_invariant)(false, "No router available for fetcher.load()");
+            !routeId && (0, _router.UNSAFE_invariant)(false, "No routeId available for fetcher.load()");
+            router.fetch(fetcherKey, routeId, href);
+        });
+    let submit = useSubmitImpl(fetcherKey, routeId);
+    let fetcher = router.getFetcher(fetcherKey);
+    let fetcherWithComponents = _react.useMemo(()=>_extends({
+            Form,
+            submit,
+            load
+        }, fetcher), [
+        fetcher,
+        Form,
+        submit,
+        load
+    ]);
+    _react.useEffect(()=>{
+        // Is this busted when the React team gets real weird and calls effects
+        // twice on mount?  We really just need to garbage collect here when this
+        // fetcher is no longer around.
+        return ()=>{
+            if (!router) {
+                console.warn("No router available to clean up from useFetcher()");
+                return;
+            }
+            router.deleteFetcher(fetcherKey);
+        };
+    }, [
+        router,
+        fetcherKey
+    ]);
+    return fetcherWithComponents;
+}
+/**
+ * Provides all fetchers currently on the page. Useful for layouts and parent
+ * routes that need to provide pending/optimistic UI regarding the fetch.
+ */ function useFetchers() {
+    let state = useDataRouterState(DataRouterStateHook.UseFetchers);
+    return [
+        ...state.fetchers.values()
+    ];
+}
+const SCROLL_RESTORATION_STORAGE_KEY = "react-router-scroll-positions";
+let savedScrollPositions = {};
+/**
+ * When rendered inside a RouterProvider, will restore scroll positions on navigations
+ */ function useScrollRestoration(_temp3) {
+    let { getKey , storageKey  } = _temp3 === void 0 ? {} : _temp3;
+    let { router  } = useDataRouterContext(DataRouterHook.UseScrollRestoration);
+    let { restoreScrollPosition , preventScrollReset  } = useDataRouterState(DataRouterStateHook.UseScrollRestoration);
+    let location = (0, _reactRouter.useLocation)();
+    let matches = (0, _reactRouter.useMatches)();
+    let navigation = (0, _reactRouter.useNavigation)();
+    // Trigger manual scroll restoration while we're active
+    _react.useEffect(()=>{
+        window.history.scrollRestoration = "manual";
+        return ()=>{
+            window.history.scrollRestoration = "auto";
+        };
+    }, []);
+    // Save positions on pagehide
+    usePageHide(_react.useCallback(()=>{
+        if (navigation.state === "idle") {
+            let key = (getKey ? getKey(location, matches) : null) || location.key;
+            savedScrollPositions[key] = window.scrollY;
+        }
+        sessionStorage.setItem(storageKey || SCROLL_RESTORATION_STORAGE_KEY, JSON.stringify(savedScrollPositions));
+        window.history.scrollRestoration = "auto";
+    }, [
+        storageKey,
+        getKey,
+        navigation.state,
+        location,
+        matches
+    ]));
+    // Read in any saved scroll locations
+    if (typeof document !== "undefined") {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        _react.useLayoutEffect(()=>{
+            try {
+                let sessionPositions = sessionStorage.getItem(storageKey || SCROLL_RESTORATION_STORAGE_KEY);
+                if (sessionPositions) savedScrollPositions = JSON.parse(sessionPositions);
+            } catch (e) {
+            // no-op, use default empty object
+            }
+        }, [
+            storageKey
+        ]);
+        // Enable scroll restoration in the router
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        _react.useLayoutEffect(()=>{
+            let disableScrollRestoration = router == null ? void 0 : router.enableScrollRestoration(savedScrollPositions, ()=>window.scrollY, getKey);
+            return ()=>disableScrollRestoration && disableScrollRestoration();
+        }, [
+            router,
+            getKey
+        ]);
+        // Restore scrolling when state.restoreScrollPosition changes
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        _react.useLayoutEffect(()=>{
+            // Explicit false means don't do anything (used for submissions)
+            if (restoreScrollPosition === false) return;
+            // been here before, scroll to it
+            if (typeof restoreScrollPosition === "number") {
+                window.scrollTo(0, restoreScrollPosition);
+                return;
+            }
+            // try to scroll to the hash
+            if (location.hash) {
+                let el = document.getElementById(location.hash.slice(1));
+                if (el) {
+                    el.scrollIntoView();
+                    return;
+                }
+            }
+            // Don't reset if this navigation opted out
+            if (preventScrollReset === true) return;
+            // otherwise go to the top on new locations
+            window.scrollTo(0, 0);
+        }, [
+            location,
+            restoreScrollPosition,
+            preventScrollReset
+        ]);
+    }
+}
+/**
+ * Setup a callback to be fired on the window's `beforeunload` event. This is
+ * useful for saving some data to `window.localStorage` just before the page
+ * refreshes.
+ *
+ * Note: The `callback` argument should be a function created with
+ * `React.useCallback()`.
+ */ function useBeforeUnload(callback, options) {
+    let { capture  } = options || {};
+    _react.useEffect(()=>{
+        let opts = capture != null ? {
+            capture
+        } : undefined;
+        window.addEventListener("beforeunload", callback, opts);
+        return ()=>{
+            window.removeEventListener("beforeunload", callback, opts);
+        };
+    }, [
+        callback,
+        capture
+    ]);
+}
+/**
+ * Setup a callback to be fired on the window's `pagehide` event. This is
+ * useful for saving some data to `window.localStorage` just before the page
+ * refreshes.  This event is better supported than beforeunload across browsers.
+ *
+ * Note: The `callback` argument should be a function created with
+ * `React.useCallback()`.
+ */ function usePageHide(callback, options) {
+    let { capture  } = options || {};
+    _react.useEffect(()=>{
+        let opts = capture != null ? {
+            capture
+        } : undefined;
+        window.addEventListener("pagehide", callback, opts);
+        return ()=>{
+            window.removeEventListener("pagehide", callback, opts);
+        };
+    }, [
+        callback,
+        capture
+    ]);
+}
+/**
+ * Wrapper around useBlocker to show a window.confirm prompt to users instead
+ * of building a custom UI with useBlocker.
+ *
+ * Warning: This has *a lot of rough edges* and behaves very differently (and
+ * very incorrectly in some cases) across browsers if user click addition
+ * back/forward navigations while the confirm is open.  Use at your own risk.
+ */ function usePrompt(_ref8) {
+    let { when , message  } = _ref8;
+    let blocker = (0, _reactRouter.unstable_useBlocker)(when);
+    _react.useEffect(()=>{
+        if (blocker.state === "blocked" && !when) blocker.reset();
+    }, [
+        blocker,
+        when
+    ]);
+    _react.useEffect(()=>{
+        if (blocker.state === "blocked") {
+            let proceed = window.confirm(message);
+            if (proceed) setTimeout(blocker.proceed, 0);
+            else blocker.reset();
+        }
+    }, [
+        blocker,
+        message
+    ]);
+}
+
+},{"react":"21dqq","react-router":"dbWyW","@remix-run/router":"5ncDG","@parcel/transformer-js/src/esmodule-helpers.js":"9FYyo"}],"dbWyW":[function(require,module,exports) {
+/**
+ * React Router v6.12.1
+ *
+ * Copyright (c) Remix Software Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE.md file in the root directory of this source tree.
+ *
+ * @license MIT
+ */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "AbortedDeferredError", ()=>(0, _router.AbortedDeferredError));
+parcelHelpers.export(exports, "NavigationType", ()=>(0, _router.Action));
+parcelHelpers.export(exports, "createPath", ()=>(0, _router.createPath));
+parcelHelpers.export(exports, "defer", ()=>(0, _router.defer));
+parcelHelpers.export(exports, "generatePath", ()=>(0, _router.generatePath));
+parcelHelpers.export(exports, "isRouteErrorResponse", ()=>(0, _router.isRouteErrorResponse));
+parcelHelpers.export(exports, "json", ()=>(0, _router.json));
+parcelHelpers.export(exports, "matchPath", ()=>(0, _router.matchPath));
+parcelHelpers.export(exports, "matchRoutes", ()=>(0, _router.matchRoutes));
+parcelHelpers.export(exports, "parsePath", ()=>(0, _router.parsePath));
+parcelHelpers.export(exports, "redirect", ()=>(0, _router.redirect));
+parcelHelpers.export(exports, "resolvePath", ()=>(0, _router.resolvePath));
+parcelHelpers.export(exports, "Await", ()=>Await);
+parcelHelpers.export(exports, "MemoryRouter", ()=>MemoryRouter);
+parcelHelpers.export(exports, "Navigate", ()=>Navigate);
+parcelHelpers.export(exports, "Outlet", ()=>Outlet);
+parcelHelpers.export(exports, "Route", ()=>Route);
+parcelHelpers.export(exports, "Router", ()=>Router);
+parcelHelpers.export(exports, "RouterProvider", ()=>RouterProvider);
+parcelHelpers.export(exports, "Routes", ()=>Routes);
+parcelHelpers.export(exports, "UNSAFE_DataRouterContext", ()=>DataRouterContext);
+parcelHelpers.export(exports, "UNSAFE_DataRouterStateContext", ()=>DataRouterStateContext);
+parcelHelpers.export(exports, "UNSAFE_LocationContext", ()=>LocationContext);
+parcelHelpers.export(exports, "UNSAFE_NavigationContext", ()=>NavigationContext);
+parcelHelpers.export(exports, "UNSAFE_RouteContext", ()=>RouteContext);
+parcelHelpers.export(exports, "UNSAFE_mapRouteProperties", ()=>mapRouteProperties);
+parcelHelpers.export(exports, "UNSAFE_useRouteId", ()=>useRouteId);
+parcelHelpers.export(exports, "UNSAFE_useRoutesImpl", ()=>useRoutesImpl);
+parcelHelpers.export(exports, "createMemoryRouter", ()=>createMemoryRouter);
+parcelHelpers.export(exports, "createRoutesFromChildren", ()=>createRoutesFromChildren);
+parcelHelpers.export(exports, "createRoutesFromElements", ()=>createRoutesFromChildren);
+parcelHelpers.export(exports, "renderMatches", ()=>renderMatches);
+parcelHelpers.export(exports, "unstable_useBlocker", ()=>useBlocker);
+parcelHelpers.export(exports, "useActionData", ()=>useActionData);
+parcelHelpers.export(exports, "useAsyncError", ()=>useAsyncError);
+parcelHelpers.export(exports, "useAsyncValue", ()=>useAsyncValue);
+parcelHelpers.export(exports, "useHref", ()=>useHref);
+parcelHelpers.export(exports, "useInRouterContext", ()=>useInRouterContext);
+parcelHelpers.export(exports, "useLoaderData", ()=>useLoaderData);
+parcelHelpers.export(exports, "useLocation", ()=>useLocation);
+parcelHelpers.export(exports, "useMatch", ()=>useMatch);
+parcelHelpers.export(exports, "useMatches", ()=>useMatches);
+parcelHelpers.export(exports, "useNavigate", ()=>useNavigate);
+parcelHelpers.export(exports, "useNavigation", ()=>useNavigation);
+parcelHelpers.export(exports, "useNavigationType", ()=>useNavigationType);
+parcelHelpers.export(exports, "useOutlet", ()=>useOutlet);
+parcelHelpers.export(exports, "useOutletContext", ()=>useOutletContext);
+parcelHelpers.export(exports, "useParams", ()=>useParams);
+parcelHelpers.export(exports, "useResolvedPath", ()=>useResolvedPath);
+parcelHelpers.export(exports, "useRevalidator", ()=>useRevalidator);
+parcelHelpers.export(exports, "useRouteError", ()=>useRouteError);
+parcelHelpers.export(exports, "useRouteLoaderData", ()=>useRouteLoaderData);
+parcelHelpers.export(exports, "useRoutes", ()=>useRoutes);
+var _react = require("react");
+var _router = require("@remix-run/router");
+function _extends() {
+    _extends = Object.assign ? Object.assign.bind() : function(target) {
+        for(var i = 1; i < arguments.length; i++){
+            var source = arguments[i];
+            for(var key in source)if (Object.prototype.hasOwnProperty.call(source, key)) target[key] = source[key];
+        }
+        return target;
+    };
+    return _extends.apply(this, arguments);
+}
+// Create react-specific types from the agnostic types in @remix-run/router to
+// export from react-router
+const DataRouterContext = /*#__PURE__*/ _react.createContext(null);
+DataRouterContext.displayName = "DataRouter";
+const DataRouterStateContext = /*#__PURE__*/ _react.createContext(null);
+DataRouterStateContext.displayName = "DataRouterState";
+const AwaitContext = /*#__PURE__*/ _react.createContext(null);
+AwaitContext.displayName = "Await";
+/**
+ * A Navigator is a "location changer"; it's how you get to different locations.
+ *
+ * Every history instance conforms to the Navigator interface, but the
+ * distinction is useful primarily when it comes to the low-level <Router> API
+ * where both the location and a navigator must be provided separately in order
+ * to avoid "tearing" that may occur in a suspense-enabled app if the action
+ * and/or location were to be read directly from the history instance.
+ */ const NavigationContext = /*#__PURE__*/ _react.createContext(null);
+NavigationContext.displayName = "Navigation";
+const LocationContext = /*#__PURE__*/ _react.createContext(null);
+LocationContext.displayName = "Location";
+const RouteContext = /*#__PURE__*/ _react.createContext({
+    outlet: null,
+    matches: [],
+    isDataRoute: false
+});
+RouteContext.displayName = "Route";
+const RouteErrorContext = /*#__PURE__*/ _react.createContext(null);
+RouteErrorContext.displayName = "RouteError";
+/**
+ * Returns the full href for the given "to" value. This is useful for building
+ * custom links that are also accessible and preserve right-click behavior.
+ *
+ * @see https://reactrouter.com/hooks/use-href
+ */ function useHref(to, _temp) {
+    let { relative  } = _temp === void 0 ? {} : _temp;
+    !useInRouterContext() && (0, _router.UNSAFE_invariant)(false, // router loaded. We can help them understand how to avoid that.
+    "useHref() may be used only in the context of a <Router> component.");
+    let { basename , navigator  } = _react.useContext(NavigationContext);
+    let { hash , pathname , search  } = useResolvedPath(to, {
+        relative
+    });
+    let joinedPathname = pathname;
+    // If we're operating within a basename, prepend it to the pathname prior
+    // to creating the href.  If this is a root navigation, then just use the raw
+    // basename which allows the basename to have full control over the presence
+    // of a trailing slash on root links
+    if (basename !== "/") joinedPathname = pathname === "/" ? basename : (0, _router.joinPaths)([
+        basename,
+        pathname
+    ]);
+    return navigator.createHref({
+        pathname: joinedPathname,
+        search,
+        hash
+    });
+}
+/**
+ * Returns true if this component is a descendant of a <Router>.
+ *
+ * @see https://reactrouter.com/hooks/use-in-router-context
+ */ function useInRouterContext() {
+    return _react.useContext(LocationContext) != null;
+}
+/**
+ * Returns the current location object, which represents the current URL in web
+ * browsers.
+ *
+ * Note: If you're using this it may mean you're doing some of your own
+ * "routing" in your app, and we'd like to know what your use case is. We may
+ * be able to provide something higher-level to better suit your needs.
+ *
+ * @see https://reactrouter.com/hooks/use-location
+ */ function useLocation() {
+    !useInRouterContext() && (0, _router.UNSAFE_invariant)(false, // router loaded. We can help them understand how to avoid that.
+    "useLocation() may be used only in the context of a <Router> component.");
+    return _react.useContext(LocationContext).location;
+}
+/**
+ * Returns the current navigation action which describes how the router came to
+ * the current location, either by a pop, push, or replace on the history stack.
+ *
+ * @see https://reactrouter.com/hooks/use-navigation-type
+ */ function useNavigationType() {
+    return _react.useContext(LocationContext).navigationType;
+}
+/**
+ * Returns a PathMatch object if the given pattern matches the current URL.
+ * This is useful for components that need to know "active" state, e.g.
+ * <NavLink>.
+ *
+ * @see https://reactrouter.com/hooks/use-match
+ */ function useMatch(pattern) {
+    !useInRouterContext() && (0, _router.UNSAFE_invariant)(false, // router loaded. We can help them understand how to avoid that.
+    "useMatch() may be used only in the context of a <Router> component.");
+    let { pathname  } = useLocation();
+    return _react.useMemo(()=>(0, _router.matchPath)(pattern, pathname), [
+        pathname,
+        pattern
+    ]);
+}
+/**
+ * The interface for the navigate() function returned from useNavigate().
+ */ const navigateEffectWarning = "You should call navigate() in a React.useEffect(), not when your component is first rendered.";
+// Mute warnings for calls to useNavigate in SSR environments
+function useIsomorphicLayoutEffect(cb) {
+    let isStatic = _react.useContext(NavigationContext).static;
+    if (!isStatic) // We should be able to get rid of this once react 18.3 is released
+    // See: https://github.com/facebook/react/pull/26395
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    _react.useLayoutEffect(cb);
+}
+/**
+ * Returns an imperative method for changing the location. Used by <Link>s, but
+ * may also be used by other elements to change the location.
+ *
+ * @see https://reactrouter.com/hooks/use-navigate
+ */ function useNavigate() {
+    let { isDataRoute  } = _react.useContext(RouteContext);
+    // Conditional usage is OK here because the usage of a data router is static
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return isDataRoute ? useNavigateStable() : useNavigateUnstable();
+}
+function useNavigateUnstable() {
+    !useInRouterContext() && (0, _router.UNSAFE_invariant)(false, // router loaded. We can help them understand how to avoid that.
+    "useNavigate() may be used only in the context of a <Router> component.");
+    let dataRouterContext = _react.useContext(DataRouterContext);
+    let { basename , navigator  } = _react.useContext(NavigationContext);
+    let { matches  } = _react.useContext(RouteContext);
+    let { pathname: locationPathname  } = useLocation();
+    let routePathnamesJson = JSON.stringify((0, _router.UNSAFE_getPathContributingMatches)(matches).map((match)=>match.pathnameBase));
+    let activeRef = _react.useRef(false);
+    useIsomorphicLayoutEffect(()=>{
+        activeRef.current = true;
+    });
+    let navigate = _react.useCallback(function(to, options) {
+        if (options === void 0) options = {};
+        (0, _router.UNSAFE_warning)(activeRef.current, navigateEffectWarning);
+        // Short circuit here since if this happens on first render the navigate
+        // is useless because we haven't wired up our history listener yet
+        if (!activeRef.current) return;
+        if (typeof to === "number") {
+            navigator.go(to);
+            return;
+        }
+        let path = (0, _router.resolveTo)(to, JSON.parse(routePathnamesJson), locationPathname, options.relative === "path");
+        // If we're operating within a basename, prepend it to the pathname prior
+        // to handing off to history (but only if we're not in a data router,
+        // otherwise it'll prepend the basename inside of the router).
+        // If this is a root navigation, then we navigate to the raw basename
+        // which allows the basename to have full control over the presence of a
+        // trailing slash on root links
+        if (dataRouterContext == null && basename !== "/") path.pathname = path.pathname === "/" ? basename : (0, _router.joinPaths)([
+            basename,
+            path.pathname
+        ]);
+        (!!options.replace ? navigator.replace : navigator.push)(path, options.state, options);
+    }, [
+        basename,
+        navigator,
+        routePathnamesJson,
+        locationPathname,
+        dataRouterContext
+    ]);
+    return navigate;
+}
+const OutletContext = /*#__PURE__*/ _react.createContext(null);
+/**
+ * Returns the context (if provided) for the child route at this level of the route
+ * hierarchy.
+ * @see https://reactrouter.com/hooks/use-outlet-context
+ */ function useOutletContext() {
+    return _react.useContext(OutletContext);
+}
+/**
+ * Returns the element for the child route at this level of the route
+ * hierarchy. Used internally by <Outlet> to render child routes.
+ *
+ * @see https://reactrouter.com/hooks/use-outlet
+ */ function useOutlet(context) {
+    let outlet = _react.useContext(RouteContext).outlet;
+    if (outlet) return /*#__PURE__*/ _react.createElement(OutletContext.Provider, {
+        value: context
+    }, outlet);
+    return outlet;
+}
+/**
+ * Returns an object of key/value pairs of the dynamic params from the current
+ * URL that were matched by the route path.
+ *
+ * @see https://reactrouter.com/hooks/use-params
+ */ function useParams() {
+    let { matches  } = _react.useContext(RouteContext);
+    let routeMatch = matches[matches.length - 1];
+    return routeMatch ? routeMatch.params : {};
+}
+/**
+ * Resolves the pathname of the given `to` value against the current location.
+ *
+ * @see https://reactrouter.com/hooks/use-resolved-path
+ */ function useResolvedPath(to, _temp2) {
+    let { relative  } = _temp2 === void 0 ? {} : _temp2;
+    let { matches  } = _react.useContext(RouteContext);
+    let { pathname: locationPathname  } = useLocation();
+    let routePathnamesJson = JSON.stringify((0, _router.UNSAFE_getPathContributingMatches)(matches).map((match)=>match.pathnameBase));
+    return _react.useMemo(()=>(0, _router.resolveTo)(to, JSON.parse(routePathnamesJson), locationPathname, relative === "path"), [
+        to,
+        routePathnamesJson,
+        locationPathname,
+        relative
+    ]);
+}
+/**
+ * Returns the element of the route that matched the current location, prepared
+ * with the correct context to render the remainder of the route tree. Route
+ * elements in the tree must render an <Outlet> to render their child route's
+ * element.
+ *
+ * @see https://reactrouter.com/hooks/use-routes
+ */ function useRoutes(routes, locationArg) {
+    return useRoutesImpl(routes, locationArg);
+}
+// Internal implementation with accept optional param for RouterProvider usage
+function useRoutesImpl(routes, locationArg, dataRouterState) {
+    !useInRouterContext() && (0, _router.UNSAFE_invariant)(false, // router loaded. We can help them understand how to avoid that.
+    "useRoutes() may be used only in the context of a <Router> component.");
+    let { navigator  } = _react.useContext(NavigationContext);
+    let { matches: parentMatches  } = _react.useContext(RouteContext);
+    let routeMatch = parentMatches[parentMatches.length - 1];
+    let parentParams = routeMatch ? routeMatch.params : {};
+    let parentPathname = routeMatch ? routeMatch.pathname : "/";
+    let parentPathnameBase = routeMatch ? routeMatch.pathnameBase : "/";
+    let parentRoute = routeMatch && routeMatch.route;
+    {
+        // You won't get a warning about 2 different <Routes> under a <Route>
+        // without a trailing *, but this is a best-effort warning anyway since we
+        // cannot even give the warning unless they land at the parent route.
+        //
+        // Example:
+        //
+        // <Routes>
+        //   {/* This route path MUST end with /* because otherwise
+        //       it will never match /blog/post/123 */}
+        //   <Route path="blog" element={<Blog />} />
+        //   <Route path="blog/feed" element={<BlogFeed />} />
+        // </Routes>
+        //
+        // function Blog() {
+        //   return (
+        //     <Routes>
+        //       <Route path="post/:id" element={<Post />} />
+        //     </Routes>
+        //   );
+        // }
+        let parentPath = parentRoute && parentRoute.path || "";
+        warningOnce(parentPathname, !parentRoute || parentPath.endsWith("*"), "You rendered descendant <Routes> (or called `useRoutes()`) at " + ('"' + parentPathname + '" (under <Route path="' + parentPath + '">) but the ') + 'parent route path has no trailing "*". This means if you navigate ' + "deeper, the parent won't match anymore and therefore the child " + "routes will never render.\n\n" + ('Please change the parent <Route path="' + parentPath + '"> to <Route ') + ('path="' + (parentPath === "/" ? "*" : parentPath + "/*") + '">.'));
+    }
+    let locationFromContext = useLocation();
+    let location;
+    if (locationArg) {
+        var _parsedLocationArg$pa;
+        let parsedLocationArg = typeof locationArg === "string" ? (0, _router.parsePath)(locationArg) : locationArg;
+        !(parentPathnameBase === "/" || ((_parsedLocationArg$pa = parsedLocationArg.pathname) == null ? void 0 : _parsedLocationArg$pa.startsWith(parentPathnameBase))) && (0, _router.UNSAFE_invariant)(false, "When overriding the location using `<Routes location>` or `useRoutes(routes, location)`, the location pathname must begin with the portion of the URL pathname that was " + ('matched by all parent routes. The current pathname base is "' + parentPathnameBase + '" ') + ('but pathname "' + parsedLocationArg.pathname + '" was given in the `location` prop.'));
+        location = parsedLocationArg;
+    } else location = locationFromContext;
+    let pathname = location.pathname || "/";
+    let remainingPathname = parentPathnameBase === "/" ? pathname : pathname.slice(parentPathnameBase.length) || "/";
+    let matches = (0, _router.matchRoutes)(routes, {
+        pathname: remainingPathname
+    });
+    (0, _router.UNSAFE_warning)(parentRoute || matches != null, 'No routes matched location "' + location.pathname + location.search + location.hash + '" ');
+    (0, _router.UNSAFE_warning)(matches == null || matches[matches.length - 1].route.element !== undefined || matches[matches.length - 1].route.Component !== undefined, 'Matched leaf route at location "' + location.pathname + location.search + location.hash + '" ' + "does not have an element or Component. This means it will render an <Outlet /> with a " + 'null value by default resulting in an "empty" page.');
+    let renderedMatches = _renderMatches(matches && matches.map((match)=>Object.assign({}, match, {
+            params: Object.assign({}, parentParams, match.params),
+            pathname: (0, _router.joinPaths)([
+                parentPathnameBase,
+                // Re-encode pathnames that were decoded inside matchRoutes
+                navigator.encodeLocation ? navigator.encodeLocation(match.pathname).pathname : match.pathname
+            ]),
+            pathnameBase: match.pathnameBase === "/" ? parentPathnameBase : (0, _router.joinPaths)([
+                parentPathnameBase,
+                // Re-encode pathnames that were decoded inside matchRoutes
+                navigator.encodeLocation ? navigator.encodeLocation(match.pathnameBase).pathname : match.pathnameBase
+            ])
+        })), parentMatches, dataRouterState);
+    // When a user passes in a `locationArg`, the associated routes need to
+    // be wrapped in a new `LocationContext.Provider` in order for `useLocation`
+    // to use the scoped location instead of the global location.
+    if (locationArg && renderedMatches) return /*#__PURE__*/ _react.createElement(LocationContext.Provider, {
+        value: {
+            location: _extends({
+                pathname: "/",
+                search: "",
+                hash: "",
+                state: null,
+                key: "default"
+            }, location),
+            navigationType: (0, _router.Action).Pop
+        }
+    }, renderedMatches);
+    return renderedMatches;
+}
+function DefaultErrorComponent() {
+    let error = useRouteError();
+    let message = (0, _router.isRouteErrorResponse)(error) ? error.status + " " + error.statusText : error instanceof Error ? error.message : JSON.stringify(error);
+    let stack = error instanceof Error ? error.stack : null;
+    let lightgrey = "rgba(200,200,200, 0.5)";
+    let preStyles = {
+        padding: "0.5rem",
+        backgroundColor: lightgrey
+    };
+    let codeStyles = {
+        padding: "2px 4px",
+        backgroundColor: lightgrey
+    };
+    let devInfo = null;
+    console.error("Error handled by React Router default ErrorBoundary:", error);
+    devInfo = /*#__PURE__*/ _react.createElement(_react.Fragment, null, /*#__PURE__*/ _react.createElement("p", null, "\uD83D\uDCBF Hey developer \uD83D\uDC4B"), /*#__PURE__*/ _react.createElement("p", null, "You can provide a way better UX than this when your app throws errors by providing your own ", /*#__PURE__*/ _react.createElement("code", {
+        style: codeStyles
+    }, "ErrorBoundary"), " or", " ", /*#__PURE__*/ _react.createElement("code", {
+        style: codeStyles
+    }, "errorElement"), " prop on your route."));
+    return /*#__PURE__*/ _react.createElement(_react.Fragment, null, /*#__PURE__*/ _react.createElement("h2", null, "Unexpected Application Error!"), /*#__PURE__*/ _react.createElement("h3", {
+        style: {
+            fontStyle: "italic"
+        }
+    }, message), stack ? /*#__PURE__*/ _react.createElement("pre", {
+        style: preStyles
+    }, stack) : null, devInfo);
+}
+const defaultErrorElement = /*#__PURE__*/ _react.createElement(DefaultErrorComponent, null);
+class RenderErrorBoundary extends _react.Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            location: props.location,
+            revalidation: props.revalidation,
+            error: props.error
+        };
+    }
+    static getDerivedStateFromError(error) {
+        return {
+            error: error
+        };
+    }
+    static getDerivedStateFromProps(props, state) {
+        // When we get into an error state, the user will likely click "back" to the
+        // previous page that didn't have an error. Because this wraps the entire
+        // application, that will have no effect--the error page continues to display.
+        // This gives us a mechanism to recover from the error when the location changes.
+        //
+        // Whether we're in an error state or not, we update the location in state
+        // so that when we are in an error state, it gets reset when a new location
+        // comes in and the user recovers from the error.
+        if (state.location !== props.location || state.revalidation !== "idle" && props.revalidation === "idle") return {
+            error: props.error,
+            location: props.location,
+            revalidation: props.revalidation
+        };
+        // If we're not changing locations, preserve the location but still surface
+        // any new errors that may come through. We retain the existing error, we do
+        // this because the error provided from the app state may be cleared without
+        // the location changing.
+        return {
+            error: props.error || state.error,
+            location: state.location,
+            revalidation: props.revalidation || state.revalidation
+        };
+    }
+    componentDidCatch(error, errorInfo) {
+        console.error("React Router caught the following error during render", error, errorInfo);
+    }
+    render() {
+        return this.state.error ? /*#__PURE__*/ _react.createElement(RouteContext.Provider, {
+            value: this.props.routeContext
+        }, /*#__PURE__*/ _react.createElement(RouteErrorContext.Provider, {
+            value: this.state.error,
+            children: this.props.component
+        })) : this.props.children;
+    }
+}
+function RenderedRoute(_ref) {
+    let { routeContext , match , children  } = _ref;
+    let dataRouterContext = _react.useContext(DataRouterContext);
+    // Track how deep we got in our render pass to emulate SSR componentDidCatch
+    // in a DataStaticRouter
+    if (dataRouterContext && dataRouterContext.static && dataRouterContext.staticContext && (match.route.errorElement || match.route.ErrorBoundary)) dataRouterContext.staticContext._deepestRenderedBoundaryId = match.route.id;
+    return /*#__PURE__*/ _react.createElement(RouteContext.Provider, {
+        value: routeContext
+    }, children);
+}
+function _renderMatches(matches, parentMatches, dataRouterState) {
+    var _dataRouterState2;
+    if (parentMatches === void 0) parentMatches = [];
+    if (dataRouterState === void 0) dataRouterState = null;
+    if (matches == null) {
+        var _dataRouterState;
+        if ((_dataRouterState = dataRouterState) != null && _dataRouterState.errors) // Don't bail if we have data router errors so we can render them in the
+        // boundary.  Use the pre-matched (or shimmed) matches
+        matches = dataRouterState.matches;
+        else return null;
+    }
+    let renderedMatches = matches;
+    // If we have data errors, trim matches to the highest error boundary
+    let errors = (_dataRouterState2 = dataRouterState) == null ? void 0 : _dataRouterState2.errors;
+    if (errors != null) {
+        let errorIndex = renderedMatches.findIndex((m)=>m.route.id && (errors == null ? void 0 : errors[m.route.id]));
+        !(errorIndex >= 0) && (0, _router.UNSAFE_invariant)(false, "Could not find a matching route for errors on route IDs: " + Object.keys(errors).join(","));
+        renderedMatches = renderedMatches.slice(0, Math.min(renderedMatches.length, errorIndex + 1));
+    }
+    return renderedMatches.reduceRight((outlet, match, index)=>{
+        let error = match.route.id ? errors == null ? void 0 : errors[match.route.id] : null;
+        // Only data routers handle errors
+        let errorElement = null;
+        if (dataRouterState) errorElement = match.route.errorElement || defaultErrorElement;
+        let matches = parentMatches.concat(renderedMatches.slice(0, index + 1));
+        let getChildren = ()=>{
+            let children;
+            if (error) children = errorElement;
+            else if (match.route.Component) // Note: This is a de-optimized path since React won't re-use the
+            // ReactElement since it's identity changes with each new
+            // React.createElement call.  We keep this so folks can use
+            // `<Route Component={...}>` in `<Routes>` but generally `Component`
+            // usage is only advised in `RouterProvider` when we can convert it to
+            // `element` ahead of time.
+            children = /*#__PURE__*/ _react.createElement(match.route.Component, null);
+            else if (match.route.element) children = match.route.element;
+            else children = outlet;
+            return /*#__PURE__*/ _react.createElement(RenderedRoute, {
+                match: match,
+                routeContext: {
+                    outlet,
+                    matches,
+                    isDataRoute: dataRouterState != null
+                },
+                children: children
+            });
+        };
+        // Only wrap in an error boundary within data router usages when we have an
+        // ErrorBoundary/errorElement on this route.  Otherwise let it bubble up to
+        // an ancestor ErrorBoundary/errorElement
+        return dataRouterState && (match.route.ErrorBoundary || match.route.errorElement || index === 0) ? /*#__PURE__*/ _react.createElement(RenderErrorBoundary, {
+            location: dataRouterState.location,
+            revalidation: dataRouterState.revalidation,
+            component: errorElement,
+            error: error,
+            children: getChildren(),
+            routeContext: {
+                outlet: null,
+                matches,
+                isDataRoute: true
+            }
+        }) : getChildren();
+    }, null);
+}
+var DataRouterHook;
+(function(DataRouterHook) {
+    DataRouterHook["UseBlocker"] = "useBlocker";
+    DataRouterHook["UseRevalidator"] = "useRevalidator";
+    DataRouterHook["UseNavigateStable"] = "useNavigate";
+})(DataRouterHook || (DataRouterHook = {}));
+var DataRouterStateHook;
+(function(DataRouterStateHook) {
+    DataRouterStateHook["UseBlocker"] = "useBlocker";
+    DataRouterStateHook["UseLoaderData"] = "useLoaderData";
+    DataRouterStateHook["UseActionData"] = "useActionData";
+    DataRouterStateHook["UseRouteError"] = "useRouteError";
+    DataRouterStateHook["UseNavigation"] = "useNavigation";
+    DataRouterStateHook["UseRouteLoaderData"] = "useRouteLoaderData";
+    DataRouterStateHook["UseMatches"] = "useMatches";
+    DataRouterStateHook["UseRevalidator"] = "useRevalidator";
+    DataRouterStateHook["UseNavigateStable"] = "useNavigate";
+    DataRouterStateHook["UseRouteId"] = "useRouteId";
+})(DataRouterStateHook || (DataRouterStateHook = {}));
+function getDataRouterConsoleError(hookName) {
+    return hookName + " must be used within a data router.  See https://reactrouter.com/routers/picking-a-router.";
+}
+function useDataRouterContext(hookName) {
+    let ctx = _react.useContext(DataRouterContext);
+    !ctx && (0, _router.UNSAFE_invariant)(false, getDataRouterConsoleError(hookName));
+    return ctx;
+}
+function useDataRouterState(hookName) {
+    let state = _react.useContext(DataRouterStateContext);
+    !state && (0, _router.UNSAFE_invariant)(false, getDataRouterConsoleError(hookName));
+    return state;
+}
+function useRouteContext(hookName) {
+    let route = _react.useContext(RouteContext);
+    !route && (0, _router.UNSAFE_invariant)(false, getDataRouterConsoleError(hookName));
+    return route;
+}
+// Internal version with hookName-aware debugging
+function useCurrentRouteId(hookName) {
+    let route = useRouteContext(hookName);
+    let thisRoute = route.matches[route.matches.length - 1];
+    !thisRoute.route.id && (0, _router.UNSAFE_invariant)(false, hookName + ' can only be used on routes that contain a unique "id"');
+    return thisRoute.route.id;
+}
+/**
+ * Returns the ID for the nearest contextual route
+ */ function useRouteId() {
+    return useCurrentRouteId(DataRouterStateHook.UseRouteId);
+}
+/**
+ * Returns the current navigation, defaulting to an "idle" navigation when
+ * no navigation is in progress
+ */ function useNavigation() {
+    let state = useDataRouterState(DataRouterStateHook.UseNavigation);
+    return state.navigation;
+}
+/**
+ * Returns a revalidate function for manually triggering revalidation, as well
+ * as the current state of any manual revalidations
+ */ function useRevalidator() {
+    let dataRouterContext = useDataRouterContext(DataRouterHook.UseRevalidator);
+    let state = useDataRouterState(DataRouterStateHook.UseRevalidator);
+    return {
+        revalidate: dataRouterContext.router.revalidate,
+        state: state.revalidation
+    };
+}
+/**
+ * Returns the active route matches, useful for accessing loaderData for
+ * parent/child routes or the route "handle" property
+ */ function useMatches() {
+    let { matches , loaderData  } = useDataRouterState(DataRouterStateHook.UseMatches);
+    return _react.useMemo(()=>matches.map((match)=>{
+            let { pathname , params  } = match;
+            // Note: This structure matches that created by createUseMatchesMatch
+            // in the @remix-run/router , so if you change this please also change
+            // that :)  Eventually we'll DRY this up
+            return {
+                id: match.route.id,
+                pathname,
+                params,
+                data: loaderData[match.route.id],
+                handle: match.route.handle
+            };
+        }), [
+        matches,
+        loaderData
+    ]);
+}
+/**
+ * Returns the loader data for the nearest ancestor Route loader
+ */ function useLoaderData() {
+    let state = useDataRouterState(DataRouterStateHook.UseLoaderData);
+    let routeId = useCurrentRouteId(DataRouterStateHook.UseLoaderData);
+    if (state.errors && state.errors[routeId] != null) {
+        console.error("You cannot `useLoaderData` in an errorElement (routeId: " + routeId + ")");
+        return undefined;
+    }
+    return state.loaderData[routeId];
+}
+/**
+ * Returns the loaderData for the given routeId
+ */ function useRouteLoaderData(routeId) {
+    let state = useDataRouterState(DataRouterStateHook.UseRouteLoaderData);
+    return state.loaderData[routeId];
+}
+/**
+ * Returns the action data for the nearest ancestor Route action
+ */ function useActionData() {
+    let state = useDataRouterState(DataRouterStateHook.UseActionData);
+    let route = _react.useContext(RouteContext);
+    !route && (0, _router.UNSAFE_invariant)(false, "useActionData must be used inside a RouteContext");
+    return Object.values((state == null ? void 0 : state.actionData) || {})[0];
+}
+/**
+ * Returns the nearest ancestor Route error, which could be a loader/action
+ * error or a render error.  This is intended to be called from your
+ * ErrorBoundary/errorElement to display a proper error message.
+ */ function useRouteError() {
+    var _state$errors;
+    let error = _react.useContext(RouteErrorContext);
+    let state = useDataRouterState(DataRouterStateHook.UseRouteError);
+    let routeId = useCurrentRouteId(DataRouterStateHook.UseRouteError);
+    // If this was a render error, we put it in a RouteError context inside
+    // of RenderErrorBoundary
+    if (error) return error;
+    // Otherwise look for errors from our data router state
+    return (_state$errors = state.errors) == null ? void 0 : _state$errors[routeId];
+}
+/**
+ * Returns the happy-path data from the nearest ancestor <Await /> value
+ */ function useAsyncValue() {
+    let value = _react.useContext(AwaitContext);
+    return value == null ? void 0 : value._data;
+}
+/**
+ * Returns the error from the nearest ancestor <Await /> value
+ */ function useAsyncError() {
+    let value = _react.useContext(AwaitContext);
+    return value == null ? void 0 : value._error;
+}
+let blockerId = 0;
+/**
+ * Allow the application to block navigations within the SPA and present the
+ * user a confirmation dialog to confirm the navigation.  Mostly used to avoid
+ * using half-filled form data.  This does not handle hard-reloads or
+ * cross-origin navigations.
+ */ function useBlocker(shouldBlock) {
+    let { router  } = useDataRouterContext(DataRouterHook.UseBlocker);
+    let state = useDataRouterState(DataRouterStateHook.UseBlocker);
+    let [blockerKey] = _react.useState(()=>String(++blockerId));
+    let blockerFunction = _react.useCallback((args)=>{
+        return typeof shouldBlock === "function" ? !!shouldBlock(args) : !!shouldBlock;
+    }, [
+        shouldBlock
+    ]);
+    let blocker = router.getBlocker(blockerKey, blockerFunction);
+    // Cleanup on unmount
+    _react.useEffect(()=>()=>router.deleteBlocker(blockerKey), [
+        router,
+        blockerKey
+    ]);
+    // Prefer the blocker from state since DataRouterContext is memoized so this
+    // ensures we update on blocker state updates
+    return state.blockers.get(blockerKey) || blocker;
+}
+/**
+ * Stable version of useNavigate that is used when we are in the context of
+ * a RouterProvider.
+ */ function useNavigateStable() {
+    let { router  } = useDataRouterContext(DataRouterHook.UseNavigateStable);
+    let id = useCurrentRouteId(DataRouterStateHook.UseNavigateStable);
+    let activeRef = _react.useRef(false);
+    useIsomorphicLayoutEffect(()=>{
+        activeRef.current = true;
+    });
+    let navigate = _react.useCallback(function(to, options) {
+        if (options === void 0) options = {};
+        (0, _router.UNSAFE_warning)(activeRef.current, navigateEffectWarning);
+        // Short circuit here since if this happens on first render the navigate
+        // is useless because we haven't wired up our router subscriber yet
+        if (!activeRef.current) return;
+        if (typeof to === "number") router.navigate(to);
+        else router.navigate(to, _extends({
+            fromRouteId: id
+        }, options));
+    }, [
+        router,
+        id
+    ]);
+    return navigate;
+}
+const alreadyWarned = {};
+function warningOnce(key, cond, message) {
+    if (!cond && !alreadyWarned[key]) {
+        alreadyWarned[key] = true;
+        (0, _router.UNSAFE_warning)(false, message);
+    }
+}
+// Webpack + React 17 fails to compile on the usage of `React.startTransition` or
+// `React["startTransition"]` even if it's behind a feature detection of
+// `"startTransition" in React`. Moving this to a constant avoids the issue :/
+const START_TRANSITION = "startTransition";
+/**
+ * Given a Remix Router instance, render the appropriate UI
+ */ function RouterProvider(_ref) {
+    let { fallbackElement , router  } = _ref;
+    // Need to use a layout effect here so we are subscribed early enough to
+    // pick up on any render-driven redirects/navigations (useEffect/<Navigate>)
+    let [state, setStateImpl] = _react.useState(router.state);
+    let setState = _react.useCallback((newState)=>{
+        START_TRANSITION in _react ? _react[START_TRANSITION](()=>setStateImpl(newState)) : setStateImpl(newState);
+    }, [
+        setStateImpl
+    ]);
+    _react.useLayoutEffect(()=>router.subscribe(setState), [
+        router,
+        setState
+    ]);
+    let navigator = _react.useMemo(()=>{
+        return {
+            createHref: router.createHref,
+            encodeLocation: router.encodeLocation,
+            go: (n)=>router.navigate(n),
+            push: (to, state, opts)=>router.navigate(to, {
+                    state,
+                    preventScrollReset: opts == null ? void 0 : opts.preventScrollReset
+                }),
+            replace: (to, state, opts)=>router.navigate(to, {
+                    replace: true,
+                    state,
+                    preventScrollReset: opts == null ? void 0 : opts.preventScrollReset
+                })
+        };
+    }, [
+        router
+    ]);
+    let basename = router.basename || "/";
+    let dataRouterContext = _react.useMemo(()=>({
+            router,
+            navigator,
+            static: false,
+            basename
+        }), [
+        router,
+        navigator,
+        basename
+    ]);
+    // The fragment and {null} here are important!  We need them to keep React 18's
+    // useId happy when we are server-rendering since we may have a <script> here
+    // containing the hydrated server-side staticContext (from StaticRouterProvider).
+    // useId relies on the component tree structure to generate deterministic id's
+    // so we need to ensure it remains the same on the client even though
+    // we don't need the <script> tag
+    return /*#__PURE__*/ _react.createElement(_react.Fragment, null, /*#__PURE__*/ _react.createElement(DataRouterContext.Provider, {
+        value: dataRouterContext
+    }, /*#__PURE__*/ _react.createElement(DataRouterStateContext.Provider, {
+        value: state
+    }, /*#__PURE__*/ _react.createElement(Router, {
+        basename: basename,
+        location: state.location,
+        navigationType: state.historyAction,
+        navigator: navigator
+    }, state.initialized ? /*#__PURE__*/ _react.createElement(DataRoutes, {
+        routes: router.routes,
+        state: state
+    }) : fallbackElement))), null);
+}
+function DataRoutes(_ref2) {
+    let { routes , state  } = _ref2;
+    return useRoutesImpl(routes, undefined, state);
+}
+/**
+ * A <Router> that stores all entries in memory.
+ *
+ * @see https://reactrouter.com/router-components/memory-router
+ */ function MemoryRouter(_ref3) {
+    let { basename , children , initialEntries , initialIndex  } = _ref3;
+    let historyRef = _react.useRef();
+    if (historyRef.current == null) historyRef.current = (0, _router.createMemoryHistory)({
+        initialEntries,
+        initialIndex,
+        v5Compat: true
+    });
+    let history = historyRef.current;
+    let [state, setStateImpl] = _react.useState({
+        action: history.action,
+        location: history.location
+    });
+    let setState = _react.useCallback((newState)=>{
+        START_TRANSITION in _react ? _react[START_TRANSITION](()=>setStateImpl(newState)) : setStateImpl(newState);
+    }, [
+        setStateImpl
+    ]);
+    _react.useLayoutEffect(()=>history.listen(setState), [
+        history,
+        setState
+    ]);
+    return /*#__PURE__*/ _react.createElement(Router, {
+        basename: basename,
+        children: children,
+        location: state.location,
+        navigationType: state.action,
+        navigator: history
+    });
+}
+/**
+ * Changes the current location.
+ *
+ * Note: This API is mostly useful in React.Component subclasses that are not
+ * able to use hooks. In functional components, we recommend you use the
+ * `useNavigate` hook instead.
+ *
+ * @see https://reactrouter.com/components/navigate
+ */ function Navigate(_ref4) {
+    let { to , replace , state , relative  } = _ref4;
+    !useInRouterContext() && (0, _router.UNSAFE_invariant)(false, // the router loaded. We can help them understand how to avoid that.
+    "<Navigate> may be used only in the context of a <Router> component.");
+    (0, _router.UNSAFE_warning)(!_react.useContext(NavigationContext).static, "<Navigate> must not be used on the initial render in a <StaticRouter>. This is a no-op, but you should modify your code so the <Navigate> is only ever rendered in response to some user interaction or state change.");
+    let { matches  } = _react.useContext(RouteContext);
+    let { pathname: locationPathname  } = useLocation();
+    let navigate = useNavigate();
+    // Resolve the path outside of the effect so that when effects run twice in
+    // StrictMode they navigate to the same place
+    let path = (0, _router.resolveTo)(to, (0, _router.UNSAFE_getPathContributingMatches)(matches).map((match)=>match.pathnameBase), locationPathname, relative === "path");
+    let jsonPath = JSON.stringify(path);
+    _react.useEffect(()=>navigate(JSON.parse(jsonPath), {
+            replace,
+            state,
+            relative
+        }), [
+        navigate,
+        jsonPath,
+        relative,
+        replace,
+        state
+    ]);
+    return null;
+}
+/**
+ * Renders the child route's element, if there is one.
+ *
+ * @see https://reactrouter.com/components/outlet
+ */ function Outlet(props) {
+    return useOutlet(props.context);
+}
+/**
+ * Declares an element that should be rendered at a certain URL path.
+ *
+ * @see https://reactrouter.com/components/route
+ */ function Route(_props) {
+    (0, _router.UNSAFE_invariant)(false, "A <Route> is only ever to be used as the child of <Routes> element, never rendered directly. Please wrap your <Route> in a <Routes>.");
+}
+/**
+ * Provides location context for the rest of the app.
+ *
+ * Note: You usually won't render a <Router> directly. Instead, you'll render a
+ * router that is more specific to your environment such as a <BrowserRouter>
+ * in web browsers or a <StaticRouter> for server rendering.
+ *
+ * @see https://reactrouter.com/router-components/router
+ */ function Router(_ref5) {
+    let { basename: basenameProp = "/" , children =null , location: locationProp , navigationType =(0, _router.Action).Pop , navigator , static: staticProp = false  } = _ref5;
+    !!useInRouterContext() && (0, _router.UNSAFE_invariant)(false, "You cannot render a <Router> inside another <Router>. You should never have more than one in your app.");
+    // Preserve trailing slashes on basename, so we can let the user control
+    // the enforcement of trailing slashes throughout the app
+    let basename = basenameProp.replace(/^\/*/, "/");
+    let navigationContext = _react.useMemo(()=>({
+            basename,
+            navigator,
+            static: staticProp
+        }), [
+        basename,
+        navigator,
+        staticProp
+    ]);
+    if (typeof locationProp === "string") locationProp = (0, _router.parsePath)(locationProp);
+    let { pathname ="/" , search ="" , hash ="" , state =null , key ="default"  } = locationProp;
+    let locationContext = _react.useMemo(()=>{
+        let trailingPathname = (0, _router.stripBasename)(pathname, basename);
+        if (trailingPathname == null) return null;
+        return {
+            location: {
+                pathname: trailingPathname,
+                search,
+                hash,
+                state,
+                key
+            },
+            navigationType
+        };
+    }, [
+        basename,
+        pathname,
+        search,
+        hash,
+        state,
+        key,
+        navigationType
+    ]);
+    (0, _router.UNSAFE_warning)(locationContext != null, '<Router basename="' + basename + '"> is not able to match the URL ' + ('"' + pathname + search + hash + '" because it does not start with the ') + "basename, so the <Router> won't render anything.");
+    if (locationContext == null) return null;
+    return /*#__PURE__*/ _react.createElement(NavigationContext.Provider, {
+        value: navigationContext
+    }, /*#__PURE__*/ _react.createElement(LocationContext.Provider, {
+        children: children,
+        value: locationContext
+    }));
+}
+/**
+ * A container for a nested tree of <Route> elements that renders the branch
+ * that best matches the current location.
+ *
+ * @see https://reactrouter.com/components/routes
+ */ function Routes(_ref6) {
+    let { children , location  } = _ref6;
+    return useRoutes(createRoutesFromChildren(children), location);
+}
+/**
+ * Component to use for rendering lazily loaded data from returning defer()
+ * in a loader function
+ */ function Await(_ref7) {
+    let { children , errorElement , resolve  } = _ref7;
+    return /*#__PURE__*/ _react.createElement(AwaitErrorBoundary, {
+        resolve: resolve,
+        errorElement: errorElement
+    }, /*#__PURE__*/ _react.createElement(ResolveAwait, null, children));
+}
+var AwaitRenderStatus;
+(function(AwaitRenderStatus) {
+    AwaitRenderStatus[AwaitRenderStatus["pending"] = 0] = "pending";
+    AwaitRenderStatus[AwaitRenderStatus["success"] = 1] = "success";
+    AwaitRenderStatus[AwaitRenderStatus["error"] = 2] = "error";
+})(AwaitRenderStatus || (AwaitRenderStatus = {}));
+const neverSettledPromise = new Promise(()=>{});
+class AwaitErrorBoundary extends _react.Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            error: null
+        };
+    }
+    static getDerivedStateFromError(error) {
+        return {
+            error
+        };
+    }
+    componentDidCatch(error, errorInfo) {
+        console.error("<Await> caught the following error during render", error, errorInfo);
+    }
+    render() {
+        let { children , errorElement , resolve  } = this.props;
+        let promise = null;
+        let status = AwaitRenderStatus.pending;
+        if (!(resolve instanceof Promise)) {
+            // Didn't get a promise - provide as a resolved promise
+            status = AwaitRenderStatus.success;
+            promise = Promise.resolve();
+            Object.defineProperty(promise, "_tracked", {
+                get: ()=>true
+            });
+            Object.defineProperty(promise, "_data", {
+                get: ()=>resolve
+            });
+        } else if (this.state.error) {
+            // Caught a render error, provide it as a rejected promise
+            status = AwaitRenderStatus.error;
+            let renderError = this.state.error;
+            promise = Promise.reject().catch(()=>{}); // Avoid unhandled rejection warnings
+            Object.defineProperty(promise, "_tracked", {
+                get: ()=>true
+            });
+            Object.defineProperty(promise, "_error", {
+                get: ()=>renderError
+            });
+        } else if (resolve._tracked) {
+            // Already tracked promise - check contents
+            promise = resolve;
+            status = promise._error !== undefined ? AwaitRenderStatus.error : promise._data !== undefined ? AwaitRenderStatus.success : AwaitRenderStatus.pending;
+        } else {
+            // Raw (untracked) promise - track it
+            status = AwaitRenderStatus.pending;
+            Object.defineProperty(resolve, "_tracked", {
+                get: ()=>true
+            });
+            promise = resolve.then((data)=>Object.defineProperty(resolve, "_data", {
+                    get: ()=>data
+                }), (error)=>Object.defineProperty(resolve, "_error", {
+                    get: ()=>error
+                }));
+        }
+        if (status === AwaitRenderStatus.error && promise._error instanceof (0, _router.AbortedDeferredError)) // Freeze the UI by throwing a never resolved promise
+        throw neverSettledPromise;
+        if (status === AwaitRenderStatus.error && !errorElement) // No errorElement, throw to the nearest route-level error boundary
+        throw promise._error;
+        if (status === AwaitRenderStatus.error) // Render via our errorElement
+        return /*#__PURE__*/ _react.createElement(AwaitContext.Provider, {
+            value: promise,
+            children: errorElement
+        });
+        if (status === AwaitRenderStatus.success) // Render children with resolved value
+        return /*#__PURE__*/ _react.createElement(AwaitContext.Provider, {
+            value: promise,
+            children: children
+        });
+        // Throw to the suspense boundary
+        throw promise;
+    }
+}
+/**
+ * @private
+ * Indirection to leverage useAsyncValue for a render-prop API on <Await>
+ */ function ResolveAwait(_ref8) {
+    let { children  } = _ref8;
+    let data = useAsyncValue();
+    let toRender = typeof children === "function" ? children(data) : children;
+    return /*#__PURE__*/ _react.createElement(_react.Fragment, null, toRender);
+}
+///////////////////////////////////////////////////////////////////////////////
+// UTILS
+///////////////////////////////////////////////////////////////////////////////
+/**
+ * Creates a route config from a React "children" object, which is usually
+ * either a `<Route>` element or an array of them. Used internally by
+ * `<Routes>` to create a route config from its children.
+ *
+ * @see https://reactrouter.com/utils/create-routes-from-children
+ */ function createRoutesFromChildren(children, parentPath) {
+    if (parentPath === void 0) parentPath = [];
+    let routes = [];
+    _react.Children.forEach(children, (element, index)=>{
+        if (!/*#__PURE__*/ _react.isValidElement(element)) // Ignore non-elements. This allows people to more easily inline
+        // conditionals in their route config.
+        return;
+        let treePath = [
+            ...parentPath,
+            index
+        ];
+        if (element.type === _react.Fragment) {
+            // Transparently support React.Fragment and its children.
+            routes.push.apply(routes, createRoutesFromChildren(element.props.children, treePath));
+            return;
+        }
+        !(element.type === Route) && (0, _router.UNSAFE_invariant)(false, "[" + (typeof element.type === "string" ? element.type : element.type.name) + "] is not a <Route> component. All component children of <Routes> must be a <Route> or <React.Fragment>");
+        !(!element.props.index || !element.props.children) && (0, _router.UNSAFE_invariant)(false, "An index route cannot have child routes.");
+        let route = {
+            id: element.props.id || treePath.join("-"),
+            caseSensitive: element.props.caseSensitive,
+            element: element.props.element,
+            Component: element.props.Component,
+            index: element.props.index,
+            path: element.props.path,
+            loader: element.props.loader,
+            action: element.props.action,
+            errorElement: element.props.errorElement,
+            ErrorBoundary: element.props.ErrorBoundary,
+            hasErrorBoundary: element.props.ErrorBoundary != null || element.props.errorElement != null,
+            shouldRevalidate: element.props.shouldRevalidate,
+            handle: element.props.handle,
+            lazy: element.props.lazy
+        };
+        if (element.props.children) route.children = createRoutesFromChildren(element.props.children, treePath);
+        routes.push(route);
+    });
+    return routes;
+}
+/**
+ * Renders the result of `matchRoutes()` into a React element.
+ */ function renderMatches(matches) {
+    return _renderMatches(matches);
+}
+function mapRouteProperties(route) {
+    let updates = {
+        // Note: this check also occurs in createRoutesFromChildren so update
+        // there if you change this -- please and thank you!
+        hasErrorBoundary: route.ErrorBoundary != null || route.errorElement != null
+    };
+    if (route.Component) {
+        if (route.element) (0, _router.UNSAFE_warning)(false, "You should not include both `Component` and `element` on your route - `Component` will be used.");
+        Object.assign(updates, {
+            element: /*#__PURE__*/ _react.createElement(route.Component),
+            Component: undefined
+        });
+    }
+    if (route.ErrorBoundary) {
+        if (route.errorElement) (0, _router.UNSAFE_warning)(false, "You should not include both `ErrorBoundary` and `errorElement` on your route - `ErrorBoundary` will be used.");
+        Object.assign(updates, {
+            errorElement: /*#__PURE__*/ _react.createElement(route.ErrorBoundary),
+            ErrorBoundary: undefined
+        });
+    }
+    return updates;
+}
+function createMemoryRouter(routes, opts) {
+    return (0, _router.createRouter)({
+        basename: opts == null ? void 0 : opts.basename,
+        future: _extends({}, opts == null ? void 0 : opts.future, {
+            v7_prependBasename: true
+        }),
+        history: (0, _router.createMemoryHistory)({
+            initialEntries: opts == null ? void 0 : opts.initialEntries,
+            initialIndex: opts == null ? void 0 : opts.initialIndex
+        }),
+        hydrationData: opts == null ? void 0 : opts.hydrationData,
+        routes,
+        mapRouteProperties
+    }).initialize();
+}
+
+},{"react":"21dqq","@remix-run/router":"5ncDG","@parcel/transformer-js/src/esmodule-helpers.js":"9FYyo"}],"5ncDG":[function(require,module,exports) {
+/**
+ * @remix-run/router v1.6.3
+ *
+ * Copyright (c) Remix Software Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE.md file in the root directory of this source tree.
+ *
+ * @license MIT
+ */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+//#endregion
+parcelHelpers.export(exports, "AbortedDeferredError", ()=>AbortedDeferredError);
+parcelHelpers.export(exports, "Action", ()=>Action);
+parcelHelpers.export(exports, "ErrorResponse", ()=>ErrorResponse);
+parcelHelpers.export(exports, "IDLE_BLOCKER", ()=>IDLE_BLOCKER);
+parcelHelpers.export(exports, "IDLE_FETCHER", ()=>IDLE_FETCHER);
+parcelHelpers.export(exports, "IDLE_NAVIGATION", ()=>IDLE_NAVIGATION);
+parcelHelpers.export(exports, "UNSAFE_DEFERRED_SYMBOL", ()=>UNSAFE_DEFERRED_SYMBOL);
+parcelHelpers.export(exports, "UNSAFE_DeferredData", ()=>DeferredData);
+parcelHelpers.export(exports, "UNSAFE_convertRoutesToDataRoutes", ()=>convertRoutesToDataRoutes);
+parcelHelpers.export(exports, "UNSAFE_getPathContributingMatches", ()=>getPathContributingMatches);
+parcelHelpers.export(exports, "UNSAFE_invariant", ()=>invariant);
+parcelHelpers.export(exports, "UNSAFE_warning", ()=>warning);
+parcelHelpers.export(exports, "createBrowserHistory", ()=>createBrowserHistory);
+parcelHelpers.export(exports, "createHashHistory", ()=>createHashHistory);
+parcelHelpers.export(exports, "createMemoryHistory", ()=>createMemoryHistory);
+parcelHelpers.export(exports, "createPath", ()=>createPath);
+parcelHelpers.export(exports, "createRouter", ()=>createRouter);
+parcelHelpers.export(exports, "createStaticHandler", ()=>createStaticHandler);
+parcelHelpers.export(exports, "defer", ()=>defer);
+parcelHelpers.export(exports, "generatePath", ()=>generatePath);
+parcelHelpers.export(exports, "getStaticContextFromError", ()=>getStaticContextFromError);
+parcelHelpers.export(exports, "getToPathname", ()=>getToPathname);
+parcelHelpers.export(exports, "isDeferredData", ()=>isDeferredData);
+parcelHelpers.export(exports, "isRouteErrorResponse", ()=>isRouteErrorResponse);
+parcelHelpers.export(exports, "joinPaths", ()=>joinPaths);
+parcelHelpers.export(exports, "json", ()=>json);
+parcelHelpers.export(exports, "matchPath", ()=>matchPath);
+parcelHelpers.export(exports, "matchRoutes", ()=>matchRoutes);
+parcelHelpers.export(exports, "normalizePathname", ()=>normalizePathname);
+parcelHelpers.export(exports, "parsePath", ()=>parsePath);
+parcelHelpers.export(exports, "redirect", ()=>redirect);
+parcelHelpers.export(exports, "resolvePath", ()=>resolvePath);
+parcelHelpers.export(exports, "resolveTo", ()=>resolveTo);
+parcelHelpers.export(exports, "stripBasename", ()=>stripBasename);
+function _extends() {
+    _extends = Object.assign ? Object.assign.bind() : function(target) {
+        for(var i = 1; i < arguments.length; i++){
+            var source = arguments[i];
+            for(var key in source)if (Object.prototype.hasOwnProperty.call(source, key)) target[key] = source[key];
+        }
+        return target;
+    };
+    return _extends.apply(this, arguments);
+}
+////////////////////////////////////////////////////////////////////////////////
+//#region Types and Constants
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * Actions represent the type of change to a location value.
+ */ var Action;
+(function(Action) {
+    /**
+   * A POP indicates a change to an arbitrary index in the history stack, such
+   * as a back or forward navigation. It does not describe the direction of the
+   * navigation, only that the current index changed.
+   *
+   * Note: This is the default action for newly created history objects.
+   */ Action["Pop"] = "POP";
+    /**
+   * A PUSH indicates a new entry being added to the history stack, such as when
+   * a link is clicked and a new page loads. When this happens, all subsequent
+   * entries in the stack are lost.
+   */ Action["Push"] = "PUSH";
+    /**
+   * A REPLACE indicates the entry at the current index in the history stack
+   * being replaced by a new one.
+   */ Action["Replace"] = "REPLACE";
+})(Action || (Action = {}));
+const PopStateEventType = "popstate";
+/**
+ * Memory history stores the current location in memory. It is designed for use
+ * in stateful non-browser environments like tests and React Native.
+ */ function createMemoryHistory(options) {
+    if (options === void 0) options = {};
+    let { initialEntries =[
+        "/"
+    ] , initialIndex , v5Compat =false  } = options;
+    let entries; // Declare so we can access from createMemoryLocation
+    entries = initialEntries.map((entry, index)=>createMemoryLocation(entry, typeof entry === "string" ? null : entry.state, index === 0 ? "default" : undefined));
+    let index = clampIndex(initialIndex == null ? entries.length - 1 : initialIndex);
+    let action = Action.Pop;
+    let listener = null;
+    function clampIndex(n) {
+        return Math.min(Math.max(n, 0), entries.length - 1);
+    }
+    function getCurrentLocation() {
+        return entries[index];
+    }
+    function createMemoryLocation(to, state, key) {
+        if (state === void 0) state = null;
+        let location = createLocation(entries ? getCurrentLocation().pathname : "/", to, state, key);
+        warning(location.pathname.charAt(0) === "/", "relative pathnames are not supported in memory history: " + JSON.stringify(to));
+        return location;
+    }
+    function createHref(to) {
+        return typeof to === "string" ? to : createPath(to);
+    }
+    let history = {
+        get index () {
+            return index;
+        },
+        get action () {
+            return action;
+        },
+        get location () {
+            return getCurrentLocation();
+        },
+        createHref,
+        createURL (to) {
+            return new URL(createHref(to), "http://localhost");
+        },
+        encodeLocation (to) {
+            let path = typeof to === "string" ? parsePath(to) : to;
+            return {
+                pathname: path.pathname || "",
+                search: path.search || "",
+                hash: path.hash || ""
+            };
+        },
+        push (to, state) {
+            action = Action.Push;
+            let nextLocation = createMemoryLocation(to, state);
+            index += 1;
+            entries.splice(index, entries.length, nextLocation);
+            if (v5Compat && listener) listener({
+                action,
+                location: nextLocation,
+                delta: 1
+            });
+        },
+        replace (to, state) {
+            action = Action.Replace;
+            let nextLocation = createMemoryLocation(to, state);
+            entries[index] = nextLocation;
+            if (v5Compat && listener) listener({
+                action,
+                location: nextLocation,
+                delta: 0
+            });
+        },
+        go (delta) {
+            action = Action.Pop;
+            let nextIndex = clampIndex(index + delta);
+            let nextLocation = entries[nextIndex];
+            index = nextIndex;
+            if (listener) listener({
+                action,
+                location: nextLocation,
+                delta
+            });
+        },
+        listen (fn) {
+            listener = fn;
+            return ()=>{
+                listener = null;
+            };
+        }
+    };
+    return history;
+}
+/**
+ * Browser history stores the location in regular URLs. This is the standard for
+ * most web apps, but it requires some configuration on the server to ensure you
+ * serve the same app at multiple URLs.
+ *
+ * @see https://github.com/remix-run/history/tree/main/docs/api-reference.md#createbrowserhistory
+ */ function createBrowserHistory(options) {
+    if (options === void 0) options = {};
+    function createBrowserLocation(window1, globalHistory) {
+        let { pathname , search , hash  } = window1.location;
+        return createLocation("", {
+            pathname,
+            search,
+            hash
+        }, // state defaults to `null` because `window.history.state` does
+        globalHistory.state && globalHistory.state.usr || null, globalHistory.state && globalHistory.state.key || "default");
+    }
+    function createBrowserHref(window1, to) {
+        return typeof to === "string" ? to : createPath(to);
+    }
+    return getUrlBasedHistory(createBrowserLocation, createBrowserHref, null, options);
+}
+/**
+ * Hash history stores the location in window.location.hash. This makes it ideal
+ * for situations where you don't want to send the location to the server for
+ * some reason, either because you do cannot configure it or the URL space is
+ * reserved for something else.
+ *
+ * @see https://github.com/remix-run/history/tree/main/docs/api-reference.md#createhashhistory
+ */ function createHashHistory(options) {
+    if (options === void 0) options = {};
+    function createHashLocation(window1, globalHistory) {
+        let { pathname ="/" , search ="" , hash =""  } = parsePath(window1.location.hash.substr(1));
+        return createLocation("", {
+            pathname,
+            search,
+            hash
+        }, // state defaults to `null` because `window.history.state` does
+        globalHistory.state && globalHistory.state.usr || null, globalHistory.state && globalHistory.state.key || "default");
+    }
+    function createHashHref(window1, to) {
+        let base = window1.document.querySelector("base");
+        let href = "";
+        if (base && base.getAttribute("href")) {
+            let url = window1.location.href;
+            let hashIndex = url.indexOf("#");
+            href = hashIndex === -1 ? url : url.slice(0, hashIndex);
+        }
+        return href + "#" + (typeof to === "string" ? to : createPath(to));
+    }
+    function validateHashLocation(location, to) {
+        warning(location.pathname.charAt(0) === "/", "relative pathnames are not supported in hash history.push(" + JSON.stringify(to) + ")");
+    }
+    return getUrlBasedHistory(createHashLocation, createHashHref, validateHashLocation, options);
+}
+function invariant(value, message) {
+    if (value === false || value === null || typeof value === "undefined") throw new Error(message);
+}
+function warning(cond, message) {
+    if (!cond) {
+        // eslint-disable-next-line no-console
+        if (typeof console !== "undefined") console.warn(message);
+        try {
+            // Welcome to debugging history!
+            //
+            // This error is thrown as a convenience so you can more easily
+            // find the source for a warning that appears in the console by
+            // enabling "pause on exceptions" in your JavaScript debugger.
+            throw new Error(message);
+        // eslint-disable-next-line no-empty
+        } catch (e) {}
+    }
+}
+function createKey() {
+    return Math.random().toString(36).substr(2, 8);
+}
+/**
+ * For browser-based histories, we combine the state and key into an object
+ */ function getHistoryState(location, index) {
+    return {
+        usr: location.state,
+        key: location.key,
+        idx: index
+    };
+}
+/**
+ * Creates a Location object with a unique key from the given Path
+ */ function createLocation(current, to, state, key) {
+    if (state === void 0) state = null;
+    let location = _extends({
+        pathname: typeof current === "string" ? current : current.pathname,
+        search: "",
+        hash: ""
+    }, typeof to === "string" ? parsePath(to) : to, {
+        state,
+        // TODO: This could be cleaned up.  push/replace should probably just take
+        // full Locations now and avoid the need to run through this flow at all
+        // But that's a pretty big refactor to the current test suite so going to
+        // keep as is for the time being and just let any incoming keys take precedence
+        key: to && to.key || key || createKey()
+    });
+    return location;
+}
+/**
+ * Creates a string URL path from the given pathname, search, and hash components.
+ */ function createPath(_ref) {
+    let { pathname ="/" , search ="" , hash =""  } = _ref;
+    if (search && search !== "?") pathname += search.charAt(0) === "?" ? search : "?" + search;
+    if (hash && hash !== "#") pathname += hash.charAt(0) === "#" ? hash : "#" + hash;
+    return pathname;
+}
+/**
+ * Parses a string URL path into its separate pathname, search, and hash components.
+ */ function parsePath(path) {
+    let parsedPath = {};
+    if (path) {
+        let hashIndex = path.indexOf("#");
+        if (hashIndex >= 0) {
+            parsedPath.hash = path.substr(hashIndex);
+            path = path.substr(0, hashIndex);
+        }
+        let searchIndex = path.indexOf("?");
+        if (searchIndex >= 0) {
+            parsedPath.search = path.substr(searchIndex);
+            path = path.substr(0, searchIndex);
+        }
+        if (path) parsedPath.pathname = path;
+    }
+    return parsedPath;
+}
+function getUrlBasedHistory(getLocation, createHref, validateLocation, options) {
+    if (options === void 0) options = {};
+    let { window: window1 = document.defaultView , v5Compat =false  } = options;
+    let globalHistory = window1.history;
+    let action = Action.Pop;
+    let listener = null;
+    let index = getIndex();
+    // Index should only be null when we initialize. If not, it's because the
+    // user called history.pushState or history.replaceState directly, in which
+    // case we should log a warning as it will result in bugs.
+    if (index == null) {
+        index = 0;
+        globalHistory.replaceState(_extends({}, globalHistory.state, {
+            idx: index
+        }), "");
+    }
+    function getIndex() {
+        let state = globalHistory.state || {
+            idx: null
+        };
+        return state.idx;
+    }
+    function handlePop() {
+        action = Action.Pop;
+        let nextIndex = getIndex();
+        let delta = nextIndex == null ? null : nextIndex - index;
+        index = nextIndex;
+        if (listener) listener({
+            action,
+            location: history.location,
+            delta
+        });
+    }
+    function push(to, state) {
+        action = Action.Push;
+        let location = createLocation(history.location, to, state);
+        if (validateLocation) validateLocation(location, to);
+        index = getIndex() + 1;
+        let historyState = getHistoryState(location, index);
+        let url = history.createHref(location);
+        // try...catch because iOS limits us to 100 pushState calls :/
+        try {
+            globalHistory.pushState(historyState, "", url);
+        } catch (error) {
+            // If the exception is because `state` can't be serialized, let that throw
+            // outwards just like a replace call would so the dev knows the cause
+            // https://html.spec.whatwg.org/multipage/nav-history-apis.html#shared-history-push/replace-state-steps
+            // https://html.spec.whatwg.org/multipage/structured-data.html#structuredserializeinternal
+            if (error instanceof DOMException && error.name === "DataCloneError") throw error;
+            // They are going to lose state here, but there is no real
+            // way to warn them about it since the page will refresh...
+            window1.location.assign(url);
+        }
+        if (v5Compat && listener) listener({
+            action,
+            location: history.location,
+            delta: 1
+        });
+    }
+    function replace(to, state) {
+        action = Action.Replace;
+        let location = createLocation(history.location, to, state);
+        if (validateLocation) validateLocation(location, to);
+        index = getIndex();
+        let historyState = getHistoryState(location, index);
+        let url = history.createHref(location);
+        globalHistory.replaceState(historyState, "", url);
+        if (v5Compat && listener) listener({
+            action,
+            location: history.location,
+            delta: 0
+        });
+    }
+    function createURL(to) {
+        // window.location.origin is "null" (the literal string value) in Firefox
+        // under certain conditions, notably when serving from a local HTML file
+        // See https://bugzilla.mozilla.org/show_bug.cgi?id=878297
+        let base = window1.location.origin !== "null" ? window1.location.origin : window1.location.href;
+        let href = typeof to === "string" ? to : createPath(to);
+        invariant(base, "No window.location.(origin|href) available to create URL for href: " + href);
+        return new URL(href, base);
+    }
+    let history = {
+        get action () {
+            return action;
+        },
+        get location () {
+            return getLocation(window1, globalHistory);
+        },
+        listen (fn) {
+            if (listener) throw new Error("A history only accepts one active listener");
+            window1.addEventListener(PopStateEventType, handlePop);
+            listener = fn;
+            return ()=>{
+                window1.removeEventListener(PopStateEventType, handlePop);
+                listener = null;
+            };
+        },
+        createHref (to) {
+            return createHref(window1, to);
+        },
+        createURL,
+        encodeLocation (to) {
+            // Encode a Location the same way window.location would
+            let url = createURL(to);
+            return {
+                pathname: url.pathname,
+                search: url.search,
+                hash: url.hash
+            };
+        },
+        push,
+        replace,
+        go (n) {
+            return globalHistory.go(n);
+        }
+    };
+    return history;
+}
+//#endregion
+var ResultType;
+(function(ResultType) {
+    ResultType["data"] = "data";
+    ResultType["deferred"] = "deferred";
+    ResultType["redirect"] = "redirect";
+    ResultType["error"] = "error";
+})(ResultType || (ResultType = {}));
+const immutableRouteKeys = new Set([
+    "lazy",
+    "caseSensitive",
+    "path",
+    "id",
+    "index",
+    "children"
+]);
+function isIndexRoute(route) {
+    return route.index === true;
+}
+// Walk the route tree generating unique IDs where necessary so we are working
+// solely with AgnosticDataRouteObject's within the Router
+function convertRoutesToDataRoutes(routes, mapRouteProperties, parentPath, manifest) {
+    if (parentPath === void 0) parentPath = [];
+    if (manifest === void 0) manifest = {};
+    return routes.map((route, index)=>{
+        let treePath = [
+            ...parentPath,
+            index
+        ];
+        let id = typeof route.id === "string" ? route.id : treePath.join("-");
+        invariant(route.index !== true || !route.children, "Cannot specify children on an index route");
+        invariant(!manifest[id], 'Found a route id collision on id "' + id + '".  Route ' + "id's must be globally unique within Data Router usages");
+        if (isIndexRoute(route)) {
+            let indexRoute = _extends({}, route, mapRouteProperties(route), {
+                id
+            });
+            manifest[id] = indexRoute;
+            return indexRoute;
+        } else {
+            let pathOrLayoutRoute = _extends({}, route, mapRouteProperties(route), {
+                id,
+                children: undefined
+            });
+            manifest[id] = pathOrLayoutRoute;
+            if (route.children) pathOrLayoutRoute.children = convertRoutesToDataRoutes(route.children, mapRouteProperties, treePath, manifest);
+            return pathOrLayoutRoute;
+        }
+    });
+}
+/**
+ * Matches the given routes to a location and returns the match data.
+ *
+ * @see https://reactrouter.com/utils/match-routes
+ */ function matchRoutes(routes, locationArg, basename) {
+    if (basename === void 0) basename = "/";
+    let location = typeof locationArg === "string" ? parsePath(locationArg) : locationArg;
+    let pathname = stripBasename(location.pathname || "/", basename);
+    if (pathname == null) return null;
+    let branches = flattenRoutes(routes);
+    rankRouteBranches(branches);
+    let matches = null;
+    for(let i = 0; matches == null && i < branches.length; ++i)matches = matchRouteBranch(branches[i], // Incoming pathnames are generally encoded from either window.location
+    // or from router.navigate, but we want to match against the unencoded
+    // paths in the route definitions.  Memory router locations won't be
+    // encoded here but there also shouldn't be anything to decode so this
+    // should be a safe operation.  This avoids needing matchRoutes to be
+    // history-aware.
+    safelyDecodeURI(pathname));
+    return matches;
+}
+function flattenRoutes(routes, branches, parentsMeta, parentPath) {
+    if (branches === void 0) branches = [];
+    if (parentsMeta === void 0) parentsMeta = [];
+    if (parentPath === void 0) parentPath = "";
+    let flattenRoute = (route, index, relativePath)=>{
+        let meta = {
+            relativePath: relativePath === undefined ? route.path || "" : relativePath,
+            caseSensitive: route.caseSensitive === true,
+            childrenIndex: index,
+            route
+        };
+        if (meta.relativePath.startsWith("/")) {
+            invariant(meta.relativePath.startsWith(parentPath), 'Absolute route path "' + meta.relativePath + '" nested under path ' + ('"' + parentPath + '" is not valid. An absolute child route path ') + "must start with the combined path of all its parent routes.");
+            meta.relativePath = meta.relativePath.slice(parentPath.length);
+        }
+        let path = joinPaths([
+            parentPath,
+            meta.relativePath
+        ]);
+        let routesMeta = parentsMeta.concat(meta);
+        // Add the children before adding this route to the array so we traverse the
+        // route tree depth-first and child routes appear before their parents in
+        // the "flattened" version.
+        if (route.children && route.children.length > 0) {
+            invariant(// Our types know better, but runtime JS may not!
+            // @ts-expect-error
+            route.index !== true, "Index routes must not have child routes. Please remove " + ('all child routes from route path "' + path + '".'));
+            flattenRoutes(route.children, branches, routesMeta, path);
+        }
+        // Routes without a path shouldn't ever match by themselves unless they are
+        // index routes, so don't add them to the list of possible branches.
+        if (route.path == null && !route.index) return;
+        branches.push({
+            path,
+            score: computeScore(path, route.index),
+            routesMeta
+        });
+    };
+    routes.forEach((route, index)=>{
+        var _route$path;
+        // coarse-grain check for optional params
+        if (route.path === "" || !((_route$path = route.path) != null && _route$path.includes("?"))) flattenRoute(route, index);
+        else for (let exploded of explodeOptionalSegments(route.path))flattenRoute(route, index, exploded);
+    });
+    return branches;
+}
+/**
+ * Computes all combinations of optional path segments for a given path,
+ * excluding combinations that are ambiguous and of lower priority.
+ *
+ * For example, `/one/:two?/three/:four?/:five?` explodes to:
+ * - `/one/three`
+ * - `/one/:two/three`
+ * - `/one/three/:four`
+ * - `/one/three/:five`
+ * - `/one/:two/three/:four`
+ * - `/one/:two/three/:five`
+ * - `/one/three/:four/:five`
+ * - `/one/:two/three/:four/:five`
+ */ function explodeOptionalSegments(path) {
+    let segments = path.split("/");
+    if (segments.length === 0) return [];
+    let [first, ...rest] = segments;
+    // Optional path segments are denoted by a trailing `?`
+    let isOptional = first.endsWith("?");
+    // Compute the corresponding required segment: `foo?` -> `foo`
+    let required = first.replace(/\?$/, "");
+    if (rest.length === 0) // Intepret empty string as omitting an optional segment
+    // `["one", "", "three"]` corresponds to omitting `:two` from `/one/:two?/three` -> `/one/three`
+    return isOptional ? [
+        required,
+        ""
+    ] : [
+        required
+    ];
+    let restExploded = explodeOptionalSegments(rest.join("/"));
+    let result = [];
+    // All child paths with the prefix.  Do this for all children before the
+    // optional version for all children so we get consistent ordering where the
+    // parent optional aspect is preferred as required.  Otherwise, we can get
+    // child sections interspersed where deeper optional segments are higher than
+    // parent optional segments, where for example, /:two would explodes _earlier_
+    // then /:one.  By always including the parent as required _for all children_
+    // first, we avoid this issue
+    result.push(...restExploded.map((subpath)=>subpath === "" ? required : [
+            required,
+            subpath
+        ].join("/")));
+    // Then if this is an optional value, add all child versions without
+    if (isOptional) result.push(...restExploded);
+    // for absolute paths, ensure `/` instead of empty segment
+    return result.map((exploded)=>path.startsWith("/") && exploded === "" ? "/" : exploded);
+}
+function rankRouteBranches(branches) {
+    branches.sort((a, b)=>a.score !== b.score ? b.score - a.score // Higher score first
+         : compareIndexes(a.routesMeta.map((meta)=>meta.childrenIndex), b.routesMeta.map((meta)=>meta.childrenIndex)));
+}
+const paramRe = /^:\w+$/;
+const dynamicSegmentValue = 3;
+const indexRouteValue = 2;
+const emptySegmentValue = 1;
+const staticSegmentValue = 10;
+const splatPenalty = -2;
+const isSplat = (s)=>s === "*";
+function computeScore(path, index) {
+    let segments = path.split("/");
+    let initialScore = segments.length;
+    if (segments.some(isSplat)) initialScore += splatPenalty;
+    if (index) initialScore += indexRouteValue;
+    return segments.filter((s)=>!isSplat(s)).reduce((score, segment)=>score + (paramRe.test(segment) ? dynamicSegmentValue : segment === "" ? emptySegmentValue : staticSegmentValue), initialScore);
+}
+function compareIndexes(a, b) {
+    let siblings = a.length === b.length && a.slice(0, -1).every((n, i)=>n === b[i]);
+    return siblings ? // If two routes are siblings, we should try to match the earlier sibling
+    // first. This allows people to have fine-grained control over the matching
+    // behavior by simply putting routes with identical paths in the order they
+    // want them tried.
+    a[a.length - 1] - b[b.length - 1] : // Otherwise, it doesn't really make sense to rank non-siblings by index,
+    // so they sort equally.
+    0;
+}
+function matchRouteBranch(branch, pathname) {
+    let { routesMeta  } = branch;
+    let matchedParams = {};
+    let matchedPathname = "/";
+    let matches = [];
+    for(let i = 0; i < routesMeta.length; ++i){
+        let meta = routesMeta[i];
+        let end = i === routesMeta.length - 1;
+        let remainingPathname = matchedPathname === "/" ? pathname : pathname.slice(matchedPathname.length) || "/";
+        let match = matchPath({
+            path: meta.relativePath,
+            caseSensitive: meta.caseSensitive,
+            end
+        }, remainingPathname);
+        if (!match) return null;
+        Object.assign(matchedParams, match.params);
+        let route = meta.route;
+        matches.push({
+            // TODO: Can this as be avoided?
+            params: matchedParams,
+            pathname: joinPaths([
+                matchedPathname,
+                match.pathname
+            ]),
+            pathnameBase: normalizePathname(joinPaths([
+                matchedPathname,
+                match.pathnameBase
+            ])),
+            route
+        });
+        if (match.pathnameBase !== "/") matchedPathname = joinPaths([
+            matchedPathname,
+            match.pathnameBase
+        ]);
+    }
+    return matches;
+}
+/**
+ * Returns a path with params interpolated.
+ *
+ * @see https://reactrouter.com/utils/generate-path
+ */ function generatePath(originalPath, params) {
+    if (params === void 0) params = {};
+    let path = originalPath;
+    if (path.endsWith("*") && path !== "*" && !path.endsWith("/*")) {
+        warning(false, 'Route path "' + path + '" will be treated as if it were ' + ('"' + path.replace(/\*$/, "/*") + '" because the `*` character must ') + "always follow a `/` in the pattern. To get rid of this warning, " + ('please change the route path to "' + path.replace(/\*$/, "/*") + '".'));
+        path = path.replace(/\*$/, "/*");
+    }
+    // ensure `/` is added at the beginning if the path is absolute
+    const prefix = path.startsWith("/") ? "/" : "";
+    const segments = path.split(/\/+/).map((segment, index, array)=>{
+        const isLastSegment = index === array.length - 1;
+        // only apply the splat if it's the last segment
+        if (isLastSegment && segment === "*") {
+            const star = "*";
+            const starParam = params[star];
+            // Apply the splat
+            return starParam;
+        }
+        const keyMatch = segment.match(/^:(\w+)(\??)$/);
+        if (keyMatch) {
+            const [, key, optional] = keyMatch;
+            let param = params[key];
+            if (optional === "?") return param == null ? "" : param;
+            if (param == null) invariant(false, 'Missing ":' + key + '" param');
+            return param;
+        }
+        // Remove any optional markers from optional static segments
+        return segment.replace(/\?$/g, "");
+    })// Remove empty segments
+    .filter((segment)=>!!segment);
+    return prefix + segments.join("/");
+}
+/**
+ * Performs pattern matching on a URL pathname and returns information about
+ * the match.
+ *
+ * @see https://reactrouter.com/utils/match-path
+ */ function matchPath(pattern, pathname) {
+    if (typeof pattern === "string") pattern = {
+        path: pattern,
+        caseSensitive: false,
+        end: true
+    };
+    let [matcher, paramNames] = compilePath(pattern.path, pattern.caseSensitive, pattern.end);
+    let match = pathname.match(matcher);
+    if (!match) return null;
+    let matchedPathname = match[0];
+    let pathnameBase = matchedPathname.replace(/(.)\/+$/, "$1");
+    let captureGroups = match.slice(1);
+    let params = paramNames.reduce((memo, paramName, index)=>{
+        // We need to compute the pathnameBase here using the raw splat value
+        // instead of using params["*"] later because it will be decoded then
+        if (paramName === "*") {
+            let splatValue = captureGroups[index] || "";
+            pathnameBase = matchedPathname.slice(0, matchedPathname.length - splatValue.length).replace(/(.)\/+$/, "$1");
+        }
+        memo[paramName] = safelyDecodeURIComponent(captureGroups[index] || "", paramName);
+        return memo;
+    }, {});
+    return {
+        params,
+        pathname: matchedPathname,
+        pathnameBase,
+        pattern
+    };
+}
+function compilePath(path, caseSensitive, end) {
+    if (caseSensitive === void 0) caseSensitive = false;
+    if (end === void 0) end = true;
+    warning(path === "*" || !path.endsWith("*") || path.endsWith("/*"), 'Route path "' + path + '" will be treated as if it were ' + ('"' + path.replace(/\*$/, "/*") + '" because the `*` character must ') + "always follow a `/` in the pattern. To get rid of this warning, " + ('please change the route path to "' + path.replace(/\*$/, "/*") + '".'));
+    let paramNames = [];
+    let regexpSource = "^" + path.replace(/\/*\*?$/, "") // Ignore trailing / and /*, we'll handle it below
+    .replace(/^\/*/, "/") // Make sure it has a leading /
+    .replace(/[\\.*+^$?{}|()[\]]/g, "\\$&") // Escape special regex chars
+    .replace(/\/:(\w+)/g, (_, paramName)=>{
+        paramNames.push(paramName);
+        return "/([^\\/]+)";
+    });
+    if (path.endsWith("*")) {
+        paramNames.push("*");
+        regexpSource += path === "*" || path === "/*" ? "(.*)$" // Already matched the initial /, just match the rest
+         : "(?:\\/(.+)|\\/*)$"; // Don't include the / in params["*"]
+    } else if (end) // When matching to the end, ignore trailing slashes
+    regexpSource += "\\/*$";
+    else if (path !== "" && path !== "/") // If our path is non-empty and contains anything beyond an initial slash,
+    // then we have _some_ form of path in our regex so we should expect to
+    // match only if we find the end of this path segment.  Look for an optional
+    // non-captured trailing slash (to match a portion of the URL) or the end
+    // of the path (if we've matched to the end).  We used to do this with a
+    // word boundary but that gives false positives on routes like
+    // /user-preferences since `-` counts as a word boundary.
+    regexpSource += "(?:(?=\\/|$))";
+    let matcher = new RegExp(regexpSource, caseSensitive ? undefined : "i");
+    return [
+        matcher,
+        paramNames
+    ];
+}
+function safelyDecodeURI(value) {
+    try {
+        return decodeURI(value);
+    } catch (error) {
+        warning(false, 'The URL path "' + value + '" could not be decoded because it is is a ' + "malformed URL segment. This is probably due to a bad percent " + ("encoding (" + error + ")."));
+        return value;
+    }
+}
+function safelyDecodeURIComponent(value, paramName) {
+    try {
+        return decodeURIComponent(value);
+    } catch (error) {
+        warning(false, 'The value for the URL param "' + paramName + '" will not be decoded because' + (' the string "' + value + '" is a malformed URL segment. This is probably') + (" due to a bad percent encoding (" + error + ")."));
+        return value;
+    }
+}
+/**
+ * @private
+ */ function stripBasename(pathname, basename) {
+    if (basename === "/") return pathname;
+    if (!pathname.toLowerCase().startsWith(basename.toLowerCase())) return null;
+    // We want to leave trailing slash behavior in the user's control, so if they
+    // specify a basename with a trailing slash, we should support it
+    let startIndex = basename.endsWith("/") ? basename.length - 1 : basename.length;
+    let nextChar = pathname.charAt(startIndex);
+    if (nextChar && nextChar !== "/") // pathname does not start with basename/
+    return null;
+    return pathname.slice(startIndex) || "/";
+}
+/**
+ * Returns a resolved path object relative to the given pathname.
+ *
+ * @see https://reactrouter.com/utils/resolve-path
+ */ function resolvePath(to, fromPathname) {
+    if (fromPathname === void 0) fromPathname = "/";
+    let { pathname: toPathname , search ="" , hash =""  } = typeof to === "string" ? parsePath(to) : to;
+    let pathname = toPathname ? toPathname.startsWith("/") ? toPathname : resolvePathname(toPathname, fromPathname) : fromPathname;
+    return {
+        pathname,
+        search: normalizeSearch(search),
+        hash: normalizeHash(hash)
+    };
+}
+function resolvePathname(relativePath, fromPathname) {
+    let segments = fromPathname.replace(/\/+$/, "").split("/");
+    let relativeSegments = relativePath.split("/");
+    relativeSegments.forEach((segment)=>{
+        if (segment === "..") // Keep the root "" segment so the pathname starts at /
+        {
+            if (segments.length > 1) segments.pop();
+        } else if (segment !== ".") segments.push(segment);
+    });
+    return segments.length > 1 ? segments.join("/") : "/";
+}
+function getInvalidPathError(char, field, dest, path) {
+    return "Cannot include a '" + char + "' character in a manually specified " + ("`to." + field + "` field [" + JSON.stringify(path) + "].  Please separate it out to the ") + ("`to." + dest + "` field. Alternatively you may provide the full path as ") + 'a string in <Link to="..."> and the router will parse it for you.';
+}
+/**
+ * @private
+ *
+ * When processing relative navigation we want to ignore ancestor routes that
+ * do not contribute to the path, such that index/pathless layout routes don't
+ * interfere.
+ *
+ * For example, when moving a route element into an index route and/or a
+ * pathless layout route, relative link behavior contained within should stay
+ * the same.  Both of the following examples should link back to the root:
+ *
+ *   <Route path="/">
+ *     <Route path="accounts" element={<Link to=".."}>
+ *   </Route>
+ *
+ *   <Route path="/">
+ *     <Route path="accounts">
+ *       <Route element={<AccountsLayout />}>       // <-- Does not contribute
+ *         <Route index element={<Link to=".."} />  // <-- Does not contribute
+ *       </Route
+ *     </Route>
+ *   </Route>
+ */ function getPathContributingMatches(matches) {
+    return matches.filter((match, index)=>index === 0 || match.route.path && match.route.path.length > 0);
+}
+/**
+ * @private
+ */ function resolveTo(toArg, routePathnames, locationPathname, isPathRelative) {
+    if (isPathRelative === void 0) isPathRelative = false;
+    let to;
+    if (typeof toArg === "string") to = parsePath(toArg);
+    else {
+        to = _extends({}, toArg);
+        invariant(!to.pathname || !to.pathname.includes("?"), getInvalidPathError("?", "pathname", "search", to));
+        invariant(!to.pathname || !to.pathname.includes("#"), getInvalidPathError("#", "pathname", "hash", to));
+        invariant(!to.search || !to.search.includes("#"), getInvalidPathError("#", "search", "hash", to));
+    }
+    let isEmptyPath = toArg === "" || to.pathname === "";
+    let toPathname = isEmptyPath ? "/" : to.pathname;
+    let from;
+    // Routing is relative to the current pathname if explicitly requested.
+    //
+    // If a pathname is explicitly provided in `to`, it should be relative to the
+    // route context. This is explained in `Note on `<Link to>` values` in our
+    // migration guide from v5 as a means of disambiguation between `to` values
+    // that begin with `/` and those that do not. However, this is problematic for
+    // `to` values that do not provide a pathname. `to` can simply be a search or
+    // hash string, in which case we should assume that the navigation is relative
+    // to the current location's pathname and *not* the route pathname.
+    if (isPathRelative || toPathname == null) from = locationPathname;
+    else {
+        let routePathnameIndex = routePathnames.length - 1;
+        if (toPathname.startsWith("..")) {
+            let toSegments = toPathname.split("/");
+            // Each leading .. segment means "go up one route" instead of "go up one
+            // URL segment".  This is a key difference from how <a href> works and a
+            // major reason we call this a "to" value instead of a "href".
+            while(toSegments[0] === ".."){
+                toSegments.shift();
+                routePathnameIndex -= 1;
+            }
+            to.pathname = toSegments.join("/");
+        }
+        // If there are more ".." segments than parent routes, resolve relative to
+        // the root / URL.
+        from = routePathnameIndex >= 0 ? routePathnames[routePathnameIndex] : "/";
+    }
+    let path = resolvePath(to, from);
+    // Ensure the pathname has a trailing slash if the original "to" had one
+    let hasExplicitTrailingSlash = toPathname && toPathname !== "/" && toPathname.endsWith("/");
+    // Or if this was a link to the current path which has a trailing slash
+    let hasCurrentTrailingSlash = (isEmptyPath || toPathname === ".") && locationPathname.endsWith("/");
+    if (!path.pathname.endsWith("/") && (hasExplicitTrailingSlash || hasCurrentTrailingSlash)) path.pathname += "/";
+    return path;
+}
+/**
+ * @private
+ */ function getToPathname(to) {
+    // Empty strings should be treated the same as / paths
+    return to === "" || to.pathname === "" ? "/" : typeof to === "string" ? parsePath(to).pathname : to.pathname;
+}
+/**
+ * @private
+ */ const joinPaths = (paths)=>paths.join("/").replace(/\/\/+/g, "/");
+/**
+ * @private
+ */ const normalizePathname = (pathname)=>pathname.replace(/\/+$/, "").replace(/^\/*/, "/");
+/**
+ * @private
+ */ const normalizeSearch = (search)=>!search || search === "?" ? "" : search.startsWith("?") ? search : "?" + search;
+/**
+ * @private
+ */ const normalizeHash = (hash)=>!hash || hash === "#" ? "" : hash.startsWith("#") ? hash : "#" + hash;
+/**
+ * This is a shortcut for creating `application/json` responses. Converts `data`
+ * to JSON and sets the `Content-Type` header.
+ */ const json = function json(data, init) {
+    if (init === void 0) init = {};
+    let responseInit = typeof init === "number" ? {
+        status: init
+    } : init;
+    let headers = new Headers(responseInit.headers);
+    if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json; charset=utf-8");
+    return new Response(JSON.stringify(data), _extends({}, responseInit, {
+        headers
+    }));
+};
+class AbortedDeferredError extends Error {
+}
+class DeferredData {
+    constructor(data, responseInit){
+        this.pendingKeysSet = new Set();
+        this.subscribers = new Set();
+        this.deferredKeys = [];
+        invariant(data && typeof data === "object" && !Array.isArray(data), "defer() only accepts plain objects");
+        // Set up an AbortController + Promise we can race against to exit early
+        // cancellation
+        let reject;
+        this.abortPromise = new Promise((_, r)=>reject = r);
+        this.controller = new AbortController();
+        let onAbort = ()=>reject(new AbortedDeferredError("Deferred data aborted"));
+        this.unlistenAbortSignal = ()=>this.controller.signal.removeEventListener("abort", onAbort);
+        this.controller.signal.addEventListener("abort", onAbort);
+        this.data = Object.entries(data).reduce((acc, _ref)=>{
+            let [key, value] = _ref;
+            return Object.assign(acc, {
+                [key]: this.trackPromise(key, value)
+            });
+        }, {});
+        if (this.done) // All incoming values were resolved
+        this.unlistenAbortSignal();
+        this.init = responseInit;
+    }
+    trackPromise(key, value) {
+        if (!(value instanceof Promise)) return value;
+        this.deferredKeys.push(key);
+        this.pendingKeysSet.add(key);
+        // We store a little wrapper promise that will be extended with
+        // _data/_error props upon resolve/reject
+        let promise = Promise.race([
+            value,
+            this.abortPromise
+        ]).then((data)=>this.onSettle(promise, key, null, data), (error)=>this.onSettle(promise, key, error));
+        // Register rejection listeners to avoid uncaught promise rejections on
+        // errors or aborted deferred values
+        promise.catch(()=>{});
+        Object.defineProperty(promise, "_tracked", {
+            get: ()=>true
+        });
+        return promise;
+    }
+    onSettle(promise, key, error, data) {
+        if (this.controller.signal.aborted && error instanceof AbortedDeferredError) {
+            this.unlistenAbortSignal();
+            Object.defineProperty(promise, "_error", {
+                get: ()=>error
+            });
+            return Promise.reject(error);
+        }
+        this.pendingKeysSet.delete(key);
+        if (this.done) // Nothing left to abort!
+        this.unlistenAbortSignal();
+        if (error) {
+            Object.defineProperty(promise, "_error", {
+                get: ()=>error
+            });
+            this.emit(false, key);
+            return Promise.reject(error);
+        }
+        Object.defineProperty(promise, "_data", {
+            get: ()=>data
+        });
+        this.emit(false, key);
+        return data;
+    }
+    emit(aborted, settledKey) {
+        this.subscribers.forEach((subscriber)=>subscriber(aborted, settledKey));
+    }
+    subscribe(fn) {
+        this.subscribers.add(fn);
+        return ()=>this.subscribers.delete(fn);
+    }
+    cancel() {
+        this.controller.abort();
+        this.pendingKeysSet.forEach((v, k)=>this.pendingKeysSet.delete(k));
+        this.emit(true);
+    }
+    async resolveData(signal) {
+        let aborted = false;
+        if (!this.done) {
+            let onAbort = ()=>this.cancel();
+            signal.addEventListener("abort", onAbort);
+            aborted = await new Promise((resolve)=>{
+                this.subscribe((aborted)=>{
+                    signal.removeEventListener("abort", onAbort);
+                    if (aborted || this.done) resolve(aborted);
+                });
+            });
+        }
+        return aborted;
+    }
+    get done() {
+        return this.pendingKeysSet.size === 0;
+    }
+    get unwrappedData() {
+        invariant(this.data !== null && this.done, "Can only unwrap data on initialized and settled deferreds");
+        return Object.entries(this.data).reduce((acc, _ref2)=>{
+            let [key, value] = _ref2;
+            return Object.assign(acc, {
+                [key]: unwrapTrackedPromise(value)
+            });
+        }, {});
+    }
+    get pendingKeys() {
+        return Array.from(this.pendingKeysSet);
+    }
+}
+function isTrackedPromise(value) {
+    return value instanceof Promise && value._tracked === true;
+}
+function unwrapTrackedPromise(value) {
+    if (!isTrackedPromise(value)) return value;
+    if (value._error) throw value._error;
+    return value._data;
+}
+const defer = function defer(data, init) {
+    if (init === void 0) init = {};
+    let responseInit = typeof init === "number" ? {
+        status: init
+    } : init;
+    return new DeferredData(data, responseInit);
+};
+/**
+ * A redirect response. Sets the status code and the `Location` header.
+ * Defaults to "302 Found".
+ */ const redirect = function redirect(url, init) {
+    if (init === void 0) init = 302;
+    let responseInit = init;
+    if (typeof responseInit === "number") responseInit = {
+        status: responseInit
+    };
+    else if (typeof responseInit.status === "undefined") responseInit.status = 302;
+    let headers = new Headers(responseInit.headers);
+    headers.set("Location", url);
+    return new Response(null, _extends({}, responseInit, {
+        headers
+    }));
+};
+/**
+ * @private
+ * Utility class we use to hold auto-unwrapped 4xx/5xx Response bodies
+ */ class ErrorResponse {
+    constructor(status, statusText, data, internal){
+        if (internal === void 0) internal = false;
+        this.status = status;
+        this.statusText = statusText || "";
+        this.internal = internal;
+        if (data instanceof Error) {
+            this.data = data.toString();
+            this.error = data;
+        } else this.data = data;
+    }
+}
+/**
+ * Check if the given error is an ErrorResponse generated from a 4xx/5xx
+ * Response thrown from an action/loader
+ */ function isRouteErrorResponse(error) {
+    return error != null && typeof error.status === "number" && typeof error.statusText === "string" && typeof error.internal === "boolean" && "data" in error;
+}
+const validMutationMethodsArr = [
+    "post",
+    "put",
+    "patch",
+    "delete"
+];
+const validMutationMethods = new Set(validMutationMethodsArr);
+const validRequestMethodsArr = [
+    "get",
+    ...validMutationMethodsArr
+];
+const validRequestMethods = new Set(validRequestMethodsArr);
+const redirectStatusCodes = new Set([
+    301,
+    302,
+    303,
+    307,
+    308
+]);
+const redirectPreserveMethodStatusCodes = new Set([
+    307,
+    308
+]);
+const IDLE_NAVIGATION = {
+    state: "idle",
+    location: undefined,
+    formMethod: undefined,
+    formAction: undefined,
+    formEncType: undefined,
+    formData: undefined
+};
+const IDLE_FETCHER = {
+    state: "idle",
+    data: undefined,
+    formMethod: undefined,
+    formAction: undefined,
+    formEncType: undefined,
+    formData: undefined
+};
+const IDLE_BLOCKER = {
+    state: "unblocked",
+    proceed: undefined,
+    reset: undefined,
+    location: undefined
+};
+const ABSOLUTE_URL_REGEX = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
+const defaultMapRouteProperties = (route)=>({
+        hasErrorBoundary: Boolean(route.hasErrorBoundary)
+    });
+//#endregion
+////////////////////////////////////////////////////////////////////////////////
+//#region createRouter
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * Create a router and listen to history POP navigations
+ */ function createRouter(init) {
+    const routerWindow = init.window ? init.window : typeof window !== "undefined" ? window : undefined;
+    const isBrowser = typeof routerWindow !== "undefined" && typeof routerWindow.document !== "undefined" && typeof routerWindow.document.createElement !== "undefined";
+    const isServer = !isBrowser;
+    invariant(init.routes.length > 0, "You must provide a non-empty routes array to createRouter");
+    let mapRouteProperties;
+    if (init.mapRouteProperties) mapRouteProperties = init.mapRouteProperties;
+    else if (init.detectErrorBoundary) {
+        // If they are still using the deprecated version, wrap it with the new API
+        let detectErrorBoundary = init.detectErrorBoundary;
+        mapRouteProperties = (route)=>({
+                hasErrorBoundary: detectErrorBoundary(route)
+            });
+    } else mapRouteProperties = defaultMapRouteProperties;
+    // Routes keyed by ID
+    let manifest = {};
+    // Routes in tree format for matching
+    let dataRoutes = convertRoutesToDataRoutes(init.routes, mapRouteProperties, undefined, manifest);
+    let inFlightDataRoutes;
+    let basename = init.basename || "/";
+    // Config driven behavior flags
+    let future = _extends({
+        v7_normalizeFormMethod: false,
+        v7_prependBasename: false
+    }, init.future);
+    // Cleanup function for history
+    let unlistenHistory = null;
+    // Externally-provided functions to call on all state changes
+    let subscribers = new Set();
+    // Externally-provided object to hold scroll restoration locations during routing
+    let savedScrollPositions = null;
+    // Externally-provided function to get scroll restoration keys
+    let getScrollRestorationKey = null;
+    // Externally-provided function to get current scroll position
+    let getScrollPosition = null;
+    // One-time flag to control the initial hydration scroll restoration.  Because
+    // we don't get the saved positions from <ScrollRestoration /> until _after_
+    // the initial render, we need to manually trigger a separate updateState to
+    // send along the restoreScrollPosition
+    // Set to true if we have `hydrationData` since we assume we were SSR'd and that
+    // SSR did the initial scroll restoration.
+    let initialScrollRestored = init.hydrationData != null;
+    let initialMatches = matchRoutes(dataRoutes, init.history.location, basename);
+    let initialErrors = null;
+    if (initialMatches == null) {
+        // If we do not match a user-provided-route, fall back to the root
+        // to allow the error boundary to take over
+        let error = getInternalRouterError(404, {
+            pathname: init.history.location.pathname
+        });
+        let { matches , route  } = getShortCircuitMatches(dataRoutes);
+        initialMatches = matches;
+        initialErrors = {
+            [route.id]: error
+        };
+    }
+    let initialized = // All initialMatches need to be loaded before we're ready.  If we have lazy
+    // functions around still then we'll need to run them in initialize()
+    !initialMatches.some((m)=>m.route.lazy) && // And we have to either have no loaders or have been provided hydrationData
+    (!initialMatches.some((m)=>m.route.loader) || init.hydrationData != null);
+    let router;
+    let state = {
+        historyAction: init.history.action,
+        location: init.history.location,
+        matches: initialMatches,
+        initialized,
+        navigation: IDLE_NAVIGATION,
+        // Don't restore on initial updateState() if we were SSR'd
+        restoreScrollPosition: init.hydrationData != null ? false : null,
+        preventScrollReset: false,
+        revalidation: "idle",
+        loaderData: init.hydrationData && init.hydrationData.loaderData || {},
+        actionData: init.hydrationData && init.hydrationData.actionData || null,
+        errors: init.hydrationData && init.hydrationData.errors || initialErrors,
+        fetchers: new Map(),
+        blockers: new Map()
+    };
+    // -- Stateful internal variables to manage navigations --
+    // Current navigation in progress (to be committed in completeNavigation)
+    let pendingAction = Action.Pop;
+    // Should the current navigation prevent the scroll reset if scroll cannot
+    // be restored?
+    let pendingPreventScrollReset = false;
+    // AbortController for the active navigation
+    let pendingNavigationController;
+    // We use this to avoid touching history in completeNavigation if a
+    // revalidation is entirely uninterrupted
+    let isUninterruptedRevalidation = false;
+    // Use this internal flag to force revalidation of all loaders:
+    //  - submissions (completed or interrupted)
+    //  - useRevalidator()
+    //  - X-Remix-Revalidate (from redirect)
+    let isRevalidationRequired = false;
+    // Use this internal array to capture routes that require revalidation due
+    // to a cancelled deferred on action submission
+    let cancelledDeferredRoutes = [];
+    // Use this internal array to capture fetcher loads that were cancelled by an
+    // action navigation and require revalidation
+    let cancelledFetcherLoads = [];
+    // AbortControllers for any in-flight fetchers
+    let fetchControllers = new Map();
+    // Track loads based on the order in which they started
+    let incrementingLoadId = 0;
+    // Track the outstanding pending navigation data load to be compared against
+    // the globally incrementing load when a fetcher load lands after a completed
+    // navigation
+    let pendingNavigationLoadId = -1;
+    // Fetchers that triggered data reloads as a result of their actions
+    let fetchReloadIds = new Map();
+    // Fetchers that triggered redirect navigations
+    let fetchRedirectIds = new Set();
+    // Most recent href/match for fetcher.load calls for fetchers
+    let fetchLoadMatches = new Map();
+    // Store DeferredData instances for active route matches.  When a
+    // route loader returns defer() we stick one in here.  Then, when a nested
+    // promise resolves we update loaderData.  If a new navigation starts we
+    // cancel active deferreds for eliminated routes.
+    let activeDeferreds = new Map();
+    // Store blocker functions in a separate Map outside of router state since
+    // we don't need to update UI state if they change
+    let blockerFunctions = new Map();
+    // Flag to ignore the next history update, so we can revert the URL change on
+    // a POP navigation that was blocked by the user without touching router state
+    let ignoreNextHistoryUpdate = false;
+    // Initialize the router, all side effects should be kicked off from here.
+    // Implemented as a Fluent API for ease of:
+    //   let router = createRouter(init).initialize();
+    function initialize() {
+        // If history informs us of a POP navigation, start the navigation but do not update
+        // state.  We'll update our own state once the navigation completes
+        unlistenHistory = init.history.listen((_ref)=>{
+            let { action: historyAction , location , delta  } = _ref;
+            // Ignore this event if it was just us resetting the URL from a
+            // blocked POP navigation
+            if (ignoreNextHistoryUpdate) {
+                ignoreNextHistoryUpdate = false;
+                return;
+            }
+            warning(blockerFunctions.size === 0 || delta != null, "You are trying to use a blocker on a POP navigation to a location that was not created by @remix-run/router. This will fail silently in production. This can happen if you are navigating outside the router via `window.history.pushState`/`window.location.hash` instead of using router navigation APIs.  This can also happen if you are using createHashRouter and the user manually changes the URL.");
+            let blockerKey = shouldBlockNavigation({
+                currentLocation: state.location,
+                nextLocation: location,
+                historyAction
+            });
+            if (blockerKey && delta != null) {
+                // Restore the URL to match the current UI, but don't update router state
+                ignoreNextHistoryUpdate = true;
+                init.history.go(delta * -1);
+                // Put the blocker into a blocked state
+                updateBlocker(blockerKey, {
+                    state: "blocked",
+                    location,
+                    proceed () {
+                        updateBlocker(blockerKey, {
+                            state: "proceeding",
+                            proceed: undefined,
+                            reset: undefined,
+                            location
+                        });
+                        // Re-do the same POP navigation we just blocked
+                        init.history.go(delta);
+                    },
+                    reset () {
+                        deleteBlocker(blockerKey);
+                        updateState({
+                            blockers: new Map(router.state.blockers)
+                        });
+                    }
+                });
+                return;
+            }
+            return startNavigation(historyAction, location);
+        });
+        // Kick off initial data load if needed.  Use Pop to avoid modifying history
+        // Note we don't do any handling of lazy here.  For SPA's it'll get handled
+        // in the normal navigation flow.  For SSR it's expected that lazy modules are
+        // resolved prior to router creation since we can't go into a fallbackElement
+        // UI for SSR'd apps
+        if (!state.initialized) startNavigation(Action.Pop, state.location);
+        return router;
+    }
+    // Clean up a router and it's side effects
+    function dispose() {
+        if (unlistenHistory) unlistenHistory();
+        subscribers.clear();
+        pendingNavigationController && pendingNavigationController.abort();
+        state.fetchers.forEach((_, key)=>deleteFetcher(key));
+        state.blockers.forEach((_, key)=>deleteBlocker(key));
+    }
+    // Subscribe to state updates for the router
+    function subscribe(fn) {
+        subscribers.add(fn);
+        return ()=>subscribers.delete(fn);
+    }
+    // Update our state and notify the calling context of the change
+    function updateState(newState) {
+        state = _extends({}, state, newState);
+        subscribers.forEach((subscriber)=>subscriber(state));
+    }
+    // Complete a navigation returning the state.navigation back to the IDLE_NAVIGATION
+    // and setting state.[historyAction/location/matches] to the new route.
+    // - Location is a required param
+    // - Navigation will always be set to IDLE_NAVIGATION
+    // - Can pass any other state in newState
+    function completeNavigation(location, newState) {
+        var _location$state, _location$state2;
+        // Deduce if we're in a loading/actionReload state:
+        // - We have committed actionData in the store
+        // - The current navigation was a mutation submission
+        // - We're past the submitting state and into the loading state
+        // - The location being loaded is not the result of a redirect
+        let isActionReload = state.actionData != null && state.navigation.formMethod != null && isMutationMethod(state.navigation.formMethod) && state.navigation.state === "loading" && ((_location$state = location.state) == null ? void 0 : _location$state._isRedirect) !== true;
+        let actionData;
+        if (newState.actionData) {
+            if (Object.keys(newState.actionData).length > 0) actionData = newState.actionData;
+            else // Empty actionData -> clear prior actionData due to an action error
+            actionData = null;
+        } else if (isActionReload) // Keep the current data if we're wrapping up the action reload
+        actionData = state.actionData;
+        else // Clear actionData on any other completed navigations
+        actionData = null;
+        // Always preserve any existing loaderData from re-used routes
+        let loaderData = newState.loaderData ? mergeLoaderData(state.loaderData, newState.loaderData, newState.matches || [], newState.errors) : state.loaderData;
+        // On a successful navigation we can assume we got through all blockers
+        // so we can start fresh
+        for (let [key] of blockerFunctions)deleteBlocker(key);
+        // Always respect the user flag.  Otherwise don't reset on mutation
+        // submission navigations unless they redirect
+        let preventScrollReset = pendingPreventScrollReset === true || state.navigation.formMethod != null && isMutationMethod(state.navigation.formMethod) && ((_location$state2 = location.state) == null ? void 0 : _location$state2._isRedirect) !== true;
+        if (inFlightDataRoutes) {
+            dataRoutes = inFlightDataRoutes;
+            inFlightDataRoutes = undefined;
+        }
+        updateState(_extends({}, newState, {
+            actionData,
+            loaderData,
+            historyAction: pendingAction,
+            location,
+            initialized: true,
+            navigation: IDLE_NAVIGATION,
+            revalidation: "idle",
+            restoreScrollPosition: getSavedScrollPosition(location, newState.matches || state.matches),
+            preventScrollReset,
+            blockers: new Map(state.blockers)
+        }));
+        if (isUninterruptedRevalidation) ;
+        else if (pendingAction === Action.Pop) ;
+        else if (pendingAction === Action.Push) init.history.push(location, location.state);
+        else if (pendingAction === Action.Replace) init.history.replace(location, location.state);
+        // Reset stateful navigation vars
+        pendingAction = Action.Pop;
+        pendingPreventScrollReset = false;
+        isUninterruptedRevalidation = false;
+        isRevalidationRequired = false;
+        cancelledDeferredRoutes = [];
+        cancelledFetcherLoads = [];
+    }
+    // Trigger a navigation event, which can either be a numerical POP or a PUSH
+    // replace with an optional submission
+    async function navigate(to, opts) {
+        if (typeof to === "number") {
+            init.history.go(to);
+            return;
+        }
+        let normalizedPath = normalizeTo(state.location, state.matches, basename, future.v7_prependBasename, to, opts == null ? void 0 : opts.fromRouteId, opts == null ? void 0 : opts.relative);
+        let { path , submission , error  } = normalizeNavigateOptions(future.v7_normalizeFormMethod, false, normalizedPath, opts);
+        let currentLocation = state.location;
+        let nextLocation = createLocation(state.location, path, opts && opts.state);
+        // When using navigate as a PUSH/REPLACE we aren't reading an already-encoded
+        // URL from window.location, so we need to encode it here so the behavior
+        // remains the same as POP and non-data-router usages.  new URL() does all
+        // the same encoding we'd get from a history.pushState/window.location read
+        // without having to touch history
+        nextLocation = _extends({}, nextLocation, init.history.encodeLocation(nextLocation));
+        let userReplace = opts && opts.replace != null ? opts.replace : undefined;
+        let historyAction = Action.Push;
+        if (userReplace === true) historyAction = Action.Replace;
+        else if (userReplace === false) ;
+        else if (submission != null && isMutationMethod(submission.formMethod) && submission.formAction === state.location.pathname + state.location.search) // By default on submissions to the current location we REPLACE so that
+        // users don't have to double-click the back button to get to the prior
+        // location.  If the user redirects to a different location from the
+        // action/loader this will be ignored and the redirect will be a PUSH
+        historyAction = Action.Replace;
+        let preventScrollReset = opts && "preventScrollReset" in opts ? opts.preventScrollReset === true : undefined;
+        let blockerKey = shouldBlockNavigation({
+            currentLocation,
+            nextLocation,
+            historyAction
+        });
+        if (blockerKey) {
+            // Put the blocker into a blocked state
+            updateBlocker(blockerKey, {
+                state: "blocked",
+                location: nextLocation,
+                proceed () {
+                    updateBlocker(blockerKey, {
+                        state: "proceeding",
+                        proceed: undefined,
+                        reset: undefined,
+                        location: nextLocation
+                    });
+                    // Send the same navigation through
+                    navigate(to, opts);
+                },
+                reset () {
+                    deleteBlocker(blockerKey);
+                    updateState({
+                        blockers: new Map(state.blockers)
+                    });
+                }
+            });
+            return;
+        }
+        return await startNavigation(historyAction, nextLocation, {
+            submission,
+            // Send through the formData serialization error if we have one so we can
+            // render at the right error boundary after we match routes
+            pendingError: error,
+            preventScrollReset,
+            replace: opts && opts.replace
+        });
+    }
+    // Revalidate all current loaders.  If a navigation is in progress or if this
+    // is interrupted by a navigation, allow this to "succeed" by calling all
+    // loaders during the next loader round
+    function revalidate() {
+        interruptActiveLoads();
+        updateState({
+            revalidation: "loading"
+        });
+        // If we're currently submitting an action, we don't need to start a new
+        // navigation, we'll just let the follow up loader execution call all loaders
+        if (state.navigation.state === "submitting") return;
+        // If we're currently in an idle state, start a new navigation for the current
+        // action/location and mark it as uninterrupted, which will skip the history
+        // update in completeNavigation
+        if (state.navigation.state === "idle") {
+            startNavigation(state.historyAction, state.location, {
+                startUninterruptedRevalidation: true
+            });
+            return;
+        }
+        // Otherwise, if we're currently in a loading state, just start a new
+        // navigation to the navigation.location but do not trigger an uninterrupted
+        // revalidation so that history correctly updates once the navigation completes
+        startNavigation(pendingAction || state.historyAction, state.navigation.location, {
+            overrideNavigation: state.navigation
+        });
+    }
+    // Start a navigation to the given action/location.  Can optionally provide a
+    // overrideNavigation which will override the normalLoad in the case of a redirect
+    // navigation
+    async function startNavigation(historyAction, location, opts) {
+        // Abort any in-progress navigations and start a new one. Unset any ongoing
+        // uninterrupted revalidations unless told otherwise, since we want this
+        // new navigation to update history normally
+        pendingNavigationController && pendingNavigationController.abort();
+        pendingNavigationController = null;
+        pendingAction = historyAction;
+        isUninterruptedRevalidation = (opts && opts.startUninterruptedRevalidation) === true;
+        // Save the current scroll position every time we start a new navigation,
+        // and track whether we should reset scroll on completion
+        saveScrollPosition(state.location, state.matches);
+        pendingPreventScrollReset = (opts && opts.preventScrollReset) === true;
+        let routesToUse = inFlightDataRoutes || dataRoutes;
+        let loadingNavigation = opts && opts.overrideNavigation;
+        let matches = matchRoutes(routesToUse, location, basename);
+        // Short circuit with a 404 on the root error boundary if we match nothing
+        if (!matches) {
+            let error = getInternalRouterError(404, {
+                pathname: location.pathname
+            });
+            let { matches: notFoundMatches , route  } = getShortCircuitMatches(routesToUse);
+            // Cancel all pending deferred on 404s since we don't keep any routes
+            cancelActiveDeferreds();
+            completeNavigation(location, {
+                matches: notFoundMatches,
+                loaderData: {},
+                errors: {
+                    [route.id]: error
+                }
+            });
+            return;
+        }
+        // Short circuit if it's only a hash change and not a revalidation or
+        // mutation submission.
+        //
+        // Ignore on initial page loads because since the initial load will always
+        // be "same hash".  For example, on /page#hash and submit a <Form method="post">
+        // which will default to a navigation to /page
+        if (state.initialized && !isRevalidationRequired && isHashChangeOnly(state.location, location) && !(opts && opts.submission && isMutationMethod(opts.submission.formMethod))) {
+            completeNavigation(location, {
+                matches
+            });
+            return;
+        }
+        // Create a controller/Request for this navigation
+        pendingNavigationController = new AbortController();
+        let request = createClientSideRequest(init.history, location, pendingNavigationController.signal, opts && opts.submission);
+        let pendingActionData;
+        let pendingError;
+        if (opts && opts.pendingError) // If we have a pendingError, it means the user attempted a GET submission
+        // with binary FormData so assign here and skip to handleLoaders.  That
+        // way we handle calling loaders above the boundary etc.  It's not really
+        // different from an actionError in that sense.
+        pendingError = {
+            [findNearestBoundary(matches).route.id]: opts.pendingError
+        };
+        else if (opts && opts.submission && isMutationMethod(opts.submission.formMethod)) {
+            // Call action if we received an action submission
+            let actionOutput = await handleAction(request, location, opts.submission, matches, {
+                replace: opts.replace
+            });
+            if (actionOutput.shortCircuited) return;
+            pendingActionData = actionOutput.pendingActionData;
+            pendingError = actionOutput.pendingActionError;
+            let navigation = _extends({
+                state: "loading",
+                location
+            }, opts.submission);
+            loadingNavigation = navigation;
+            // Create a GET request for the loaders
+            request = new Request(request.url, {
+                signal: request.signal
+            });
+        }
+        // Call loaders
+        let { shortCircuited , loaderData , errors  } = await handleLoaders(request, location, matches, loadingNavigation, opts && opts.submission, opts && opts.fetcherSubmission, opts && opts.replace, pendingActionData, pendingError);
+        if (shortCircuited) return;
+        // Clean up now that the action/loaders have completed.  Don't clean up if
+        // we short circuited because pendingNavigationController will have already
+        // been assigned to a new controller for the next navigation
+        pendingNavigationController = null;
+        completeNavigation(location, _extends({
+            matches
+        }, pendingActionData ? {
+            actionData: pendingActionData
+        } : {}, {
+            loaderData,
+            errors
+        }));
+    }
+    // Call the action matched by the leaf route for this navigation and handle
+    // redirects/errors
+    async function handleAction(request, location, submission, matches, opts) {
+        interruptActiveLoads();
+        // Put us in a submitting state
+        let navigation = _extends({
+            state: "submitting",
+            location
+        }, submission);
+        updateState({
+            navigation
+        });
+        // Call our action and get the result
+        let result;
+        let actionMatch = getTargetMatch(matches, location);
+        if (!actionMatch.route.action && !actionMatch.route.lazy) result = {
+            type: ResultType.error,
+            error: getInternalRouterError(405, {
+                method: request.method,
+                pathname: location.pathname,
+                routeId: actionMatch.route.id
+            })
+        };
+        else {
+            result = await callLoaderOrAction("action", request, actionMatch, matches, manifest, mapRouteProperties, basename);
+            if (request.signal.aborted) return {
+                shortCircuited: true
+            };
+        }
+        if (isRedirectResult(result)) {
+            let replace;
+            if (opts && opts.replace != null) replace = opts.replace;
+            else // If the user didn't explicity indicate replace behavior, replace if
+            // we redirected to the exact same location we're currently at to avoid
+            // double back-buttons
+            replace = result.location === state.location.pathname + state.location.search;
+            await startRedirectNavigation(state, result, {
+                submission,
+                replace
+            });
+            return {
+                shortCircuited: true
+            };
+        }
+        if (isErrorResult(result)) {
+            // Store off the pending error - we use it to determine which loaders
+            // to call and will commit it when we complete the navigation
+            let boundaryMatch = findNearestBoundary(matches, actionMatch.route.id);
+            // By default, all submissions are REPLACE navigations, but if the
+            // action threw an error that'll be rendered in an errorElement, we fall
+            // back to PUSH so that the user can use the back button to get back to
+            // the pre-submission form location to try again
+            if ((opts && opts.replace) !== true) pendingAction = Action.Push;
+            return {
+                // Send back an empty object we can use to clear out any prior actionData
+                pendingActionData: {},
+                pendingActionError: {
+                    [boundaryMatch.route.id]: result.error
+                }
+            };
+        }
+        if (isDeferredResult(result)) throw getInternalRouterError(400, {
+            type: "defer-action"
+        });
+        return {
+            pendingActionData: {
+                [actionMatch.route.id]: result.data
+            }
+        };
+    }
+    // Call all applicable loaders for the given matches, handling redirects,
+    // errors, etc.
+    async function handleLoaders(request, location, matches, overrideNavigation, submission, fetcherSubmission, replace, pendingActionData, pendingError) {
+        // Figure out the right navigation we want to use for data loading
+        let loadingNavigation = overrideNavigation;
+        if (!loadingNavigation) {
+            let navigation = _extends({
+                state: "loading",
+                location,
+                formMethod: undefined,
+                formAction: undefined,
+                formEncType: undefined,
+                formData: undefined
+            }, submission);
+            loadingNavigation = navigation;
+        }
+        // If this was a redirect from an action we don't have a "submission" but
+        // we have it on the loading navigation so use that if available
+        let activeSubmission = submission || fetcherSubmission ? submission || fetcherSubmission : loadingNavigation.formMethod && loadingNavigation.formAction && loadingNavigation.formData && loadingNavigation.formEncType ? {
+            formMethod: loadingNavigation.formMethod,
+            formAction: loadingNavigation.formAction,
+            formData: loadingNavigation.formData,
+            formEncType: loadingNavigation.formEncType
+        } : undefined;
+        let routesToUse = inFlightDataRoutes || dataRoutes;
+        let [matchesToLoad, revalidatingFetchers] = getMatchesToLoad(init.history, state, matches, activeSubmission, location, isRevalidationRequired, cancelledDeferredRoutes, cancelledFetcherLoads, fetchLoadMatches, routesToUse, basename, pendingActionData, pendingError);
+        // Cancel pending deferreds for no-longer-matched routes or routes we're
+        // about to reload.  Note that if this is an action reload we would have
+        // already cancelled all pending deferreds so this would be a no-op
+        cancelActiveDeferreds((routeId)=>!(matches && matches.some((m)=>m.route.id === routeId)) || matchesToLoad && matchesToLoad.some((m)=>m.route.id === routeId));
+        // Short circuit if we have no loaders to run
+        if (matchesToLoad.length === 0 && revalidatingFetchers.length === 0) {
+            let updatedFetchers = markFetchRedirectsDone();
+            completeNavigation(location, _extends({
+                matches,
+                loaderData: {},
+                // Commit pending error if we're short circuiting
+                errors: pendingError || null
+            }, pendingActionData ? {
+                actionData: pendingActionData
+            } : {}, updatedFetchers ? {
+                fetchers: new Map(state.fetchers)
+            } : {}));
+            return {
+                shortCircuited: true
+            };
+        }
+        // If this is an uninterrupted revalidation, we remain in our current idle
+        // state.  If not, we need to switch to our loading state and load data,
+        // preserving any new action data or existing action data (in the case of
+        // a revalidation interrupting an actionReload)
+        if (!isUninterruptedRevalidation) {
+            revalidatingFetchers.forEach((rf)=>{
+                let fetcher = state.fetchers.get(rf.key);
+                let revalidatingFetcher = {
+                    state: "loading",
+                    data: fetcher && fetcher.data,
+                    formMethod: undefined,
+                    formAction: undefined,
+                    formEncType: undefined,
+                    formData: undefined,
+                    " _hasFetcherDoneAnything ": true
+                };
+                state.fetchers.set(rf.key, revalidatingFetcher);
+            });
+            let actionData = pendingActionData || state.actionData;
+            updateState(_extends({
+                navigation: loadingNavigation
+            }, actionData ? Object.keys(actionData).length === 0 ? {
+                actionData: null
+            } : {
+                actionData
+            } : {}, revalidatingFetchers.length > 0 ? {
+                fetchers: new Map(state.fetchers)
+            } : {}));
+        }
+        pendingNavigationLoadId = ++incrementingLoadId;
+        revalidatingFetchers.forEach((rf)=>{
+            if (rf.controller) // Fetchers use an independent AbortController so that aborting a fetcher
+            // (via deleteFetcher) does not abort the triggering navigation that
+            // triggered the revalidation
+            fetchControllers.set(rf.key, rf.controller);
+        });
+        // Proxy navigation abort through to revalidation fetchers
+        let abortPendingFetchRevalidations = ()=>revalidatingFetchers.forEach((f)=>abortFetcher(f.key));
+        if (pendingNavigationController) pendingNavigationController.signal.addEventListener("abort", abortPendingFetchRevalidations);
+        let { results , loaderResults , fetcherResults  } = await callLoadersAndMaybeResolveData(state.matches, matches, matchesToLoad, revalidatingFetchers, request);
+        if (request.signal.aborted) return {
+            shortCircuited: true
+        };
+        // Clean up _after_ loaders have completed.  Don't clean up if we short
+        // circuited because fetchControllers would have been aborted and
+        // reassigned to new controllers for the next navigation
+        if (pendingNavigationController) pendingNavigationController.signal.removeEventListener("abort", abortPendingFetchRevalidations);
+        revalidatingFetchers.forEach((rf)=>fetchControllers.delete(rf.key));
+        // If any loaders returned a redirect Response, start a new REPLACE navigation
+        let redirect = findRedirect(results);
+        if (redirect) {
+            await startRedirectNavigation(state, redirect, {
+                replace
+            });
+            return {
+                shortCircuited: true
+            };
+        }
+        // Process and commit output from loaders
+        let { loaderData , errors  } = processLoaderData(state, matches, matchesToLoad, loaderResults, pendingError, revalidatingFetchers, fetcherResults, activeDeferreds);
+        // Wire up subscribers to update loaderData as promises settle
+        activeDeferreds.forEach((deferredData, routeId)=>{
+            deferredData.subscribe((aborted)=>{
+                // Note: No need to updateState here since the TrackedPromise on
+                // loaderData is stable across resolve/reject
+                // Remove this instance if we were aborted or if promises have settled
+                if (aborted || deferredData.done) activeDeferreds.delete(routeId);
+            });
+        });
+        let updatedFetchers = markFetchRedirectsDone();
+        let didAbortFetchLoads = abortStaleFetchLoads(pendingNavigationLoadId);
+        let shouldUpdateFetchers = updatedFetchers || didAbortFetchLoads || revalidatingFetchers.length > 0;
+        return _extends({
+            loaderData,
+            errors
+        }, shouldUpdateFetchers ? {
+            fetchers: new Map(state.fetchers)
+        } : {});
+    }
+    function getFetcher(key) {
+        return state.fetchers.get(key) || IDLE_FETCHER;
+    }
+    // Trigger a fetcher load/submit for the given fetcher key
+    function fetch(key, routeId, href, opts) {
+        if (isServer) throw new Error("router.fetch() was called during the server render, but it shouldn't be. You are likely calling a useFetcher() method in the body of your component. Try moving it to a useEffect or a callback.");
+        if (fetchControllers.has(key)) abortFetcher(key);
+        let routesToUse = inFlightDataRoutes || dataRoutes;
+        let normalizedPath = normalizeTo(state.location, state.matches, basename, future.v7_prependBasename, href, routeId, opts == null ? void 0 : opts.relative);
+        let matches = matchRoutes(routesToUse, normalizedPath, basename);
+        if (!matches) {
+            setFetcherError(key, routeId, getInternalRouterError(404, {
+                pathname: normalizedPath
+            }));
+            return;
+        }
+        let { path , submission  } = normalizeNavigateOptions(future.v7_normalizeFormMethod, true, normalizedPath, opts);
+        let match = getTargetMatch(matches, path);
+        pendingPreventScrollReset = (opts && opts.preventScrollReset) === true;
+        if (submission && isMutationMethod(submission.formMethod)) {
+            handleFetcherAction(key, routeId, path, match, matches, submission);
+            return;
+        }
+        // Store off the match so we can call it's shouldRevalidate on subsequent
+        // revalidations
+        fetchLoadMatches.set(key, {
+            routeId,
+            path
+        });
+        handleFetcherLoader(key, routeId, path, match, matches, submission);
+    }
+    // Call the action for the matched fetcher.submit(), and then handle redirects,
+    // errors, and revalidation
+    async function handleFetcherAction(key, routeId, path, match, requestMatches, submission) {
+        interruptActiveLoads();
+        fetchLoadMatches.delete(key);
+        if (!match.route.action && !match.route.lazy) {
+            let error = getInternalRouterError(405, {
+                method: submission.formMethod,
+                pathname: path,
+                routeId: routeId
+            });
+            setFetcherError(key, routeId, error);
+            return;
+        }
+        // Put this fetcher into it's submitting state
+        let existingFetcher = state.fetchers.get(key);
+        let fetcher = _extends({
+            state: "submitting"
+        }, submission, {
+            data: existingFetcher && existingFetcher.data,
+            " _hasFetcherDoneAnything ": true
+        });
+        state.fetchers.set(key, fetcher);
+        updateState({
+            fetchers: new Map(state.fetchers)
+        });
+        // Call the action for the fetcher
+        let abortController = new AbortController();
+        let fetchRequest = createClientSideRequest(init.history, path, abortController.signal, submission);
+        fetchControllers.set(key, abortController);
+        let actionResult = await callLoaderOrAction("action", fetchRequest, match, requestMatches, manifest, mapRouteProperties, basename);
+        if (fetchRequest.signal.aborted) {
+            // We can delete this so long as we weren't aborted by ou our own fetcher
+            // re-submit which would have put _new_ controller is in fetchControllers
+            if (fetchControllers.get(key) === abortController) fetchControllers.delete(key);
+            return;
+        }
+        if (isRedirectResult(actionResult)) {
+            fetchControllers.delete(key);
+            fetchRedirectIds.add(key);
+            let loadingFetcher = _extends({
+                state: "loading"
+            }, submission, {
+                data: undefined,
+                " _hasFetcherDoneAnything ": true
+            });
+            state.fetchers.set(key, loadingFetcher);
+            updateState({
+                fetchers: new Map(state.fetchers)
+            });
+            return startRedirectNavigation(state, actionResult, {
+                submission,
+                isFetchActionRedirect: true
+            });
+        }
+        // Process any non-redirect errors thrown
+        if (isErrorResult(actionResult)) {
+            setFetcherError(key, routeId, actionResult.error);
+            return;
+        }
+        if (isDeferredResult(actionResult)) throw getInternalRouterError(400, {
+            type: "defer-action"
+        });
+        // Start the data load for current matches, or the next location if we're
+        // in the middle of a navigation
+        let nextLocation = state.navigation.location || state.location;
+        let revalidationRequest = createClientSideRequest(init.history, nextLocation, abortController.signal);
+        let routesToUse = inFlightDataRoutes || dataRoutes;
+        let matches = state.navigation.state !== "idle" ? matchRoutes(routesToUse, state.navigation.location, basename) : state.matches;
+        invariant(matches, "Didn't find any matches after fetcher action");
+        let loadId = ++incrementingLoadId;
+        fetchReloadIds.set(key, loadId);
+        let loadFetcher = _extends({
+            state: "loading",
+            data: actionResult.data
+        }, submission, {
+            " _hasFetcherDoneAnything ": true
+        });
+        state.fetchers.set(key, loadFetcher);
+        let [matchesToLoad, revalidatingFetchers] = getMatchesToLoad(init.history, state, matches, submission, nextLocation, isRevalidationRequired, cancelledDeferredRoutes, cancelledFetcherLoads, fetchLoadMatches, routesToUse, basename, {
+            [match.route.id]: actionResult.data
+        }, undefined // No need to send through errors since we short circuit above
+        );
+        // Put all revalidating fetchers into the loading state, except for the
+        // current fetcher which we want to keep in it's current loading state which
+        // contains it's action submission info + action data
+        revalidatingFetchers.filter((rf)=>rf.key !== key).forEach((rf)=>{
+            let staleKey = rf.key;
+            let existingFetcher = state.fetchers.get(staleKey);
+            let revalidatingFetcher = {
+                state: "loading",
+                data: existingFetcher && existingFetcher.data,
+                formMethod: undefined,
+                formAction: undefined,
+                formEncType: undefined,
+                formData: undefined,
+                " _hasFetcherDoneAnything ": true
+            };
+            state.fetchers.set(staleKey, revalidatingFetcher);
+            if (rf.controller) fetchControllers.set(staleKey, rf.controller);
+        });
+        updateState({
+            fetchers: new Map(state.fetchers)
+        });
+        let abortPendingFetchRevalidations = ()=>revalidatingFetchers.forEach((rf)=>abortFetcher(rf.key));
+        abortController.signal.addEventListener("abort", abortPendingFetchRevalidations);
+        let { results , loaderResults , fetcherResults  } = await callLoadersAndMaybeResolveData(state.matches, matches, matchesToLoad, revalidatingFetchers, revalidationRequest);
+        if (abortController.signal.aborted) return;
+        abortController.signal.removeEventListener("abort", abortPendingFetchRevalidations);
+        fetchReloadIds.delete(key);
+        fetchControllers.delete(key);
+        revalidatingFetchers.forEach((r)=>fetchControllers.delete(r.key));
+        let redirect = findRedirect(results);
+        if (redirect) return startRedirectNavigation(state, redirect);
+        // Process and commit output from loaders
+        let { loaderData , errors  } = processLoaderData(state, state.matches, matchesToLoad, loaderResults, undefined, revalidatingFetchers, fetcherResults, activeDeferreds);
+        // Since we let revalidations complete even if the submitting fetcher was
+        // deleted, only put it back to idle if it hasn't been deleted
+        if (state.fetchers.has(key)) {
+            let doneFetcher = {
+                state: "idle",
+                data: actionResult.data,
+                formMethod: undefined,
+                formAction: undefined,
+                formEncType: undefined,
+                formData: undefined,
+                " _hasFetcherDoneAnything ": true
+            };
+            state.fetchers.set(key, doneFetcher);
+        }
+        let didAbortFetchLoads = abortStaleFetchLoads(loadId);
+        // If we are currently in a navigation loading state and this fetcher is
+        // more recent than the navigation, we want the newer data so abort the
+        // navigation and complete it with the fetcher data
+        if (state.navigation.state === "loading" && loadId > pendingNavigationLoadId) {
+            invariant(pendingAction, "Expected pending action");
+            pendingNavigationController && pendingNavigationController.abort();
+            completeNavigation(state.navigation.location, {
+                matches,
+                loaderData,
+                errors,
+                fetchers: new Map(state.fetchers)
+            });
+        } else {
+            // otherwise just update with the fetcher data, preserving any existing
+            // loaderData for loaders that did not need to reload.  We have to
+            // manually merge here since we aren't going through completeNavigation
+            updateState(_extends({
+                errors,
+                loaderData: mergeLoaderData(state.loaderData, loaderData, matches, errors)
+            }, didAbortFetchLoads || revalidatingFetchers.length > 0 ? {
+                fetchers: new Map(state.fetchers)
+            } : {}));
+            isRevalidationRequired = false;
+        }
+    }
+    // Call the matched loader for fetcher.load(), handling redirects, errors, etc.
+    async function handleFetcherLoader(key, routeId, path, match, matches, submission) {
+        let existingFetcher = state.fetchers.get(key);
+        // Put this fetcher into it's loading state
+        let loadingFetcher = _extends({
+            state: "loading",
+            formMethod: undefined,
+            formAction: undefined,
+            formEncType: undefined,
+            formData: undefined
+        }, submission, {
+            data: existingFetcher && existingFetcher.data,
+            " _hasFetcherDoneAnything ": true
+        });
+        state.fetchers.set(key, loadingFetcher);
+        updateState({
+            fetchers: new Map(state.fetchers)
+        });
+        // Call the loader for this fetcher route match
+        let abortController = new AbortController();
+        let fetchRequest = createClientSideRequest(init.history, path, abortController.signal);
+        fetchControllers.set(key, abortController);
+        let result = await callLoaderOrAction("loader", fetchRequest, match, matches, manifest, mapRouteProperties, basename);
+        // Deferred isn't supported for fetcher loads, await everything and treat it
+        // as a normal load.  resolveDeferredData will return undefined if this
+        // fetcher gets aborted, so we just leave result untouched and short circuit
+        // below if that happens
+        if (isDeferredResult(result)) result = await resolveDeferredData(result, fetchRequest.signal, true) || result;
+        // We can delete this so long as we weren't aborted by our our own fetcher
+        // re-load which would have put _new_ controller is in fetchControllers
+        if (fetchControllers.get(key) === abortController) fetchControllers.delete(key);
+        if (fetchRequest.signal.aborted) return;
+        // If the loader threw a redirect Response, start a new REPLACE navigation
+        if (isRedirectResult(result)) {
+            fetchRedirectIds.add(key);
+            await startRedirectNavigation(state, result);
+            return;
+        }
+        // Process any non-redirect errors thrown
+        if (isErrorResult(result)) {
+            let boundaryMatch = findNearestBoundary(state.matches, routeId);
+            state.fetchers.delete(key);
+            // TODO: In remix, this would reset to IDLE_NAVIGATION if it was a catch -
+            // do we need to behave any differently with our non-redirect errors?
+            // What if it was a non-redirect Response?
+            updateState({
+                fetchers: new Map(state.fetchers),
+                errors: {
+                    [boundaryMatch.route.id]: result.error
+                }
+            });
+            return;
+        }
+        invariant(!isDeferredResult(result), "Unhandled fetcher deferred data");
+        // Put the fetcher back into an idle state
+        let doneFetcher = {
+            state: "idle",
+            data: result.data,
+            formMethod: undefined,
+            formAction: undefined,
+            formEncType: undefined,
+            formData: undefined,
+            " _hasFetcherDoneAnything ": true
+        };
+        state.fetchers.set(key, doneFetcher);
+        updateState({
+            fetchers: new Map(state.fetchers)
+        });
+    }
+    /**
+   * Utility function to handle redirects returned from an action or loader.
+   * Normally, a redirect "replaces" the navigation that triggered it.  So, for
+   * example:
+   *
+   *  - user is on /a
+   *  - user clicks a link to /b
+   *  - loader for /b redirects to /c
+   *
+   * In a non-JS app the browser would track the in-flight navigation to /b and
+   * then replace it with /c when it encountered the redirect response.  In
+   * the end it would only ever update the URL bar with /c.
+   *
+   * In client-side routing using pushState/replaceState, we aim to emulate
+   * this behavior and we also do not update history until the end of the
+   * navigation (including processed redirects).  This means that we never
+   * actually touch history until we've processed redirects, so we just use
+   * the history action from the original navigation (PUSH or REPLACE).
+   */ async function startRedirectNavigation(state, redirect, _temp) {
+        let { submission , replace , isFetchActionRedirect  } = _temp === void 0 ? {} : _temp;
+        if (redirect.revalidate) isRevalidationRequired = true;
+        let redirectLocation = createLocation(state.location, redirect.location, _extends({
+            _isRedirect: true
+        }, isFetchActionRedirect ? {
+            _isFetchActionRedirect: true
+        } : {}));
+        invariant(redirectLocation, "Expected a location on the redirect navigation");
+        // Check if this an absolute external redirect that goes to a new origin
+        if (ABSOLUTE_URL_REGEX.test(redirect.location) && isBrowser) {
+            let url = init.history.createURL(redirect.location);
+            let isDifferentBasename = stripBasename(url.pathname, basename) == null;
+            if (routerWindow.location.origin !== url.origin || isDifferentBasename) {
+                if (replace) routerWindow.location.replace(redirect.location);
+                else routerWindow.location.assign(redirect.location);
+                return;
+            }
+        }
+        // There's no need to abort on redirects, since we don't detect the
+        // redirect until the action/loaders have settled
+        pendingNavigationController = null;
+        let redirectHistoryAction = replace === true ? Action.Replace : Action.Push;
+        // Use the incoming submission if provided, fallback on the active one in
+        // state.navigation
+        let { formMethod , formAction , formEncType , formData  } = state.navigation;
+        if (!submission && formMethod && formAction && formData && formEncType) submission = {
+            formMethod,
+            formAction,
+            formEncType,
+            formData
+        };
+        // If this was a 307/308 submission we want to preserve the HTTP method and
+        // re-submit the GET/POST/PUT/PATCH/DELETE as a submission navigation to the
+        // redirected location
+        if (redirectPreserveMethodStatusCodes.has(redirect.status) && submission && isMutationMethod(submission.formMethod)) await startNavigation(redirectHistoryAction, redirectLocation, {
+            submission: _extends({}, submission, {
+                formAction: redirect.location
+            }),
+            // Preserve this flag across redirects
+            preventScrollReset: pendingPreventScrollReset
+        });
+        else if (isFetchActionRedirect) // For a fetch action redirect, we kick off a new loading navigation
+        // without the fetcher submission, but we send it along for shouldRevalidate
+        await startNavigation(redirectHistoryAction, redirectLocation, {
+            overrideNavigation: {
+                state: "loading",
+                location: redirectLocation,
+                formMethod: undefined,
+                formAction: undefined,
+                formEncType: undefined,
+                formData: undefined
+            },
+            fetcherSubmission: submission,
+            // Preserve this flag across redirects
+            preventScrollReset: pendingPreventScrollReset
+        });
+        else // Otherwise, we kick off a new loading navigation, preserving the
+        // submission info for the duration of this navigation
+        await startNavigation(redirectHistoryAction, redirectLocation, {
+            overrideNavigation: {
+                state: "loading",
+                location: redirectLocation,
+                formMethod: submission ? submission.formMethod : undefined,
+                formAction: submission ? submission.formAction : undefined,
+                formEncType: submission ? submission.formEncType : undefined,
+                formData: submission ? submission.formData : undefined
+            },
+            // Preserve this flag across redirects
+            preventScrollReset: pendingPreventScrollReset
+        });
+    }
+    async function callLoadersAndMaybeResolveData(currentMatches, matches, matchesToLoad, fetchersToLoad, request) {
+        // Call all navigation loaders and revalidating fetcher loaders in parallel,
+        // then slice off the results into separate arrays so we can handle them
+        // accordingly
+        let results = await Promise.all([
+            ...matchesToLoad.map((match)=>callLoaderOrAction("loader", request, match, matches, manifest, mapRouteProperties, basename)),
+            ...fetchersToLoad.map((f)=>{
+                if (f.matches && f.match && f.controller) return callLoaderOrAction("loader", createClientSideRequest(init.history, f.path, f.controller.signal), f.match, f.matches, manifest, mapRouteProperties, basename);
+                else {
+                    let error = {
+                        type: ResultType.error,
+                        error: getInternalRouterError(404, {
+                            pathname: f.path
+                        })
+                    };
+                    return error;
+                }
+            })
+        ]);
+        let loaderResults = results.slice(0, matchesToLoad.length);
+        let fetcherResults = results.slice(matchesToLoad.length);
+        await Promise.all([
+            resolveDeferredResults(currentMatches, matchesToLoad, loaderResults, loaderResults.map(()=>request.signal), false, state.loaderData),
+            resolveDeferredResults(currentMatches, fetchersToLoad.map((f)=>f.match), fetcherResults, fetchersToLoad.map((f)=>f.controller ? f.controller.signal : null), true)
+        ]);
+        return {
+            results,
+            loaderResults,
+            fetcherResults
+        };
+    }
+    function interruptActiveLoads() {
+        // Every interruption triggers a revalidation
+        isRevalidationRequired = true;
+        // Cancel pending route-level deferreds and mark cancelled routes for
+        // revalidation
+        cancelledDeferredRoutes.push(...cancelActiveDeferreds());
+        // Abort in-flight fetcher loads
+        fetchLoadMatches.forEach((_, key)=>{
+            if (fetchControllers.has(key)) {
+                cancelledFetcherLoads.push(key);
+                abortFetcher(key);
+            }
+        });
+    }
+    function setFetcherError(key, routeId, error) {
+        let boundaryMatch = findNearestBoundary(state.matches, routeId);
+        deleteFetcher(key);
+        updateState({
+            errors: {
+                [boundaryMatch.route.id]: error
+            },
+            fetchers: new Map(state.fetchers)
+        });
+    }
+    function deleteFetcher(key) {
+        let fetcher = state.fetchers.get(key);
+        // Don't abort the controller if this is a deletion of a fetcher.submit()
+        // in it's loading phase since - we don't want to abort the corresponding
+        // revalidation and want them to complete and land
+        if (fetchControllers.has(key) && !(fetcher && fetcher.state === "loading" && fetchReloadIds.has(key))) abortFetcher(key);
+        fetchLoadMatches.delete(key);
+        fetchReloadIds.delete(key);
+        fetchRedirectIds.delete(key);
+        state.fetchers.delete(key);
+    }
+    function abortFetcher(key) {
+        let controller = fetchControllers.get(key);
+        invariant(controller, "Expected fetch controller: " + key);
+        controller.abort();
+        fetchControllers.delete(key);
+    }
+    function markFetchersDone(keys) {
+        for (let key of keys){
+            let fetcher = getFetcher(key);
+            let doneFetcher = {
+                state: "idle",
+                data: fetcher.data,
+                formMethod: undefined,
+                formAction: undefined,
+                formEncType: undefined,
+                formData: undefined,
+                " _hasFetcherDoneAnything ": true
+            };
+            state.fetchers.set(key, doneFetcher);
+        }
+    }
+    function markFetchRedirectsDone() {
+        let doneKeys = [];
+        let updatedFetchers = false;
+        for (let key of fetchRedirectIds){
+            let fetcher = state.fetchers.get(key);
+            invariant(fetcher, "Expected fetcher: " + key);
+            if (fetcher.state === "loading") {
+                fetchRedirectIds.delete(key);
+                doneKeys.push(key);
+                updatedFetchers = true;
+            }
+        }
+        markFetchersDone(doneKeys);
+        return updatedFetchers;
+    }
+    function abortStaleFetchLoads(landedId) {
+        let yeetedKeys = [];
+        for (let [key, id] of fetchReloadIds)if (id < landedId) {
+            let fetcher = state.fetchers.get(key);
+            invariant(fetcher, "Expected fetcher: " + key);
+            if (fetcher.state === "loading") {
+                abortFetcher(key);
+                fetchReloadIds.delete(key);
+                yeetedKeys.push(key);
+            }
+        }
+        markFetchersDone(yeetedKeys);
+        return yeetedKeys.length > 0;
+    }
+    function getBlocker(key, fn) {
+        let blocker = state.blockers.get(key) || IDLE_BLOCKER;
+        if (blockerFunctions.get(key) !== fn) blockerFunctions.set(key, fn);
+        return blocker;
+    }
+    function deleteBlocker(key) {
+        state.blockers.delete(key);
+        blockerFunctions.delete(key);
+    }
+    // Utility function to update blockers, ensuring valid state transitions
+    function updateBlocker(key, newBlocker) {
+        let blocker = state.blockers.get(key) || IDLE_BLOCKER;
+        // Poor mans state machine :)
+        // https://mermaid.live/edit#pako:eNqVkc9OwzAMxl8l8nnjAYrEtDIOHEBIgwvKJTReGy3_lDpIqO27k6awMG0XcrLlnz87nwdonESogKXXBuE79rq75XZO3-yHds0RJVuv70YrPlUrCEe2HfrORS3rubqZfuhtpg5C9wk5tZ4VKcRUq88q9Z8RS0-48cE1iHJkL0ugbHuFLus9L6spZy8nX9MP2CNdomVaposqu3fGayT8T8-jJQwhepo_UtpgBQaDEUom04dZhAN1aJBDlUKJBxE1ceB2Smj0Mln-IBW5AFU2dwUiktt_2Qaq2dBfaKdEup85UV7Yd-dKjlnkabl2Pvr0DTkTreM
+        invariant(blocker.state === "unblocked" && newBlocker.state === "blocked" || blocker.state === "blocked" && newBlocker.state === "blocked" || blocker.state === "blocked" && newBlocker.state === "proceeding" || blocker.state === "blocked" && newBlocker.state === "unblocked" || blocker.state === "proceeding" && newBlocker.state === "unblocked", "Invalid blocker state transition: " + blocker.state + " -> " + newBlocker.state);
+        state.blockers.set(key, newBlocker);
+        updateState({
+            blockers: new Map(state.blockers)
+        });
+    }
+    function shouldBlockNavigation(_ref2) {
+        let { currentLocation , nextLocation , historyAction  } = _ref2;
+        if (blockerFunctions.size === 0) return;
+        // We ony support a single active blocker at the moment since we don't have
+        // any compelling use cases for multi-blocker yet
+        if (blockerFunctions.size > 1) warning(false, "A router only supports one blocker at a time");
+        let entries = Array.from(blockerFunctions.entries());
+        let [blockerKey, blockerFunction] = entries[entries.length - 1];
+        let blocker = state.blockers.get(blockerKey);
+        if (blocker && blocker.state === "proceeding") // If the blocker is currently proceeding, we don't need to re-check
+        // it and can let this navigation continue
+        return;
+        // At this point, we know we're unblocked/blocked so we need to check the
+        // user-provided blocker function
+        if (blockerFunction({
+            currentLocation,
+            nextLocation,
+            historyAction
+        })) return blockerKey;
+    }
+    function cancelActiveDeferreds(predicate) {
+        let cancelledRouteIds = [];
+        activeDeferreds.forEach((dfd, routeId)=>{
+            if (!predicate || predicate(routeId)) {
+                // Cancel the deferred - but do not remove from activeDeferreds here -
+                // we rely on the subscribers to do that so our tests can assert proper
+                // cleanup via _internalActiveDeferreds
+                dfd.cancel();
+                cancelledRouteIds.push(routeId);
+                activeDeferreds.delete(routeId);
+            }
+        });
+        return cancelledRouteIds;
+    }
+    // Opt in to capturing and reporting scroll positions during navigations,
+    // used by the <ScrollRestoration> component
+    function enableScrollRestoration(positions, getPosition, getKey) {
+        savedScrollPositions = positions;
+        getScrollPosition = getPosition;
+        getScrollRestorationKey = getKey || ((location)=>location.key);
+        // Perform initial hydration scroll restoration, since we miss the boat on
+        // the initial updateState() because we've not yet rendered <ScrollRestoration/>
+        // and therefore have no savedScrollPositions available
+        if (!initialScrollRestored && state.navigation === IDLE_NAVIGATION) {
+            initialScrollRestored = true;
+            let y = getSavedScrollPosition(state.location, state.matches);
+            if (y != null) updateState({
+                restoreScrollPosition: y
+            });
+        }
+        return ()=>{
+            savedScrollPositions = null;
+            getScrollPosition = null;
+            getScrollRestorationKey = null;
+        };
+    }
+    function saveScrollPosition(location, matches) {
+        if (savedScrollPositions && getScrollRestorationKey && getScrollPosition) {
+            let userMatches = matches.map((m)=>createUseMatchesMatch(m, state.loaderData));
+            let key = getScrollRestorationKey(location, userMatches) || location.key;
+            savedScrollPositions[key] = getScrollPosition();
+        }
+    }
+    function getSavedScrollPosition(location, matches) {
+        if (savedScrollPositions && getScrollRestorationKey && getScrollPosition) {
+            let userMatches = matches.map((m)=>createUseMatchesMatch(m, state.loaderData));
+            let key = getScrollRestorationKey(location, userMatches) || location.key;
+            let y = savedScrollPositions[key];
+            if (typeof y === "number") return y;
+        }
+        return null;
+    }
+    function _internalSetRoutes(newRoutes) {
+        manifest = {};
+        inFlightDataRoutes = convertRoutesToDataRoutes(newRoutes, mapRouteProperties, undefined, manifest);
+    }
+    router = {
+        get basename () {
+            return basename;
+        },
+        get state () {
+            return state;
+        },
+        get routes () {
+            return dataRoutes;
+        },
+        initialize,
+        subscribe,
+        enableScrollRestoration,
+        navigate,
+        fetch,
+        revalidate,
+        // Passthrough to history-aware createHref used by useHref so we get proper
+        // hash-aware URLs in DOM paths
+        createHref: (to)=>init.history.createHref(to),
+        encodeLocation: (to)=>init.history.encodeLocation(to),
+        getFetcher,
+        deleteFetcher,
+        dispose,
+        getBlocker,
+        deleteBlocker,
+        _internalFetchControllers: fetchControllers,
+        _internalActiveDeferreds: activeDeferreds,
+        // TODO: Remove setRoutes, it's temporary to avoid dealing with
+        // updating the tree while validating the update algorithm.
+        _internalSetRoutes
+    };
+    return router;
+}
+//#endregion
+////////////////////////////////////////////////////////////////////////////////
+//#region createStaticHandler
+////////////////////////////////////////////////////////////////////////////////
+const UNSAFE_DEFERRED_SYMBOL = Symbol("deferred");
+function createStaticHandler(routes, opts) {
+    invariant(routes.length > 0, "You must provide a non-empty routes array to createStaticHandler");
+    let manifest = {};
+    let basename = (opts ? opts.basename : null) || "/";
+    let mapRouteProperties;
+    if (opts != null && opts.mapRouteProperties) mapRouteProperties = opts.mapRouteProperties;
+    else if (opts != null && opts.detectErrorBoundary) {
+        // If they are still using the deprecated version, wrap it with the new API
+        let detectErrorBoundary = opts.detectErrorBoundary;
+        mapRouteProperties = (route)=>({
+                hasErrorBoundary: detectErrorBoundary(route)
+            });
+    } else mapRouteProperties = defaultMapRouteProperties;
+    let dataRoutes = convertRoutesToDataRoutes(routes, mapRouteProperties, undefined, manifest);
+    /**
+   * The query() method is intended for document requests, in which we want to
+   * call an optional action and potentially multiple loaders for all nested
+   * routes.  It returns a StaticHandlerContext object, which is very similar
+   * to the router state (location, loaderData, actionData, errors, etc.) and
+   * also adds SSR-specific information such as the statusCode and headers
+   * from action/loaders Responses.
+   *
+   * It _should_ never throw and should report all errors through the
+   * returned context.errors object, properly associating errors to their error
+   * boundary.  Additionally, it tracks _deepestRenderedBoundaryId which can be
+   * used to emulate React error boundaries during SSr by performing a second
+   * pass only down to the boundaryId.
+   *
+   * The one exception where we do not return a StaticHandlerContext is when a
+   * redirect response is returned or thrown from any action/loader.  We
+   * propagate that out and return the raw Response so the HTTP server can
+   * return it directly.
+   */ async function query(request, _temp2) {
+        let { requestContext  } = _temp2 === void 0 ? {} : _temp2;
+        let url = new URL(request.url);
+        let method = request.method;
+        let location = createLocation("", createPath(url), null, "default");
+        let matches = matchRoutes(dataRoutes, location, basename);
+        // SSR supports HEAD requests while SPA doesn't
+        if (!isValidMethod(method) && method !== "HEAD") {
+            let error = getInternalRouterError(405, {
+                method
+            });
+            let { matches: methodNotAllowedMatches , route  } = getShortCircuitMatches(dataRoutes);
+            return {
+                basename,
+                location,
+                matches: methodNotAllowedMatches,
+                loaderData: {},
+                actionData: null,
+                errors: {
+                    [route.id]: error
+                },
+                statusCode: error.status,
+                loaderHeaders: {},
+                actionHeaders: {},
+                activeDeferreds: null
+            };
+        } else if (!matches) {
+            let error = getInternalRouterError(404, {
+                pathname: location.pathname
+            });
+            let { matches: notFoundMatches , route  } = getShortCircuitMatches(dataRoutes);
+            return {
+                basename,
+                location,
+                matches: notFoundMatches,
+                loaderData: {},
+                actionData: null,
+                errors: {
+                    [route.id]: error
+                },
+                statusCode: error.status,
+                loaderHeaders: {},
+                actionHeaders: {},
+                activeDeferreds: null
+            };
+        }
+        let result = await queryImpl(request, location, matches, requestContext);
+        if (isResponse(result)) return result;
+        // When returning StaticHandlerContext, we patch back in the location here
+        // since we need it for React Context.  But this helps keep our submit and
+        // loadRouteData operating on a Request instead of a Location
+        return _extends({
+            location,
+            basename
+        }, result);
+    }
+    /**
+   * The queryRoute() method is intended for targeted route requests, either
+   * for fetch ?_data requests or resource route requests.  In this case, we
+   * are only ever calling a single action or loader, and we are returning the
+   * returned value directly.  In most cases, this will be a Response returned
+   * from the action/loader, but it may be a primitive or other value as well -
+   * and in such cases the calling context should handle that accordingly.
+   *
+   * We do respect the throw/return differentiation, so if an action/loader
+   * throws, then this method will throw the value.  This is important so we
+   * can do proper boundary identification in Remix where a thrown Response
+   * must go to the Catch Boundary but a returned Response is happy-path.
+   *
+   * One thing to note is that any Router-initiated Errors that make sense
+   * to associate with a status code will be thrown as an ErrorResponse
+   * instance which include the raw Error, such that the calling context can
+   * serialize the error as they see fit while including the proper response
+   * code.  Examples here are 404 and 405 errors that occur prior to reaching
+   * any user-defined loaders.
+   */ async function queryRoute(request, _temp3) {
+        let { routeId , requestContext  } = _temp3 === void 0 ? {} : _temp3;
+        let url = new URL(request.url);
+        let method = request.method;
+        let location = createLocation("", createPath(url), null, "default");
+        let matches = matchRoutes(dataRoutes, location, basename);
+        // SSR supports HEAD requests while SPA doesn't
+        if (!isValidMethod(method) && method !== "HEAD" && method !== "OPTIONS") throw getInternalRouterError(405, {
+            method
+        });
+        else if (!matches) throw getInternalRouterError(404, {
+            pathname: location.pathname
+        });
+        let match = routeId ? matches.find((m)=>m.route.id === routeId) : getTargetMatch(matches, location);
+        if (routeId && !match) throw getInternalRouterError(403, {
+            pathname: location.pathname,
+            routeId
+        });
+        else if (!match) // This should never hit I don't think?
+        throw getInternalRouterError(404, {
+            pathname: location.pathname
+        });
+        let result = await queryImpl(request, location, matches, requestContext, match);
+        if (isResponse(result)) return result;
+        let error = result.errors ? Object.values(result.errors)[0] : undefined;
+        if (error !== undefined) // If we got back result.errors, that means the loader/action threw
+        // _something_ that wasn't a Response, but it's not guaranteed/required
+        // to be an `instanceof Error` either, so we have to use throw here to
+        // preserve the "error" state outside of queryImpl.
+        throw error;
+        // Pick off the right state value to return
+        if (result.actionData) return Object.values(result.actionData)[0];
+        if (result.loaderData) {
+            var _result$activeDeferre;
+            let data = Object.values(result.loaderData)[0];
+            if ((_result$activeDeferre = result.activeDeferreds) != null && _result$activeDeferre[match.route.id]) data[UNSAFE_DEFERRED_SYMBOL] = result.activeDeferreds[match.route.id];
+            return data;
+        }
+        return undefined;
+    }
+    async function queryImpl(request, location, matches, requestContext, routeMatch) {
+        invariant(request.signal, "query()/queryRoute() requests must contain an AbortController signal");
+        try {
+            if (isMutationMethod(request.method.toLowerCase())) {
+                let result = await submit(request, matches, routeMatch || getTargetMatch(matches, location), requestContext, routeMatch != null);
+                return result;
+            }
+            let result = await loadRouteData(request, matches, requestContext, routeMatch);
+            return isResponse(result) ? result : _extends({}, result, {
+                actionData: null,
+                actionHeaders: {}
+            });
+        } catch (e) {
+            // If the user threw/returned a Response in callLoaderOrAction, we throw
+            // it to bail out and then return or throw here based on whether the user
+            // returned or threw
+            if (isQueryRouteResponse(e)) {
+                if (e.type === ResultType.error && !isRedirectResponse(e.response)) throw e.response;
+                return e.response;
+            }
+            // Redirects are always returned since they don't propagate to catch
+            // boundaries
+            if (isRedirectResponse(e)) return e;
+            throw e;
+        }
+    }
+    async function submit(request, matches, actionMatch, requestContext, isRouteRequest) {
+        let result;
+        if (!actionMatch.route.action && !actionMatch.route.lazy) {
+            let error = getInternalRouterError(405, {
+                method: request.method,
+                pathname: new URL(request.url).pathname,
+                routeId: actionMatch.route.id
+            });
+            if (isRouteRequest) throw error;
+            result = {
+                type: ResultType.error,
+                error
+            };
+        } else {
+            result = await callLoaderOrAction("action", request, actionMatch, matches, manifest, mapRouteProperties, basename, true, isRouteRequest, requestContext);
+            if (request.signal.aborted) {
+                let method = isRouteRequest ? "queryRoute" : "query";
+                throw new Error(method + "() call aborted");
+            }
+        }
+        if (isRedirectResult(result)) // Uhhhh - this should never happen, we should always throw these from
+        // callLoaderOrAction, but the type narrowing here keeps TS happy and we
+        // can get back on the "throw all redirect responses" train here should
+        // this ever happen :/
+        throw new Response(null, {
+            status: result.status,
+            headers: {
+                Location: result.location
+            }
+        });
+        if (isDeferredResult(result)) {
+            let error = getInternalRouterError(400, {
+                type: "defer-action"
+            });
+            if (isRouteRequest) throw error;
+            result = {
+                type: ResultType.error,
+                error
+            };
+        }
+        if (isRouteRequest) {
+            // Note: This should only be non-Response values if we get here, since
+            // isRouteRequest should throw any Response received in callLoaderOrAction
+            if (isErrorResult(result)) throw result.error;
+            return {
+                matches: [
+                    actionMatch
+                ],
+                loaderData: {},
+                actionData: {
+                    [actionMatch.route.id]: result.data
+                },
+                errors: null,
+                // Note: statusCode + headers are unused here since queryRoute will
+                // return the raw Response or value
+                statusCode: 200,
+                loaderHeaders: {},
+                actionHeaders: {},
+                activeDeferreds: null
+            };
+        }
+        if (isErrorResult(result)) {
+            // Store off the pending error - we use it to determine which loaders
+            // to call and will commit it when we complete the navigation
+            let boundaryMatch = findNearestBoundary(matches, actionMatch.route.id);
+            let context = await loadRouteData(request, matches, requestContext, undefined, {
+                [boundaryMatch.route.id]: result.error
+            });
+            // action status codes take precedence over loader status codes
+            return _extends({}, context, {
+                statusCode: isRouteErrorResponse(result.error) ? result.error.status : 500,
+                actionData: null,
+                actionHeaders: _extends({}, result.headers ? {
+                    [actionMatch.route.id]: result.headers
+                } : {})
+            });
+        }
+        // Create a GET request for the loaders
+        let loaderRequest = new Request(request.url, {
+            headers: request.headers,
+            redirect: request.redirect,
+            signal: request.signal
+        });
+        let context = await loadRouteData(loaderRequest, matches, requestContext);
+        return _extends({}, context, result.statusCode ? {
+            statusCode: result.statusCode
+        } : {}, {
+            actionData: {
+                [actionMatch.route.id]: result.data
+            },
+            actionHeaders: _extends({}, result.headers ? {
+                [actionMatch.route.id]: result.headers
+            } : {})
+        });
+    }
+    async function loadRouteData(request, matches, requestContext, routeMatch, pendingActionError) {
+        let isRouteRequest = routeMatch != null;
+        // Short circuit if we have no loaders to run (queryRoute())
+        if (isRouteRequest && !(routeMatch != null && routeMatch.route.loader) && !(routeMatch != null && routeMatch.route.lazy)) throw getInternalRouterError(400, {
+            method: request.method,
+            pathname: new URL(request.url).pathname,
+            routeId: routeMatch == null ? void 0 : routeMatch.route.id
+        });
+        let requestMatches = routeMatch ? [
+            routeMatch
+        ] : getLoaderMatchesUntilBoundary(matches, Object.keys(pendingActionError || {})[0]);
+        let matchesToLoad = requestMatches.filter((m)=>m.route.loader || m.route.lazy);
+        // Short circuit if we have no loaders to run (query())
+        if (matchesToLoad.length === 0) return {
+            matches,
+            // Add a null for all matched routes for proper revalidation on the client
+            loaderData: matches.reduce((acc, m)=>Object.assign(acc, {
+                    [m.route.id]: null
+                }), {}),
+            errors: pendingActionError || null,
+            statusCode: 200,
+            loaderHeaders: {},
+            activeDeferreds: null
+        };
+        let results = await Promise.all([
+            ...matchesToLoad.map((match)=>callLoaderOrAction("loader", request, match, matches, manifest, mapRouteProperties, basename, true, isRouteRequest, requestContext))
+        ]);
+        if (request.signal.aborted) {
+            let method = isRouteRequest ? "queryRoute" : "query";
+            throw new Error(method + "() call aborted");
+        }
+        // Process and commit output from loaders
+        let activeDeferreds = new Map();
+        let context = processRouteLoaderData(matches, matchesToLoad, results, pendingActionError, activeDeferreds);
+        // Add a null for any non-loader matches for proper revalidation on the client
+        let executedLoaders = new Set(matchesToLoad.map((match)=>match.route.id));
+        matches.forEach((match)=>{
+            if (!executedLoaders.has(match.route.id)) context.loaderData[match.route.id] = null;
+        });
+        return _extends({}, context, {
+            matches,
+            activeDeferreds: activeDeferreds.size > 0 ? Object.fromEntries(activeDeferreds.entries()) : null
+        });
+    }
+    return {
+        dataRoutes,
+        query,
+        queryRoute
+    };
+}
+//#endregion
+////////////////////////////////////////////////////////////////////////////////
+//#region Helpers
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * Given an existing StaticHandlerContext and an error thrown at render time,
+ * provide an updated StaticHandlerContext suitable for a second SSR render
+ */ function getStaticContextFromError(routes, context, error) {
+    let newContext = _extends({}, context, {
+        statusCode: 500,
+        errors: {
+            [context._deepestRenderedBoundaryId || routes[0].id]: error
+        }
+    });
+    return newContext;
+}
+function isSubmissionNavigation(opts) {
+    return opts != null && "formData" in opts;
+}
+function normalizeTo(location, matches, basename, prependBasename, to, fromRouteId, relative) {
+    let contextualMatches;
+    let activeRouteMatch;
+    if (fromRouteId != null && relative !== "path") {
+        // Grab matches up to the calling route so our route-relative logic is
+        // relative to the correct source route.  When using relative:path,
+        // fromRouteId is ignored since that is always relative to the current
+        // location path
+        contextualMatches = [];
+        for (let match of matches){
+            contextualMatches.push(match);
+            if (match.route.id === fromRouteId) {
+                activeRouteMatch = match;
+                break;
+            }
+        }
+    } else {
+        contextualMatches = matches;
+        activeRouteMatch = matches[matches.length - 1];
+    }
+    // Resolve the relative path
+    let path = resolveTo(to ? to : ".", getPathContributingMatches(contextualMatches).map((m)=>m.pathnameBase), stripBasename(location.pathname, basename) || location.pathname, relative === "path");
+    // When `to` is not specified we inherit search/hash from the current
+    // location, unlike when to="." and we just inherit the path.
+    // See https://github.com/remix-run/remix/issues/927
+    if (to == null) {
+        path.search = location.search;
+        path.hash = location.hash;
+    }
+    // Add an ?index param for matched index routes if we don't already have one
+    if ((to == null || to === "" || to === ".") && activeRouteMatch && activeRouteMatch.route.index && !hasNakedIndexQuery(path.search)) path.search = path.search ? path.search.replace(/^\?/, "?index&") : "?index";
+    // If we're operating within a basename, prepend it to the pathname.  If
+    // this is a root navigation, then just use the raw basename which allows
+    // the basename to have full control over the presence of a trailing slash
+    // on root actions
+    if (prependBasename && basename !== "/") path.pathname = path.pathname === "/" ? basename : joinPaths([
+        basename,
+        path.pathname
+    ]);
+    return createPath(path);
+}
+// Normalize navigation options by converting formMethod=GET formData objects to
+// URLSearchParams so they behave identically to links with query params
+function normalizeNavigateOptions(normalizeFormMethod, isFetcher, path, opts) {
+    // Return location verbatim on non-submission navigations
+    if (!opts || !isSubmissionNavigation(opts)) return {
+        path
+    };
+    if (opts.formMethod && !isValidMethod(opts.formMethod)) return {
+        path,
+        error: getInternalRouterError(405, {
+            method: opts.formMethod
+        })
+    };
+    // Create a Submission on non-GET navigations
+    let submission;
+    if (opts.formData) {
+        let formMethod = opts.formMethod || "get";
+        submission = {
+            formMethod: normalizeFormMethod ? formMethod.toUpperCase() : formMethod.toLowerCase(),
+            formAction: stripHashFromPath(path),
+            formEncType: opts && opts.formEncType || "application/x-www-form-urlencoded",
+            formData: opts.formData
+        };
+        if (isMutationMethod(submission.formMethod)) return {
+            path,
+            submission
+        };
+    }
+    // Flatten submission onto URLSearchParams for GET submissions
+    let parsedPath = parsePath(path);
+    let searchParams = convertFormDataToSearchParams(opts.formData);
+    // On GET navigation submissions we can drop the ?index param from the
+    // resulting location since all loaders will run.  But fetcher GET submissions
+    // only run a single loader so we need to preserve any incoming ?index params
+    if (isFetcher && parsedPath.search && hasNakedIndexQuery(parsedPath.search)) searchParams.append("index", "");
+    parsedPath.search = "?" + searchParams;
+    return {
+        path: createPath(parsedPath),
+        submission
+    };
+}
+// Filter out all routes below any caught error as they aren't going to
+// render so we don't need to load them
+function getLoaderMatchesUntilBoundary(matches, boundaryId) {
+    let boundaryMatches = matches;
+    if (boundaryId) {
+        let index = matches.findIndex((m)=>m.route.id === boundaryId);
+        if (index >= 0) boundaryMatches = matches.slice(0, index);
+    }
+    return boundaryMatches;
+}
+function getMatchesToLoad(history, state, matches, submission, location, isRevalidationRequired, cancelledDeferredRoutes, cancelledFetcherLoads, fetchLoadMatches, routesToUse, basename, pendingActionData, pendingError) {
+    let actionResult = pendingError ? Object.values(pendingError)[0] : pendingActionData ? Object.values(pendingActionData)[0] : undefined;
+    let currentUrl = history.createURL(state.location);
+    let nextUrl = history.createURL(location);
+    // Pick navigation matches that are net-new or qualify for revalidation
+    let boundaryId = pendingError ? Object.keys(pendingError)[0] : undefined;
+    let boundaryMatches = getLoaderMatchesUntilBoundary(matches, boundaryId);
+    let navigationMatches = boundaryMatches.filter((match, index)=>{
+        if (match.route.lazy) // We haven't loaded this route yet so we don't know if it's got a loader!
+        return true;
+        if (match.route.loader == null) return false;
+        // Always call the loader on new route instances and pending defer cancellations
+        if (isNewLoader(state.loaderData, state.matches[index], match) || cancelledDeferredRoutes.some((id)=>id === match.route.id)) return true;
+        // This is the default implementation for when we revalidate.  If the route
+        // provides it's own implementation, then we give them full control but
+        // provide this value so they can leverage it if needed after they check
+        // their own specific use cases
+        let currentRouteMatch = state.matches[index];
+        let nextRouteMatch = match;
+        return shouldRevalidateLoader(match, _extends({
+            currentUrl,
+            currentParams: currentRouteMatch.params,
+            nextUrl,
+            nextParams: nextRouteMatch.params
+        }, submission, {
+            actionResult,
+            defaultShouldRevalidate: // Forced revalidation due to submission, useRevalidator, or X-Remix-Revalidate
+            isRevalidationRequired || // Clicked the same link, resubmitted a GET form
+            currentUrl.pathname + currentUrl.search === nextUrl.pathname + nextUrl.search || // Search params affect all loaders
+            currentUrl.search !== nextUrl.search || isNewRouteInstance(currentRouteMatch, nextRouteMatch)
+        }));
+    });
+    // Pick fetcher.loads that need to be revalidated
+    let revalidatingFetchers = [];
+    fetchLoadMatches.forEach((f, key)=>{
+        // Don't revalidate if fetcher won't be present in the subsequent render
+        if (!matches.some((m)=>m.route.id === f.routeId)) return;
+        let fetcherMatches = matchRoutes(routesToUse, f.path, basename);
+        // If the fetcher path no longer matches, push it in with null matches so
+        // we can trigger a 404 in callLoadersAndMaybeResolveData
+        if (!fetcherMatches) {
+            revalidatingFetchers.push({
+                key,
+                routeId: f.routeId,
+                path: f.path,
+                matches: null,
+                match: null,
+                controller: null
+            });
+            return;
+        }
+        let fetcherMatch = getTargetMatch(fetcherMatches, f.path);
+        if (cancelledFetcherLoads.includes(key)) {
+            revalidatingFetchers.push({
+                key,
+                routeId: f.routeId,
+                path: f.path,
+                matches: fetcherMatches,
+                match: fetcherMatch,
+                controller: new AbortController()
+            });
+            return;
+        }
+        // Revalidating fetchers are decoupled from the route matches since they
+        // hit a static href, so they _always_ check shouldRevalidate and the
+        // default is strictly if a revalidation is explicitly required (action
+        // submissions, useRevalidator, X-Remix-Revalidate).
+        let shouldRevalidate = shouldRevalidateLoader(fetcherMatch, _extends({
+            currentUrl,
+            currentParams: state.matches[state.matches.length - 1].params,
+            nextUrl,
+            nextParams: matches[matches.length - 1].params
+        }, submission, {
+            actionResult,
+            // Forced revalidation due to submission, useRevalidator, or X-Remix-Revalidate
+            defaultShouldRevalidate: isRevalidationRequired
+        }));
+        if (shouldRevalidate) revalidatingFetchers.push({
+            key,
+            routeId: f.routeId,
+            path: f.path,
+            matches: fetcherMatches,
+            match: fetcherMatch,
+            controller: new AbortController()
+        });
+    });
+    return [
+        navigationMatches,
+        revalidatingFetchers
+    ];
+}
+function isNewLoader(currentLoaderData, currentMatch, match) {
+    let isNew = // [a] -> [a, b]
+    !currentMatch || // [a, b] -> [a, c]
+    match.route.id !== currentMatch.route.id;
+    // Handle the case that we don't have data for a re-used route, potentially
+    // from a prior error or from a cancelled pending deferred
+    let isMissingData = currentLoaderData[match.route.id] === undefined;
+    // Always load if this is a net-new route or we don't yet have data
+    return isNew || isMissingData;
+}
+function isNewRouteInstance(currentMatch, match) {
+    let currentPath = currentMatch.route.path;
+    return(// param change for this match, /users/123 -> /users/456
+    currentMatch.pathname !== match.pathname || // splat param changed, which is not present in match.path
+    // e.g. /files/images/avatar.jpg -> files/finances.xls
+    currentPath != null && currentPath.endsWith("*") && currentMatch.params["*"] !== match.params["*"]);
+}
+function shouldRevalidateLoader(loaderMatch, arg) {
+    if (loaderMatch.route.shouldRevalidate) {
+        let routeChoice = loaderMatch.route.shouldRevalidate(arg);
+        if (typeof routeChoice === "boolean") return routeChoice;
+    }
+    return arg.defaultShouldRevalidate;
+}
+/**
+ * Execute route.lazy() methods to lazily load route modules (loader, action,
+ * shouldRevalidate) and update the routeManifest in place which shares objects
+ * with dataRoutes so those get updated as well.
+ */ async function loadLazyRouteModule(route, mapRouteProperties, manifest) {
+    if (!route.lazy) return;
+    let lazyRoute = await route.lazy();
+    // If the lazy route function was executed and removed by another parallel
+    // call then we can return - first lazy() to finish wins because the return
+    // value of lazy is expected to be static
+    if (!route.lazy) return;
+    let routeToUpdate = manifest[route.id];
+    invariant(routeToUpdate, "No route found in manifest");
+    // Update the route in place.  This should be safe because there's no way
+    // we could yet be sitting on this route as we can't get there without
+    // resolving lazy() first.
+    //
+    // This is different than the HMR "update" use-case where we may actively be
+    // on the route being updated.  The main concern boils down to "does this
+    // mutation affect any ongoing navigations or any current state.matches
+    // values?".  If not, it should be safe to update in place.
+    let routeUpdates = {};
+    for(let lazyRouteProperty in lazyRoute){
+        let staticRouteValue = routeToUpdate[lazyRouteProperty];
+        let isPropertyStaticallyDefined = staticRouteValue !== undefined && // This property isn't static since it should always be updated based
+        // on the route updates
+        lazyRouteProperty !== "hasErrorBoundary";
+        warning(!isPropertyStaticallyDefined, 'Route "' + routeToUpdate.id + '" has a static property "' + lazyRouteProperty + '" ' + "defined but its lazy function is also returning a value for this property. " + ('The lazy route property "' + lazyRouteProperty + '" will be ignored.'));
+        if (!isPropertyStaticallyDefined && !immutableRouteKeys.has(lazyRouteProperty)) routeUpdates[lazyRouteProperty] = lazyRoute[lazyRouteProperty];
+    }
+    // Mutate the route with the provided updates.  Do this first so we pass
+    // the updated version to mapRouteProperties
+    Object.assign(routeToUpdate, routeUpdates);
+    // Mutate the `hasErrorBoundary` property on the route based on the route
+    // updates and remove the `lazy` function so we don't resolve the lazy
+    // route again.
+    Object.assign(routeToUpdate, _extends({}, mapRouteProperties(routeToUpdate), {
+        lazy: undefined
+    }));
+}
+async function callLoaderOrAction(type, request, match, matches, manifest, mapRouteProperties, basename, isStaticRequest, isRouteRequest, requestContext) {
+    if (isStaticRequest === void 0) isStaticRequest = false;
+    if (isRouteRequest === void 0) isRouteRequest = false;
+    let resultType;
+    let result;
+    let onReject;
+    let runHandler = (handler)=>{
+        // Setup a promise we can race against so that abort signals short circuit
+        let reject;
+        let abortPromise = new Promise((_, r)=>reject = r);
+        onReject = ()=>reject();
+        request.signal.addEventListener("abort", onReject);
+        return Promise.race([
+            handler({
+                request,
+                params: match.params,
+                context: requestContext
+            }),
+            abortPromise
+        ]);
+    };
+    try {
+        let handler = match.route[type];
+        if (match.route.lazy) {
+            if (handler) {
+                // Run statically defined handler in parallel with lazy()
+                let values = await Promise.all([
+                    runHandler(handler),
+                    loadLazyRouteModule(match.route, mapRouteProperties, manifest)
+                ]);
+                result = values[0];
+            } else {
+                // Load lazy route module, then run any returned handler
+                await loadLazyRouteModule(match.route, mapRouteProperties, manifest);
+                handler = match.route[type];
+                if (handler) // Handler still run even if we got interrupted to maintain consistency
+                // with un-abortable behavior of handler execution on non-lazy or
+                // previously-lazy-loaded routes
+                result = await runHandler(handler);
+                else if (type === "action") {
+                    let url = new URL(request.url);
+                    let pathname = url.pathname + url.search;
+                    throw getInternalRouterError(405, {
+                        method: request.method,
+                        pathname,
+                        routeId: match.route.id
+                    });
+                } else // lazy() route has no loader to run.  Short circuit here so we don't
+                // hit the invariant below that errors on returning undefined.
+                return {
+                    type: ResultType.data,
+                    data: undefined
+                };
+            }
+        } else if (!handler) {
+            let url = new URL(request.url);
+            let pathname = url.pathname + url.search;
+            throw getInternalRouterError(404, {
+                pathname
+            });
+        } else result = await runHandler(handler);
+        invariant(result !== undefined, "You defined " + (type === "action" ? "an action" : "a loader") + " for route " + ('"' + match.route.id + "\" but didn't return anything from your `" + type + "` ") + "function. Please return a value or `null`.");
+    } catch (e) {
+        resultType = ResultType.error;
+        result = e;
+    } finally{
+        if (onReject) request.signal.removeEventListener("abort", onReject);
+    }
+    if (isResponse(result)) {
+        let status = result.status;
+        // Process redirects
+        if (redirectStatusCodes.has(status)) {
+            let location = result.headers.get("Location");
+            invariant(location, "Redirects returned/thrown from loaders/actions must have a Location header");
+            // Support relative routing in internal redirects
+            if (!ABSOLUTE_URL_REGEX.test(location)) location = normalizeTo(new URL(request.url), matches.slice(0, matches.indexOf(match) + 1), basename, true, location);
+            else if (!isStaticRequest) {
+                // Strip off the protocol+origin for same-origin + same-basename absolute
+                // redirects. If this is a static request, we can let it go back to the
+                // browser as-is
+                let currentUrl = new URL(request.url);
+                let url = location.startsWith("//") ? new URL(currentUrl.protocol + location) : new URL(location);
+                let isSameBasename = stripBasename(url.pathname, basename) != null;
+                if (url.origin === currentUrl.origin && isSameBasename) location = url.pathname + url.search + url.hash;
+            }
+            // Don't process redirects in the router during static requests requests.
+            // Instead, throw the Response and let the server handle it with an HTTP
+            // redirect.  We also update the Location header in place in this flow so
+            // basename and relative routing is taken into account
+            if (isStaticRequest) {
+                result.headers.set("Location", location);
+                throw result;
+            }
+            return {
+                type: ResultType.redirect,
+                status,
+                location,
+                revalidate: result.headers.get("X-Remix-Revalidate") !== null
+            };
+        }
+        // For SSR single-route requests, we want to hand Responses back directly
+        // without unwrapping.  We do this with the QueryRouteResponse wrapper
+        // interface so we can know whether it was returned or thrown
+        if (isRouteRequest) // eslint-disable-next-line no-throw-literal
+        throw {
+            type: resultType || ResultType.data,
+            response: result
+        };
+        let data;
+        let contentType = result.headers.get("Content-Type");
+        // Check between word boundaries instead of startsWith() due to the last
+        // paragraph of https://httpwg.org/specs/rfc9110.html#field.content-type
+        if (contentType && /\bapplication\/json\b/.test(contentType)) data = await result.json();
+        else data = await result.text();
+        if (resultType === ResultType.error) return {
+            type: resultType,
+            error: new ErrorResponse(status, result.statusText, data),
+            headers: result.headers
+        };
+        return {
+            type: ResultType.data,
+            data,
+            statusCode: result.status,
+            headers: result.headers
+        };
+    }
+    if (resultType === ResultType.error) return {
+        type: resultType,
+        error: result
+    };
+    if (isDeferredData(result)) {
+        var _result$init, _result$init2;
+        return {
+            type: ResultType.deferred,
+            deferredData: result,
+            statusCode: (_result$init = result.init) == null ? void 0 : _result$init.status,
+            headers: ((_result$init2 = result.init) == null ? void 0 : _result$init2.headers) && new Headers(result.init.headers)
+        };
+    }
+    return {
+        type: ResultType.data,
+        data: result
+    };
+}
+// Utility method for creating the Request instances for loaders/actions during
+// client-side navigations and fetches.  During SSR we will always have a
+// Request instance from the static handler (query/queryRoute)
+function createClientSideRequest(history, location, signal, submission) {
+    let url = history.createURL(stripHashFromPath(location)).toString();
+    let init = {
+        signal
+    };
+    if (submission && isMutationMethod(submission.formMethod)) {
+        let { formMethod , formEncType , formData  } = submission;
+        // Didn't think we needed this but it turns out unlike other methods, patch
+        // won't be properly normalized to uppercase and results in a 405 error.
+        // See: https://fetch.spec.whatwg.org/#concept-method
+        init.method = formMethod.toUpperCase();
+        init.body = formEncType === "application/x-www-form-urlencoded" ? convertFormDataToSearchParams(formData) : formData;
+    }
+    // Content-Type is inferred (https://fetch.spec.whatwg.org/#dom-request)
+    return new Request(url, init);
+}
+function convertFormDataToSearchParams(formData) {
+    let searchParams = new URLSearchParams();
+    for (let [key, value] of formData.entries())// https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#converting-an-entry-list-to-a-list-of-name-value-pairs
+    searchParams.append(key, value instanceof File ? value.name : value);
+    return searchParams;
+}
+function processRouteLoaderData(matches, matchesToLoad, results, pendingError, activeDeferreds) {
+    // Fill in loaderData/errors from our loaders
+    let loaderData = {};
+    let errors = null;
+    let statusCode;
+    let foundError = false;
+    let loaderHeaders = {};
+    // Process loader results into state.loaderData/state.errors
+    results.forEach((result, index)=>{
+        let id = matchesToLoad[index].route.id;
+        invariant(!isRedirectResult(result), "Cannot handle redirect results in processLoaderData");
+        if (isErrorResult(result)) {
+            // Look upwards from the matched route for the closest ancestor
+            // error boundary, defaulting to the root match
+            let boundaryMatch = findNearestBoundary(matches, id);
+            let error = result.error;
+            // If we have a pending action error, we report it at the highest-route
+            // that throws a loader error, and then clear it out to indicate that
+            // it was consumed
+            if (pendingError) {
+                error = Object.values(pendingError)[0];
+                pendingError = undefined;
+            }
+            errors = errors || {};
+            // Prefer higher error values if lower errors bubble to the same boundary
+            if (errors[boundaryMatch.route.id] == null) errors[boundaryMatch.route.id] = error;
+            // Clear our any prior loaderData for the throwing route
+            loaderData[id] = undefined;
+            // Once we find our first (highest) error, we set the status code and
+            // prevent deeper status codes from overriding
+            if (!foundError) {
+                foundError = true;
+                statusCode = isRouteErrorResponse(result.error) ? result.error.status : 500;
+            }
+            if (result.headers) loaderHeaders[id] = result.headers;
+        } else {
+            if (isDeferredResult(result)) {
+                activeDeferreds.set(id, result.deferredData);
+                loaderData[id] = result.deferredData.data;
+            } else loaderData[id] = result.data;
+            // Error status codes always override success status codes, but if all
+            // loaders are successful we take the deepest status code.
+            if (result.statusCode != null && result.statusCode !== 200 && !foundError) statusCode = result.statusCode;
+            if (result.headers) loaderHeaders[id] = result.headers;
+        }
+    });
+    // If we didn't consume the pending action error (i.e., all loaders
+    // resolved), then consume it here.  Also clear out any loaderData for the
+    // throwing route
+    if (pendingError) {
+        errors = pendingError;
+        loaderData[Object.keys(pendingError)[0]] = undefined;
+    }
+    return {
+        loaderData,
+        errors,
+        statusCode: statusCode || 200,
+        loaderHeaders
+    };
+}
+function processLoaderData(state, matches, matchesToLoad, results, pendingError, revalidatingFetchers, fetcherResults, activeDeferreds) {
+    let { loaderData , errors  } = processRouteLoaderData(matches, matchesToLoad, results, pendingError, activeDeferreds);
+    // Process results from our revalidating fetchers
+    for(let index = 0; index < revalidatingFetchers.length; index++){
+        let { key , match , controller  } = revalidatingFetchers[index];
+        invariant(fetcherResults !== undefined && fetcherResults[index] !== undefined, "Did not find corresponding fetcher result");
+        let result = fetcherResults[index];
+        // Process fetcher non-redirect errors
+        if (controller && controller.signal.aborted) continue;
+        else if (isErrorResult(result)) {
+            let boundaryMatch = findNearestBoundary(state.matches, match == null ? void 0 : match.route.id);
+            if (!(errors && errors[boundaryMatch.route.id])) errors = _extends({}, errors, {
+                [boundaryMatch.route.id]: result.error
+            });
+            state.fetchers.delete(key);
+        } else if (isRedirectResult(result)) // Should never get here, redirects should get processed above, but we
+        // keep this to type narrow to a success result in the else
+        invariant(false, "Unhandled fetcher revalidation redirect");
+        else if (isDeferredResult(result)) // Should never get here, deferred data should be awaited for fetchers
+        // in resolveDeferredResults
+        invariant(false, "Unhandled fetcher deferred data");
+        else {
+            let doneFetcher = {
+                state: "idle",
+                data: result.data,
+                formMethod: undefined,
+                formAction: undefined,
+                formEncType: undefined,
+                formData: undefined,
+                " _hasFetcherDoneAnything ": true
+            };
+            state.fetchers.set(key, doneFetcher);
+        }
+    }
+    return {
+        loaderData,
+        errors
+    };
+}
+function mergeLoaderData(loaderData, newLoaderData, matches, errors) {
+    let mergedLoaderData = _extends({}, newLoaderData);
+    for (let match of matches){
+        let id = match.route.id;
+        if (newLoaderData.hasOwnProperty(id)) {
+            if (newLoaderData[id] !== undefined) mergedLoaderData[id] = newLoaderData[id];
+        } else if (loaderData[id] !== undefined && match.route.loader) // Preserve existing keys not included in newLoaderData and where a loader
+        // wasn't removed by HMR
+        mergedLoaderData[id] = loaderData[id];
+        if (errors && errors.hasOwnProperty(id)) break;
+    }
+    return mergedLoaderData;
+}
+// Find the nearest error boundary, looking upwards from the leaf route (or the
+// route specified by routeId) for the closest ancestor error boundary,
+// defaulting to the root match
+function findNearestBoundary(matches, routeId) {
+    let eligibleMatches = routeId ? matches.slice(0, matches.findIndex((m)=>m.route.id === routeId) + 1) : [
+        ...matches
+    ];
+    return eligibleMatches.reverse().find((m)=>m.route.hasErrorBoundary === true) || matches[0];
+}
+function getShortCircuitMatches(routes) {
+    // Prefer a root layout route if present, otherwise shim in a route object
+    let route = routes.find((r)=>r.index || !r.path || r.path === "/") || {
+        id: "__shim-error-route__"
+    };
+    return {
+        matches: [
+            {
+                params: {},
+                pathname: "",
+                pathnameBase: "",
+                route
+            }
+        ],
+        route
+    };
+}
+function getInternalRouterError(status, _temp4) {
+    let { pathname , routeId , method , type  } = _temp4 === void 0 ? {} : _temp4;
+    let statusText = "Unknown Server Error";
+    let errorMessage = "Unknown @remix-run/router error";
+    if (status === 400) {
+        statusText = "Bad Request";
+        if (method && pathname && routeId) errorMessage = "You made a " + method + ' request to "' + pathname + '" but ' + ('did not provide a `loader` for route "' + routeId + '", ') + "so there is no way to handle the request.";
+        else if (type === "defer-action") errorMessage = "defer() is not supported in actions";
+    } else if (status === 403) {
+        statusText = "Forbidden";
+        errorMessage = 'Route "' + routeId + '" does not match URL "' + pathname + '"';
+    } else if (status === 404) {
+        statusText = "Not Found";
+        errorMessage = 'No route matches URL "' + pathname + '"';
+    } else if (status === 405) {
+        statusText = "Method Not Allowed";
+        if (method && pathname && routeId) errorMessage = "You made a " + method.toUpperCase() + ' request to "' + pathname + '" but ' + ('did not provide an `action` for route "' + routeId + '", ') + "so there is no way to handle the request.";
+        else if (method) errorMessage = 'Invalid request method "' + method.toUpperCase() + '"';
+    }
+    return new ErrorResponse(status || 500, statusText, new Error(errorMessage), true);
+}
+// Find any returned redirect errors, starting from the lowest match
+function findRedirect(results) {
+    for(let i = results.length - 1; i >= 0; i--){
+        let result = results[i];
+        if (isRedirectResult(result)) return result;
+    }
+}
+function stripHashFromPath(path) {
+    let parsedPath = typeof path === "string" ? parsePath(path) : path;
+    return createPath(_extends({}, parsedPath, {
+        hash: ""
+    }));
+}
+function isHashChangeOnly(a, b) {
+    if (a.pathname !== b.pathname || a.search !== b.search) return false;
+    if (a.hash === "") // /page -> /page#hash
+    return b.hash !== "";
+    else if (a.hash === b.hash) // /page#hash -> /page#hash
+    return true;
+    else if (b.hash !== "") // /page#hash -> /page#other
+    return true;
+    // If the hash is removed the browser will re-perform a request to the server
+    // /page#hash -> /page
+    return false;
+}
+function isDeferredResult(result) {
+    return result.type === ResultType.deferred;
+}
+function isErrorResult(result) {
+    return result.type === ResultType.error;
+}
+function isRedirectResult(result) {
+    return (result && result.type) === ResultType.redirect;
+}
+function isDeferredData(value) {
+    let deferred = value;
+    return deferred && typeof deferred === "object" && typeof deferred.data === "object" && typeof deferred.subscribe === "function" && typeof deferred.cancel === "function" && typeof deferred.resolveData === "function";
+}
+function isResponse(value) {
+    return value != null && typeof value.status === "number" && typeof value.statusText === "string" && typeof value.headers === "object" && typeof value.body !== "undefined";
+}
+function isRedirectResponse(result) {
+    if (!isResponse(result)) return false;
+    let status = result.status;
+    let location = result.headers.get("Location");
+    return status >= 300 && status <= 399 && location != null;
+}
+function isQueryRouteResponse(obj) {
+    return obj && isResponse(obj.response) && (obj.type === ResultType.data || ResultType.error);
+}
+function isValidMethod(method) {
+    return validRequestMethods.has(method.toLowerCase());
+}
+function isMutationMethod(method) {
+    return validMutationMethods.has(method.toLowerCase());
+}
+async function resolveDeferredResults(currentMatches, matchesToLoad, results, signals, isFetcher, currentLoaderData) {
+    for(let index = 0; index < results.length; index++){
+        let result = results[index];
+        let match = matchesToLoad[index];
+        // If we don't have a match, then we can have a deferred result to do
+        // anything with.  This is for revalidating fetchers where the route was
+        // removed during HMR
+        if (!match) continue;
+        let currentMatch = currentMatches.find((m)=>m.route.id === match.route.id);
+        let isRevalidatingLoader = currentMatch != null && !isNewRouteInstance(currentMatch, match) && (currentLoaderData && currentLoaderData[match.route.id]) !== undefined;
+        if (isDeferredResult(result) && (isFetcher || isRevalidatingLoader)) {
+            // Note: we do not have to touch activeDeferreds here since we race them
+            // against the signal in resolveDeferredData and they'll get aborted
+            // there if needed
+            let signal = signals[index];
+            invariant(signal, "Expected an AbortSignal for revalidating fetcher deferred result");
+            await resolveDeferredData(result, signal, isFetcher).then((result)=>{
+                if (result) results[index] = result || results[index];
+            });
+        }
+    }
+}
+async function resolveDeferredData(result, signal, unwrap) {
+    if (unwrap === void 0) unwrap = false;
+    let aborted = await result.deferredData.resolveData(signal);
+    if (aborted) return;
+    if (unwrap) try {
+        return {
+            type: ResultType.data,
+            data: result.deferredData.unwrappedData
+        };
+    } catch (e) {
+        // Handle any TrackedPromise._error values encountered while unwrapping
+        return {
+            type: ResultType.error,
+            error: e
+        };
+    }
+    return {
+        type: ResultType.data,
+        data: result.deferredData.data
+    };
+}
+function hasNakedIndexQuery(search) {
+    return new URLSearchParams(search).getAll("index").some((v)=>v === "");
+}
+// Note: This should match the format exported by useMatches, so if you change
+// this please also change that :)  Eventually we'll DRY this up
+function createUseMatchesMatch(match, loaderData) {
+    let { route , pathname , params  } = match;
+    return {
+        id: route.id,
+        pathname,
+        params,
+        data: loaderData[route.id],
+        handle: route.handle
+    };
+}
+function getTargetMatch(matches, location) {
+    let search = typeof location === "string" ? parsePath(location).search : location.search;
+    if (matches[matches.length - 1].route.index && hasNakedIndexQuery(search || "")) // Return the leaf index route when index is present
+    return matches[matches.length - 1];
+    // Otherwise grab the deepest "path contributing" match (ignoring index and
+    // pathless layout routes)
+    let pathMatches = getPathContributingMatches(matches);
+    return pathMatches[pathMatches.length - 1];
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"9FYyo"}],"ggaUx":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$e9f6 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -40862,189 +46523,236 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "MovieView", ()=>MovieView);
 var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
 var _propTypes = require("prop-types");
 var _propTypesDefault = parcelHelpers.interopDefault(_propTypes);
-const MovieView = ({ movie , onBackClick  })=>{
+var _reactRouterDom = require("react-router-dom");
+var _reactBootstrap = require("react-bootstrap");
+var _s = $RefreshSig$();
+const MovieView = ()=>{
+    _s();
+    const { movieTitle  } = (0, _reactRouterDom.useParams)();
+    const [movie, setMovie] = (0, _reactDefault.default).useState(undefined);
+    (0, _reactDefault.default).useEffect(()=>{
+        const storedToken = localStorage.getItem("token");
+        if (!storedToken) return;
+        fetch(`https://cinedex.herokuapp.com/movies/${movieTitle}`, {
+            headers: {
+                Authorization: `Bearer ${storedToken}`
+            }
+        }).then((response)=>response.json()).then((data)=>{
+            setMovie(data);
+        });
+    }, [
+        movieTitle
+    ]);
+    if (!movie) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+        children: "Loading..."
+    }, void 0, false, {
+        fileName: "src/components/movie-view/movie-view.jsx",
+        lineNumber: 27,
+        columnNumber: 12
+    }, undefined);
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
         children: [
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                 children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("img", {
-                    className: "w-100",
+                    className: "w-50",
+                    style: {
+                        alignItem: "center"
+                    },
                     src: movie.ImageURL
                 }, void 0, false, {
                     fileName: "src/components/movie-view/movie-view.jsx",
-                    lineNumber: 6,
+                    lineNumber: 33,
                     columnNumber: 9
                 }, undefined)
             }, void 0, false, {
                 fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 5,
+                lineNumber: 32,
                 columnNumber: 7
             }, undefined),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                 children: [
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                        style: {
+                            color: "#c5c6c7",
+                            fontSize: "18px"
+                        },
                         children: "Title: "
                     }, void 0, false, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 9,
+                        lineNumber: 40,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                        style: {
+                            color: "#c5c6c7",
+                            fontSize: "18px"
+                        },
                         children: movie.Title
                     }, void 0, false, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 10,
+                        lineNumber: 41,
                         columnNumber: 9
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 8,
+                lineNumber: 39,
                 columnNumber: 7
             }, undefined),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                 children: [
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                        style: {
+                            color: "#c5c6c7",
+                            fontSize: "18px"
+                        },
                         children: "Released: "
                     }, void 0, false, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 13,
+                        lineNumber: 46,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                        style: {
+                            color: "#c5c6c7",
+                            fontSize: "18px"
+                        },
                         children: movie.Released
                     }, void 0, false, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 14,
+                        lineNumber: 47,
                         columnNumber: 9
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 12,
+                lineNumber: 45,
                 columnNumber: 7
             }, undefined),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                 children: [
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                        style: {
+                            color: "#c5c6c7",
+                            fontSize: "18px"
+                        },
                         children: "Description: "
                     }, void 0, false, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 17,
+                        lineNumber: 50,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                        style: {
+                            color: "#c5c6c7",
+                            fontSize: "18px"
+                        },
                         children: movie.Description
                     }, void 0, false, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 18,
+                        lineNumber: 51,
                         columnNumber: 9
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 16,
+                lineNumber: 49,
                 columnNumber: 7
             }, undefined),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                 children: [
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                        style: {
+                            color: "#c5c6c7",
+                            fontSize: "18px"
+                        },
                         children: "Genre: "
                     }, void 0, false, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 21,
+                        lineNumber: 54,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                        style: {
+                            color: "#c5c6c7",
+                            fontSize: "18px"
+                        },
                         children: movie.Genre.Name
                     }, void 0, false, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 22,
+                        lineNumber: 55,
                         columnNumber: 9
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 20,
+                lineNumber: 53,
                 columnNumber: 7
             }, undefined),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                 children: [
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                        style: {
+                            color: "#c5c6c7",
+                            fontSize: "18px"
+                        },
                         children: "Director: "
                     }, void 0, false, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 25,
+                        lineNumber: 58,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                        style: {
+                            color: "#c5c6c7",
+                            fontSize: "18px"
+                        },
                         children: movie.Director.Name
                     }, void 0, false, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 26,
+                        lineNumber: 59,
                         columnNumber: 9
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 24,
+                lineNumber: 57,
                 columnNumber: 7
             }, undefined),
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                children: [
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-                        children: "Featured: "
-                    }, void 0, false, {
-                        fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 29,
-                        columnNumber: 9
-                    }, undefined),
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-                        children: movie.Featured
-                    }, void 0, false, {
-                        fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 30,
-                        columnNumber: 9
-                    }, undefined)
-                ]
-            }, void 0, true, {
-                fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 28,
-                columnNumber: 7
-            }, undefined),
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
-                onClick: onBackClick,
-                children: "Back"
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Link), {
+                to: `/`,
+                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
+                    className: "mt-4",
+                    variant: "primary",
+                    children: "Back"
+                }, void 0, false, {
+                    fileName: "src/components/movie-view/movie-view.jsx",
+                    lineNumber: 62,
+                    columnNumber: 9
+                }, undefined)
             }, void 0, false, {
                 fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 33,
+                lineNumber: 61,
                 columnNumber: 7
             }, undefined)
         ]
     }, void 0, true, {
         fileName: "src/components/movie-view/movie-view.jsx",
-        lineNumber: 4,
+        lineNumber: 31,
         columnNumber: 5
     }, undefined);
 };
+_s(MovieView, "pk5zF1vEBo3Y7LwC2Ztu1CB+1fA=", false, function() {
+    return [
+        (0, _reactRouterDom.useParams)
+    ];
+});
 _c = MovieView;
-MovieView.propTypes = {
-    movie: (0, _propTypesDefault.default).shape({
-        ImageURL: (0, _propTypesDefault.default).string.isRequired,
-        Title: (0, _propTypesDefault.default).string.isRequired,
-        Released: (0, _propTypesDefault.default).string.isRequired,
-        Description: (0, _propTypesDefault.default).string.isRequired,
-        Genre: (0, _propTypesDefault.default).shape({
-            Name: (0, _propTypesDefault.default).string.isRequired
-        }),
-        Director: (0, _propTypesDefault.default).shape({
-            Name: (0, _propTypesDefault.default).string.isRequired
-        }),
-        Featured: (0, _propTypesDefault.default).string.isRequired
-    }).isRequired,
-    onBackClick: (0, _propTypesDefault.default).func.isRequired
-};
+MovieView.propTypes = {};
 var _c;
 $RefreshReg$(_c, "MovieView");
 
@@ -41053,7 +46761,7 @@ $RefreshReg$(_c, "MovieView");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","prop-types":"7wKI2","@parcel/transformer-js/src/esmodule-helpers.js":"9FYyo","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"9YtA0":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","prop-types":"7wKI2","@parcel/transformer-js/src/esmodule-helpers.js":"9FYyo","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","react":"21dqq","react-router-dom":"9xmpe","react-bootstrap":"3AD9A"}],"9YtA0":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$9fee = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -41066,6 +46774,7 @@ parcelHelpers.export(exports, "LoginView", ()=>LoginView);
 var _jsxDevRuntime = require("react/jsx-dev-runtime");
 var _react = require("react");
 var _reactBootstrap = require("react-bootstrap");
+var _luxon = require("luxon");
 var _s = $RefreshSig$();
 const LoginView = ({ onLoggedIn  })=>{
     _s();
@@ -41086,9 +46795,13 @@ const LoginView = ({ onLoggedIn  })=>{
         }).then((response)=>response.json()).then((data)=>{
             console.log("Login response: ", data);
             if (data.user) {
-                localStorage.setItem("user", JSON.stringify(data.user));
+                const user = {
+                    ...data.user,
+                    Birthday: (0, _luxon.DateTime).fromISO(data.user.Birthday).toFormat("yyyy-MM-dd")
+                };
+                localStorage.setItem("user", JSON.stringify(user));
                 localStorage.setItem("token", data.token);
-                onLoggedIn(data.user, data.token);
+                onLoggedIn(user, data.token);
             } else alert("No such user");
         }).catch((e)=>{
             alert("Something went wrong");
@@ -41100,12 +46813,15 @@ const LoginView = ({ onLoggedIn  })=>{
                 children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.CardGroup), {
                     children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card), {
                         children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Body, {
+                            style: {
+                                color: "#C5C6C7"
+                            },
                             children: [
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Title, {
                                     children: "Login"
                                 }, void 0, false, {
                                     fileName: "src/components/login-view/login-view.jsx",
-                                    lineNumber: 49,
+                                    lineNumber: 56,
                                     columnNumber: 17
                                 }, undefined),
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("form", {
@@ -41118,10 +46834,13 @@ const LoginView = ({ onLoggedIn  })=>{
                                                     children: "Username:"
                                                 }, void 0, false, {
                                                     fileName: "src/components/login-view/login-view.jsx",
-                                                    lineNumber: 52,
+                                                    lineNumber: 59,
                                                     columnNumber: 21
                                                 }, undefined),
                                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Control, {
+                                                    style: {
+                                                        color: "#C5C6C7"
+                                                    },
                                                     type: "text",
                                                     value: username,
                                                     onChange: (e)=>setUsername(e.target.value),
@@ -41129,13 +46848,13 @@ const LoginView = ({ onLoggedIn  })=>{
                                                     minLength: "3"
                                                 }, void 0, false, {
                                                     fileName: "src/components/login-view/login-view.jsx",
-                                                    lineNumber: 53,
+                                                    lineNumber: 60,
                                                     columnNumber: 21
                                                 }, undefined)
                                             ]
                                         }, void 0, true, {
                                             fileName: "src/components/login-view/login-view.jsx",
-                                            lineNumber: 51,
+                                            lineNumber: 58,
                                             columnNumber: 19
                                         }, undefined),
                                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Group, {
@@ -41145,69 +46864,73 @@ const LoginView = ({ onLoggedIn  })=>{
                                                     children: "Password:"
                                                 }, void 0, false, {
                                                     fileName: "src/components/login-view/login-view.jsx",
-                                                    lineNumber: 63,
+                                                    lineNumber: 71,
                                                     columnNumber: 21
                                                 }, undefined),
                                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Control, {
+                                                    style: {
+                                                        color: "#C5C6C7"
+                                                    },
                                                     type: "password",
                                                     value: password,
                                                     onChange: (e)=>setPassword(e.target.value),
                                                     required: true
                                                 }, void 0, false, {
                                                     fileName: "src/components/login-view/login-view.jsx",
-                                                    lineNumber: 64,
+                                                    lineNumber: 72,
                                                     columnNumber: 21
                                                 }, undefined)
                                             ]
                                         }, void 0, true, {
                                             fileName: "src/components/login-view/login-view.jsx",
-                                            lineNumber: 62,
+                                            lineNumber: 70,
                                             columnNumber: 19
                                         }, undefined),
                                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
+                                            className: "mt-4",
                                             variant: "primary",
                                             type: "submit",
                                             children: "Submit"
                                         }, void 0, false, {
                                             fileName: "src/components/login-view/login-view.jsx",
-                                            lineNumber: 71,
+                                            lineNumber: 80,
                                             columnNumber: 19
                                         }, undefined)
                                     ]
                                 }, void 0, true, {
                                     fileName: "src/components/login-view/login-view.jsx",
-                                    lineNumber: 50,
+                                    lineNumber: 57,
                                     columnNumber: 17
                                 }, undefined)
                             ]
                         }, void 0, true, {
                             fileName: "src/components/login-view/login-view.jsx",
-                            lineNumber: 48,
+                            lineNumber: 55,
                             columnNumber: 15
                         }, undefined)
                     }, void 0, false, {
                         fileName: "src/components/login-view/login-view.jsx",
-                        lineNumber: 47,
+                        lineNumber: 54,
                         columnNumber: 13
                     }, undefined)
                 }, void 0, false, {
                     fileName: "src/components/login-view/login-view.jsx",
-                    lineNumber: 46,
+                    lineNumber: 53,
                     columnNumber: 11
                 }, undefined)
             }, void 0, false, {
                 fileName: "src/components/login-view/login-view.jsx",
-                lineNumber: 45,
+                lineNumber: 52,
                 columnNumber: 9
             }, undefined)
         }, void 0, false, {
             fileName: "src/components/login-view/login-view.jsx",
-            lineNumber: 44,
+            lineNumber: 51,
             columnNumber: 7
         }, undefined)
     }, void 0, false, {
         fileName: "src/components/login-view/login-view.jsx",
-        lineNumber: 43,
+        lineNumber: 50,
         columnNumber: 5
     }, undefined);
 };
@@ -41221,7 +46944,6440 @@ $RefreshReg$(_c, "LoginView");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-bootstrap":"3AD9A","@parcel/transformer-js/src/esmodule-helpers.js":"9FYyo","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"4OGiN":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-bootstrap":"3AD9A","@parcel/transformer-js/src/esmodule-helpers.js":"9FYyo","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","luxon":"dpK6X"}],"dpK6X":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _defineProperties(target, props) {
+    for(var i = 0; i < props.length; i++){
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor);
+    }
+}
+function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties(Constructor, staticProps);
+    Object.defineProperty(Constructor, "prototype", {
+        writable: false
+    });
+    return Constructor;
+}
+function _extends() {
+    _extends = Object.assign ? Object.assign.bind() : function(target) {
+        for(var i = 1; i < arguments.length; i++){
+            var source = arguments[i];
+            for(var key in source)if (Object.prototype.hasOwnProperty.call(source, key)) target[key] = source[key];
+        }
+        return target;
+    };
+    return _extends.apply(this, arguments);
+}
+function _inheritsLoose(subClass, superClass) {
+    subClass.prototype = Object.create(superClass.prototype);
+    subClass.prototype.constructor = subClass;
+    _setPrototypeOf(subClass, superClass);
+}
+function _getPrototypeOf(o) {
+    _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) {
+        return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf(o);
+}
+function _setPrototypeOf(o, p) {
+    _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) {
+        o.__proto__ = p;
+        return o;
+    };
+    return _setPrototypeOf(o, p);
+}
+function _isNativeReflectConstruct() {
+    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+    if (Reflect.construct.sham) return false;
+    if (typeof Proxy === "function") return true;
+    try {
+        Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function() {}));
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+function _construct(Parent, args, Class) {
+    if (_isNativeReflectConstruct()) _construct = Reflect.construct.bind();
+    else _construct = function _construct(Parent, args, Class) {
+        var a = [
+            null
+        ];
+        a.push.apply(a, args);
+        var Constructor = Function.bind.apply(Parent, a);
+        var instance = new Constructor();
+        if (Class) _setPrototypeOf(instance, Class.prototype);
+        return instance;
+    };
+    return _construct.apply(null, arguments);
+}
+function _isNativeFunction(fn) {
+    return Function.toString.call(fn).indexOf("[native code]") !== -1;
+}
+function _wrapNativeSuper(Class) {
+    var _cache = typeof Map === "function" ? new Map() : undefined;
+    _wrapNativeSuper = function _wrapNativeSuper(Class) {
+        if (Class === null || !_isNativeFunction(Class)) return Class;
+        if (typeof Class !== "function") throw new TypeError("Super expression must either be null or a function");
+        if (typeof _cache !== "undefined") {
+            if (_cache.has(Class)) return _cache.get(Class);
+            _cache.set(Class, Wrapper);
+        }
+        function Wrapper() {
+            return _construct(Class, arguments, _getPrototypeOf(this).constructor);
+        }
+        Wrapper.prototype = Object.create(Class.prototype, {
+            constructor: {
+                value: Wrapper,
+                enumerable: false,
+                writable: true,
+                configurable: true
+            }
+        });
+        return _setPrototypeOf(Wrapper, Class);
+    };
+    return _wrapNativeSuper(Class);
+}
+function _objectWithoutPropertiesLoose(source, excluded) {
+    if (source == null) return {};
+    var target = {};
+    var sourceKeys = Object.keys(source);
+    var key, i;
+    for(i = 0; i < sourceKeys.length; i++){
+        key = sourceKeys[i];
+        if (excluded.indexOf(key) >= 0) continue;
+        target[key] = source[key];
+    }
+    return target;
+}
+function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+}
+function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+    for(var i = 0, arr2 = new Array(len); i < len; i++)arr2[i] = arr[i];
+    return arr2;
+}
+function _createForOfIteratorHelperLoose(o, allowArrayLike) {
+    var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
+    if (it) return (it = it.call(o)).next.bind(it);
+    if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+        if (it) o = it;
+        var i = 0;
+        return function() {
+            if (i >= o.length) return {
+                done: true
+            };
+            return {
+                done: false,
+                value: o[i++]
+            };
+        };
+    }
+    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+}
+function _toPrimitive(input, hint) {
+    if (typeof input !== "object" || input === null) return input;
+    var prim = input[Symbol.toPrimitive];
+    if (prim !== undefined) {
+        var res = prim.call(input, hint || "default");
+        if (typeof res !== "object") return res;
+        throw new TypeError("@@toPrimitive must return a primitive value.");
+    }
+    return (hint === "string" ? String : Number)(input);
+}
+function _toPropertyKey(arg) {
+    var key = _toPrimitive(arg, "string");
+    return typeof key === "symbol" ? key : String(key);
+}
+// these aren't really private, but nor are they really useful to document
+/**
+ * @private
+ */ var LuxonError = /*#__PURE__*/ function(_Error) {
+    _inheritsLoose(LuxonError, _Error);
+    function LuxonError() {
+        return _Error.apply(this, arguments) || this;
+    }
+    return LuxonError;
+}(/*#__PURE__*/ _wrapNativeSuper(Error));
+/**
+ * @private
+ */ var InvalidDateTimeError = /*#__PURE__*/ function(_LuxonError) {
+    _inheritsLoose(InvalidDateTimeError, _LuxonError);
+    function InvalidDateTimeError(reason) {
+        return _LuxonError.call(this, "Invalid DateTime: " + reason.toMessage()) || this;
+    }
+    return InvalidDateTimeError;
+}(LuxonError);
+/**
+ * @private
+ */ var InvalidIntervalError = /*#__PURE__*/ function(_LuxonError2) {
+    _inheritsLoose(InvalidIntervalError, _LuxonError2);
+    function InvalidIntervalError(reason) {
+        return _LuxonError2.call(this, "Invalid Interval: " + reason.toMessage()) || this;
+    }
+    return InvalidIntervalError;
+}(LuxonError);
+/**
+ * @private
+ */ var InvalidDurationError = /*#__PURE__*/ function(_LuxonError3) {
+    _inheritsLoose(InvalidDurationError, _LuxonError3);
+    function InvalidDurationError(reason) {
+        return _LuxonError3.call(this, "Invalid Duration: " + reason.toMessage()) || this;
+    }
+    return InvalidDurationError;
+}(LuxonError);
+/**
+ * @private
+ */ var ConflictingSpecificationError = /*#__PURE__*/ function(_LuxonError4) {
+    _inheritsLoose(ConflictingSpecificationError, _LuxonError4);
+    function ConflictingSpecificationError() {
+        return _LuxonError4.apply(this, arguments) || this;
+    }
+    return ConflictingSpecificationError;
+}(LuxonError);
+/**
+ * @private
+ */ var InvalidUnitError = /*#__PURE__*/ function(_LuxonError5) {
+    _inheritsLoose(InvalidUnitError, _LuxonError5);
+    function InvalidUnitError(unit) {
+        return _LuxonError5.call(this, "Invalid unit " + unit) || this;
+    }
+    return InvalidUnitError;
+}(LuxonError);
+/**
+ * @private
+ */ var InvalidArgumentError = /*#__PURE__*/ function(_LuxonError6) {
+    _inheritsLoose(InvalidArgumentError, _LuxonError6);
+    function InvalidArgumentError() {
+        return _LuxonError6.apply(this, arguments) || this;
+    }
+    return InvalidArgumentError;
+}(LuxonError);
+/**
+ * @private
+ */ var ZoneIsAbstractError = /*#__PURE__*/ function(_LuxonError7) {
+    _inheritsLoose(ZoneIsAbstractError, _LuxonError7);
+    function ZoneIsAbstractError() {
+        return _LuxonError7.call(this, "Zone is an abstract class") || this;
+    }
+    return ZoneIsAbstractError;
+}(LuxonError);
+/**
+ * @private
+ */ var n = "numeric", s = "short", l = "long";
+var DATE_SHORT = {
+    year: n,
+    month: n,
+    day: n
+};
+var DATE_MED = {
+    year: n,
+    month: s,
+    day: n
+};
+var DATE_MED_WITH_WEEKDAY = {
+    year: n,
+    month: s,
+    day: n,
+    weekday: s
+};
+var DATE_FULL = {
+    year: n,
+    month: l,
+    day: n
+};
+var DATE_HUGE = {
+    year: n,
+    month: l,
+    day: n,
+    weekday: l
+};
+var TIME_SIMPLE = {
+    hour: n,
+    minute: n
+};
+var TIME_WITH_SECONDS = {
+    hour: n,
+    minute: n,
+    second: n
+};
+var TIME_WITH_SHORT_OFFSET = {
+    hour: n,
+    minute: n,
+    second: n,
+    timeZoneName: s
+};
+var TIME_WITH_LONG_OFFSET = {
+    hour: n,
+    minute: n,
+    second: n,
+    timeZoneName: l
+};
+var TIME_24_SIMPLE = {
+    hour: n,
+    minute: n,
+    hourCycle: "h23"
+};
+var TIME_24_WITH_SECONDS = {
+    hour: n,
+    minute: n,
+    second: n,
+    hourCycle: "h23"
+};
+var TIME_24_WITH_SHORT_OFFSET = {
+    hour: n,
+    minute: n,
+    second: n,
+    hourCycle: "h23",
+    timeZoneName: s
+};
+var TIME_24_WITH_LONG_OFFSET = {
+    hour: n,
+    minute: n,
+    second: n,
+    hourCycle: "h23",
+    timeZoneName: l
+};
+var DATETIME_SHORT = {
+    year: n,
+    month: n,
+    day: n,
+    hour: n,
+    minute: n
+};
+var DATETIME_SHORT_WITH_SECONDS = {
+    year: n,
+    month: n,
+    day: n,
+    hour: n,
+    minute: n,
+    second: n
+};
+var DATETIME_MED = {
+    year: n,
+    month: s,
+    day: n,
+    hour: n,
+    minute: n
+};
+var DATETIME_MED_WITH_SECONDS = {
+    year: n,
+    month: s,
+    day: n,
+    hour: n,
+    minute: n,
+    second: n
+};
+var DATETIME_MED_WITH_WEEKDAY = {
+    year: n,
+    month: s,
+    day: n,
+    weekday: s,
+    hour: n,
+    minute: n
+};
+var DATETIME_FULL = {
+    year: n,
+    month: l,
+    day: n,
+    hour: n,
+    minute: n,
+    timeZoneName: s
+};
+var DATETIME_FULL_WITH_SECONDS = {
+    year: n,
+    month: l,
+    day: n,
+    hour: n,
+    minute: n,
+    second: n,
+    timeZoneName: s
+};
+var DATETIME_HUGE = {
+    year: n,
+    month: l,
+    day: n,
+    weekday: l,
+    hour: n,
+    minute: n,
+    timeZoneName: l
+};
+var DATETIME_HUGE_WITH_SECONDS = {
+    year: n,
+    month: l,
+    day: n,
+    weekday: l,
+    hour: n,
+    minute: n,
+    second: n,
+    timeZoneName: l
+};
+/**
+ * @interface
+ */ var Zone = /*#__PURE__*/ function() {
+    function Zone() {}
+    var _proto = Zone.prototype;
+    /**
+   * Returns the offset's common name (such as EST) at the specified timestamp
+   * @abstract
+   * @param {number} ts - Epoch milliseconds for which to get the name
+   * @param {Object} opts - Options to affect the format
+   * @param {string} opts.format - What style of offset to return. Accepts 'long' or 'short'.
+   * @param {string} opts.locale - What locale to return the offset name in.
+   * @return {string}
+   */ _proto.offsetName = function offsetName(ts, opts) {
+        throw new ZoneIsAbstractError();
+    } /**
+   * Returns the offset's value as a string
+   * @abstract
+   * @param {number} ts - Epoch milliseconds for which to get the offset
+   * @param {string} format - What style of offset to return.
+   *                          Accepts 'narrow', 'short', or 'techie'. Returning '+6', '+06:00', or '+0600' respectively
+   * @return {string}
+   */ ;
+    _proto.formatOffset = function formatOffset(ts, format) {
+        throw new ZoneIsAbstractError();
+    } /**
+   * Return the offset in minutes for this zone at the specified timestamp.
+   * @abstract
+   * @param {number} ts - Epoch milliseconds for which to compute the offset
+   * @return {number}
+   */ ;
+    _proto.offset = function offset(ts) {
+        throw new ZoneIsAbstractError();
+    } /**
+   * Return whether this Zone is equal to another zone
+   * @abstract
+   * @param {Zone} otherZone - the zone to compare
+   * @return {boolean}
+   */ ;
+    _proto.equals = function equals(otherZone) {
+        throw new ZoneIsAbstractError();
+    } /**
+   * Return whether this Zone is valid.
+   * @abstract
+   * @type {boolean}
+   */ ;
+    _createClass(Zone, [
+        {
+            key: "type",
+            get: /**
+     * The type of zone
+     * @abstract
+     * @type {string}
+     */ function get() {
+                throw new ZoneIsAbstractError();
+            }
+        },
+        {
+            key: "name",
+            get: function get() {
+                throw new ZoneIsAbstractError();
+            }
+        },
+        {
+            key: "ianaName",
+            get: function get() {
+                return this.name;
+            }
+        },
+        {
+            key: "isUniversal",
+            get: function get() {
+                throw new ZoneIsAbstractError();
+            }
+        },
+        {
+            key: "isValid",
+            get: function get() {
+                throw new ZoneIsAbstractError();
+            }
+        }
+    ]);
+    return Zone;
+}();
+var singleton$1 = null;
+/**
+ * Represents the local zone for this JavaScript environment.
+ * @implements {Zone}
+ */ var SystemZone = /*#__PURE__*/ function(_Zone) {
+    _inheritsLoose(SystemZone, _Zone);
+    function SystemZone() {
+        return _Zone.apply(this, arguments) || this;
+    }
+    var _proto = SystemZone.prototype;
+    /** @override **/ _proto.offsetName = function offsetName(ts, _ref) {
+        var format = _ref.format, locale = _ref.locale;
+        return parseZoneInfo(ts, format, locale);
+    } /** @override **/ ;
+    _proto.formatOffset = function formatOffset$1(ts, format) {
+        return formatOffset(this.offset(ts), format);
+    } /** @override **/ ;
+    _proto.offset = function offset(ts) {
+        return -new Date(ts).getTimezoneOffset();
+    } /** @override **/ ;
+    _proto.equals = function equals(otherZone) {
+        return otherZone.type === "system";
+    } /** @override **/ ;
+    _createClass(SystemZone, [
+        {
+            key: "type",
+            get: /** @override **/ function get() {
+                return "system";
+            }
+        },
+        {
+            key: "name",
+            get: function get() {
+                return new Intl.DateTimeFormat().resolvedOptions().timeZone;
+            }
+        },
+        {
+            key: "isUniversal",
+            get: function get() {
+                return false;
+            }
+        },
+        {
+            key: "isValid",
+            get: function get() {
+                return true;
+            }
+        }
+    ], [
+        {
+            key: "instance",
+            get: /**
+     * Get a singleton instance of the local zone
+     * @return {SystemZone}
+     */ function get() {
+                if (singleton$1 === null) singleton$1 = new SystemZone();
+                return singleton$1;
+            }
+        }
+    ]);
+    return SystemZone;
+}(Zone);
+var dtfCache = {};
+function makeDTF(zone) {
+    if (!dtfCache[zone]) dtfCache[zone] = new Intl.DateTimeFormat("en-US", {
+        hour12: false,
+        timeZone: zone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        era: "short"
+    });
+    return dtfCache[zone];
+}
+var typeToPos = {
+    year: 0,
+    month: 1,
+    day: 2,
+    era: 3,
+    hour: 4,
+    minute: 5,
+    second: 6
+};
+function hackyOffset(dtf, date) {
+    var formatted = dtf.format(date).replace(/\u200E/g, ""), parsed = /(\d+)\/(\d+)\/(\d+) (AD|BC),? (\d+):(\d+):(\d+)/.exec(formatted), fMonth = parsed[1], fDay = parsed[2], fYear = parsed[3], fadOrBc = parsed[4], fHour = parsed[5], fMinute = parsed[6], fSecond = parsed[7];
+    return [
+        fYear,
+        fMonth,
+        fDay,
+        fadOrBc,
+        fHour,
+        fMinute,
+        fSecond
+    ];
+}
+function partsOffset(dtf, date) {
+    var formatted = dtf.formatToParts(date);
+    var filled = [];
+    for(var i = 0; i < formatted.length; i++){
+        var _formatted$i = formatted[i], type = _formatted$i.type, value = _formatted$i.value;
+        var pos = typeToPos[type];
+        if (type === "era") filled[pos] = value;
+        else if (!isUndefined(pos)) filled[pos] = parseInt(value, 10);
+    }
+    return filled;
+}
+var ianaZoneCache = {};
+/**
+ * A zone identified by an IANA identifier, like America/New_York
+ * @implements {Zone}
+ */ var IANAZone = /*#__PURE__*/ function(_Zone) {
+    _inheritsLoose(IANAZone, _Zone);
+    /**
+   * @param {string} name - Zone name
+   * @return {IANAZone}
+   */ IANAZone.create = function create(name) {
+        if (!ianaZoneCache[name]) ianaZoneCache[name] = new IANAZone(name);
+        return ianaZoneCache[name];
+    } /**
+   * Reset local caches. Should only be necessary in testing scenarios.
+   * @return {void}
+   */ ;
+    IANAZone.resetCache = function resetCache() {
+        ianaZoneCache = {};
+        dtfCache = {};
+    } /**
+   * Returns whether the provided string is a valid specifier. This only checks the string's format, not that the specifier identifies a known zone; see isValidZone for that.
+   * @param {string} s - The string to check validity on
+   * @example IANAZone.isValidSpecifier("America/New_York") //=> true
+   * @example IANAZone.isValidSpecifier("Sport~~blorp") //=> false
+   * @deprecated This method returns false for some valid IANA names. Use isValidZone instead.
+   * @return {boolean}
+   */ ;
+    IANAZone.isValidSpecifier = function isValidSpecifier(s) {
+        return this.isValidZone(s);
+    } /**
+   * Returns whether the provided string identifies a real zone
+   * @param {string} zone - The string to check
+   * @example IANAZone.isValidZone("America/New_York") //=> true
+   * @example IANAZone.isValidZone("Fantasia/Castle") //=> false
+   * @example IANAZone.isValidZone("Sport~~blorp") //=> false
+   * @return {boolean}
+   */ ;
+    IANAZone.isValidZone = function isValidZone(zone) {
+        if (!zone) return false;
+        try {
+            new Intl.DateTimeFormat("en-US", {
+                timeZone: zone
+            }).format();
+            return true;
+        } catch (e) {
+            return false;
+        }
+    };
+    function IANAZone(name) {
+        var _this;
+        _this = _Zone.call(this) || this;
+        /** @private **/ _this.zoneName = name;
+        /** @private **/ _this.valid = IANAZone.isValidZone(name);
+        return _this;
+    }
+    /** @override **/ var _proto = IANAZone.prototype;
+    /** @override **/ _proto.offsetName = function offsetName(ts, _ref) {
+        var format = _ref.format, locale = _ref.locale;
+        return parseZoneInfo(ts, format, locale, this.name);
+    } /** @override **/ ;
+    _proto.formatOffset = function formatOffset$1(ts, format) {
+        return formatOffset(this.offset(ts), format);
+    } /** @override **/ ;
+    _proto.offset = function offset(ts) {
+        var date = new Date(ts);
+        if (isNaN(date)) return NaN;
+        var dtf = makeDTF(this.name);
+        var _ref2 = dtf.formatToParts ? partsOffset(dtf, date) : hackyOffset(dtf, date), year = _ref2[0], month = _ref2[1], day = _ref2[2], adOrBc = _ref2[3], hour = _ref2[4], minute = _ref2[5], second = _ref2[6];
+        if (adOrBc === "BC") year = -Math.abs(year) + 1;
+        // because we're using hour12 and https://bugs.chromium.org/p/chromium/issues/detail?id=1025564&can=2&q=%2224%3A00%22%20datetimeformat
+        var adjustedHour = hour === 24 ? 0 : hour;
+        var asUTC = objToLocalTS({
+            year: year,
+            month: month,
+            day: day,
+            hour: adjustedHour,
+            minute: minute,
+            second: second,
+            millisecond: 0
+        });
+        var asTS = +date;
+        var over = asTS % 1000;
+        asTS -= over >= 0 ? over : 1000 + over;
+        return (asUTC - asTS) / 60000;
+    } /** @override **/ ;
+    _proto.equals = function equals(otherZone) {
+        return otherZone.type === "iana" && otherZone.name === this.name;
+    } /** @override **/ ;
+    _createClass(IANAZone, [
+        {
+            key: "type",
+            get: function get() {
+                return "iana";
+            }
+        },
+        {
+            key: "name",
+            get: function get() {
+                return this.zoneName;
+            }
+        },
+        {
+            key: "isUniversal",
+            get: function get() {
+                return false;
+            }
+        },
+        {
+            key: "isValid",
+            get: function get() {
+                return this.valid;
+            }
+        }
+    ]);
+    return IANAZone;
+}(Zone);
+var _excluded = [
+    "base"
+], _excluded2 = [
+    "padTo",
+    "floor"
+];
+// todo - remap caching
+var intlLFCache = {};
+function getCachedLF(locString, opts) {
+    if (opts === void 0) opts = {};
+    var key = JSON.stringify([
+        locString,
+        opts
+    ]);
+    var dtf = intlLFCache[key];
+    if (!dtf) {
+        dtf = new Intl.ListFormat(locString, opts);
+        intlLFCache[key] = dtf;
+    }
+    return dtf;
+}
+var intlDTCache = {};
+function getCachedDTF(locString, opts) {
+    if (opts === void 0) opts = {};
+    var key = JSON.stringify([
+        locString,
+        opts
+    ]);
+    var dtf = intlDTCache[key];
+    if (!dtf) {
+        dtf = new Intl.DateTimeFormat(locString, opts);
+        intlDTCache[key] = dtf;
+    }
+    return dtf;
+}
+var intlNumCache = {};
+function getCachedINF(locString, opts) {
+    if (opts === void 0) opts = {};
+    var key = JSON.stringify([
+        locString,
+        opts
+    ]);
+    var inf = intlNumCache[key];
+    if (!inf) {
+        inf = new Intl.NumberFormat(locString, opts);
+        intlNumCache[key] = inf;
+    }
+    return inf;
+}
+var intlRelCache = {};
+function getCachedRTF(locString, opts) {
+    if (opts === void 0) opts = {};
+    var _opts = opts;
+    _opts.base;
+    var cacheKeyOpts = _objectWithoutPropertiesLoose(_opts, _excluded); // exclude `base` from the options
+    var key = JSON.stringify([
+        locString,
+        cacheKeyOpts
+    ]);
+    var inf = intlRelCache[key];
+    if (!inf) {
+        inf = new Intl.RelativeTimeFormat(locString, opts);
+        intlRelCache[key] = inf;
+    }
+    return inf;
+}
+var sysLocaleCache = null;
+function systemLocale() {
+    if (sysLocaleCache) return sysLocaleCache;
+    else {
+        sysLocaleCache = new Intl.DateTimeFormat().resolvedOptions().locale;
+        return sysLocaleCache;
+    }
+}
+function parseLocaleString(localeStr) {
+    // I really want to avoid writing a BCP 47 parser
+    // see, e.g. https://github.com/wooorm/bcp-47
+    // Instead, we'll do this:
+    // a) if the string has no -u extensions, just leave it alone
+    // b) if it does, use Intl to resolve everything
+    // c) if Intl fails, try again without the -u
+    // private subtags and unicode subtags have ordering requirements,
+    // and we're not properly parsing this, so just strip out the
+    // private ones if they exist.
+    var xIndex = localeStr.indexOf("-x-");
+    if (xIndex !== -1) localeStr = localeStr.substring(0, xIndex);
+    var uIndex = localeStr.indexOf("-u-");
+    if (uIndex === -1) return [
+        localeStr
+    ];
+    else {
+        var options;
+        var selectedStr;
+        try {
+            options = getCachedDTF(localeStr).resolvedOptions();
+            selectedStr = localeStr;
+        } catch (e) {
+            var smaller = localeStr.substring(0, uIndex);
+            options = getCachedDTF(smaller).resolvedOptions();
+            selectedStr = smaller;
+        }
+        var _options = options, numberingSystem = _options.numberingSystem, calendar = _options.calendar;
+        return [
+            selectedStr,
+            numberingSystem,
+            calendar
+        ];
+    }
+}
+function intlConfigString(localeStr, numberingSystem, outputCalendar) {
+    if (outputCalendar || numberingSystem) {
+        if (!localeStr.includes("-u-")) localeStr += "-u";
+        if (outputCalendar) localeStr += "-ca-" + outputCalendar;
+        if (numberingSystem) localeStr += "-nu-" + numberingSystem;
+        return localeStr;
+    } else return localeStr;
+}
+function mapMonths(f) {
+    var ms = [];
+    for(var i = 1; i <= 12; i++){
+        var dt = DateTime.utc(2016, i, 1);
+        ms.push(f(dt));
+    }
+    return ms;
+}
+function mapWeekdays(f) {
+    var ms = [];
+    for(var i = 1; i <= 7; i++){
+        var dt = DateTime.utc(2016, 11, 13 + i);
+        ms.push(f(dt));
+    }
+    return ms;
+}
+function listStuff(loc, length, defaultOK, englishFn, intlFn) {
+    var mode = loc.listingMode(defaultOK);
+    if (mode === "error") return null;
+    else if (mode === "en") return englishFn(length);
+    else return intlFn(length);
+}
+function supportsFastNumbers(loc) {
+    if (loc.numberingSystem && loc.numberingSystem !== "latn") return false;
+    else return loc.numberingSystem === "latn" || !loc.locale || loc.locale.startsWith("en") || new Intl.DateTimeFormat(loc.intl).resolvedOptions().numberingSystem === "latn";
+}
+/**
+ * @private
+ */ var PolyNumberFormatter = /*#__PURE__*/ function() {
+    function PolyNumberFormatter(intl, forceSimple, opts) {
+        this.padTo = opts.padTo || 0;
+        this.floor = opts.floor || false;
+        opts.padTo;
+        opts.floor;
+        var otherOpts = _objectWithoutPropertiesLoose(opts, _excluded2);
+        if (!forceSimple || Object.keys(otherOpts).length > 0) {
+            var intlOpts = _extends({
+                useGrouping: false
+            }, opts);
+            if (opts.padTo > 0) intlOpts.minimumIntegerDigits = opts.padTo;
+            this.inf = getCachedINF(intl, intlOpts);
+        }
+    }
+    var _proto = PolyNumberFormatter.prototype;
+    _proto.format = function format(i) {
+        if (this.inf) {
+            var fixed = this.floor ? Math.floor(i) : i;
+            return this.inf.format(fixed);
+        } else {
+            // to match the browser's numberformatter defaults
+            var _fixed = this.floor ? Math.floor(i) : roundTo(i, 3);
+            return padStart(_fixed, this.padTo);
+        }
+    };
+    return PolyNumberFormatter;
+}();
+/**
+ * @private
+ */ var PolyDateFormatter = /*#__PURE__*/ function() {
+    function PolyDateFormatter(dt, intl, opts) {
+        this.opts = opts;
+        this.originalZone = undefined;
+        var z = undefined;
+        if (this.opts.timeZone) // Don't apply any workarounds if a timeZone is explicitly provided in opts
+        this.dt = dt;
+        else if (dt.zone.type === "fixed") {
+            // UTC-8 or Etc/UTC-8 are not part of tzdata, only Etc/GMT+8 and the like.
+            // That is why fixed-offset TZ is set to that unless it is:
+            // 1. Representing offset 0 when UTC is used to maintain previous behavior and does not become GMT.
+            // 2. Unsupported by the browser:
+            //    - some do not support Etc/
+            //    - < Etc/GMT-14, > Etc/GMT+12, and 30-minute or 45-minute offsets are not part of tzdata
+            var gmtOffset = -1 * (dt.offset / 60);
+            var offsetZ = gmtOffset >= 0 ? "Etc/GMT+" + gmtOffset : "Etc/GMT" + gmtOffset;
+            if (dt.offset !== 0 && IANAZone.create(offsetZ).valid) {
+                z = offsetZ;
+                this.dt = dt;
+            } else {
+                // Not all fixed-offset zones like Etc/+4:30 are present in tzdata so
+                // we manually apply the offset and substitute the zone as needed.
+                z = "UTC";
+                this.dt = dt.offset === 0 ? dt : dt.setZone("UTC").plus({
+                    minutes: dt.offset
+                });
+                this.originalZone = dt.zone;
+            }
+        } else if (dt.zone.type === "system") this.dt = dt;
+        else if (dt.zone.type === "iana") {
+            this.dt = dt;
+            z = dt.zone.name;
+        } else {
+            // Custom zones can have any offset / offsetName so we just manually
+            // apply the offset and substitute the zone as needed.
+            z = "UTC";
+            this.dt = dt.setZone("UTC").plus({
+                minutes: dt.offset
+            });
+            this.originalZone = dt.zone;
+        }
+        var intlOpts = _extends({}, this.opts);
+        intlOpts.timeZone = intlOpts.timeZone || z;
+        this.dtf = getCachedDTF(intl, intlOpts);
+    }
+    var _proto2 = PolyDateFormatter.prototype;
+    _proto2.format = function format() {
+        if (this.originalZone) // If we have to substitute in the actual zone name, we have to use
+        // formatToParts so that the timezone can be replaced.
+        return this.formatToParts().map(function(_ref) {
+            var value = _ref.value;
+            return value;
+        }).join("");
+        return this.dtf.format(this.dt.toJSDate());
+    };
+    _proto2.formatToParts = function formatToParts() {
+        var _this = this;
+        var parts = this.dtf.formatToParts(this.dt.toJSDate());
+        if (this.originalZone) return parts.map(function(part) {
+            if (part.type === "timeZoneName") {
+                var offsetName = _this.originalZone.offsetName(_this.dt.ts, {
+                    locale: _this.dt.locale,
+                    format: _this.opts.timeZoneName
+                });
+                return _extends({}, part, {
+                    value: offsetName
+                });
+            } else return part;
+        });
+        return parts;
+    };
+    _proto2.resolvedOptions = function resolvedOptions() {
+        return this.dtf.resolvedOptions();
+    };
+    return PolyDateFormatter;
+}();
+/**
+ * @private
+ */ var PolyRelFormatter = /*#__PURE__*/ function() {
+    function PolyRelFormatter(intl, isEnglish, opts) {
+        this.opts = _extends({
+            style: "long"
+        }, opts);
+        if (!isEnglish && hasRelative()) this.rtf = getCachedRTF(intl, opts);
+    }
+    var _proto3 = PolyRelFormatter.prototype;
+    _proto3.format = function format(count, unit) {
+        if (this.rtf) return this.rtf.format(count, unit);
+        else return formatRelativeTime(unit, count, this.opts.numeric, this.opts.style !== "long");
+    };
+    _proto3.formatToParts = function formatToParts(count, unit) {
+        if (this.rtf) return this.rtf.formatToParts(count, unit);
+        else return [];
+    };
+    return PolyRelFormatter;
+}();
+/**
+ * @private
+ */ var Locale = /*#__PURE__*/ function() {
+    Locale.fromOpts = function fromOpts(opts) {
+        return Locale.create(opts.locale, opts.numberingSystem, opts.outputCalendar, opts.defaultToEN);
+    };
+    Locale.create = function create(locale, numberingSystem, outputCalendar, defaultToEN) {
+        if (defaultToEN === void 0) defaultToEN = false;
+        var specifiedLocale = locale || Settings.defaultLocale;
+        // the system locale is useful for human readable strings but annoying for parsing/formatting known formats
+        var localeR = specifiedLocale || (defaultToEN ? "en-US" : systemLocale());
+        var numberingSystemR = numberingSystem || Settings.defaultNumberingSystem;
+        var outputCalendarR = outputCalendar || Settings.defaultOutputCalendar;
+        return new Locale(localeR, numberingSystemR, outputCalendarR, specifiedLocale);
+    };
+    Locale.resetCache = function resetCache() {
+        sysLocaleCache = null;
+        intlDTCache = {};
+        intlNumCache = {};
+        intlRelCache = {};
+    };
+    Locale.fromObject = function fromObject(_temp) {
+        var _ref2 = _temp === void 0 ? {} : _temp, locale = _ref2.locale, numberingSystem = _ref2.numberingSystem, outputCalendar = _ref2.outputCalendar;
+        return Locale.create(locale, numberingSystem, outputCalendar);
+    };
+    function Locale(locale, numbering, outputCalendar, specifiedLocale) {
+        var _parseLocaleString = parseLocaleString(locale), parsedLocale = _parseLocaleString[0], parsedNumberingSystem = _parseLocaleString[1], parsedOutputCalendar = _parseLocaleString[2];
+        this.locale = parsedLocale;
+        this.numberingSystem = numbering || parsedNumberingSystem || null;
+        this.outputCalendar = outputCalendar || parsedOutputCalendar || null;
+        this.intl = intlConfigString(this.locale, this.numberingSystem, this.outputCalendar);
+        this.weekdaysCache = {
+            format: {},
+            standalone: {}
+        };
+        this.monthsCache = {
+            format: {},
+            standalone: {}
+        };
+        this.meridiemCache = null;
+        this.eraCache = {};
+        this.specifiedLocale = specifiedLocale;
+        this.fastNumbersCached = null;
+    }
+    var _proto4 = Locale.prototype;
+    _proto4.listingMode = function listingMode() {
+        var isActuallyEn = this.isEnglish();
+        var hasNoWeirdness = (this.numberingSystem === null || this.numberingSystem === "latn") && (this.outputCalendar === null || this.outputCalendar === "gregory");
+        return isActuallyEn && hasNoWeirdness ? "en" : "intl";
+    };
+    _proto4.clone = function clone(alts) {
+        if (!alts || Object.getOwnPropertyNames(alts).length === 0) return this;
+        else return Locale.create(alts.locale || this.specifiedLocale, alts.numberingSystem || this.numberingSystem, alts.outputCalendar || this.outputCalendar, alts.defaultToEN || false);
+    };
+    _proto4.redefaultToEN = function redefaultToEN(alts) {
+        if (alts === void 0) alts = {};
+        return this.clone(_extends({}, alts, {
+            defaultToEN: true
+        }));
+    };
+    _proto4.redefaultToSystem = function redefaultToSystem(alts) {
+        if (alts === void 0) alts = {};
+        return this.clone(_extends({}, alts, {
+            defaultToEN: false
+        }));
+    };
+    _proto4.months = function months$1(length, format, defaultOK) {
+        var _this2 = this;
+        if (format === void 0) format = false;
+        if (defaultOK === void 0) defaultOK = true;
+        return listStuff(this, length, defaultOK, months, function() {
+            var intl = format ? {
+                month: length,
+                day: "numeric"
+            } : {
+                month: length
+            }, formatStr = format ? "format" : "standalone";
+            if (!_this2.monthsCache[formatStr][length]) _this2.monthsCache[formatStr][length] = mapMonths(function(dt) {
+                return _this2.extract(dt, intl, "month");
+            });
+            return _this2.monthsCache[formatStr][length];
+        });
+    };
+    _proto4.weekdays = function weekdays$1(length, format, defaultOK) {
+        var _this3 = this;
+        if (format === void 0) format = false;
+        if (defaultOK === void 0) defaultOK = true;
+        return listStuff(this, length, defaultOK, weekdays, function() {
+            var intl = format ? {
+                weekday: length,
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+            } : {
+                weekday: length
+            }, formatStr = format ? "format" : "standalone";
+            if (!_this3.weekdaysCache[formatStr][length]) _this3.weekdaysCache[formatStr][length] = mapWeekdays(function(dt) {
+                return _this3.extract(dt, intl, "weekday");
+            });
+            return _this3.weekdaysCache[formatStr][length];
+        });
+    };
+    _proto4.meridiems = function meridiems$1(defaultOK) {
+        var _this4 = this;
+        if (defaultOK === void 0) defaultOK = true;
+        return listStuff(this, undefined, defaultOK, function() {
+            return meridiems;
+        }, function() {
+            // In theory there could be aribitrary day periods. We're gonna assume there are exactly two
+            // for AM and PM. This is probably wrong, but it's makes parsing way easier.
+            if (!_this4.meridiemCache) {
+                var intl = {
+                    hour: "numeric",
+                    hourCycle: "h12"
+                };
+                _this4.meridiemCache = [
+                    DateTime.utc(2016, 11, 13, 9),
+                    DateTime.utc(2016, 11, 13, 19)
+                ].map(function(dt) {
+                    return _this4.extract(dt, intl, "dayperiod");
+                });
+            }
+            return _this4.meridiemCache;
+        });
+    };
+    _proto4.eras = function eras$1(length, defaultOK) {
+        var _this5 = this;
+        if (defaultOK === void 0) defaultOK = true;
+        return listStuff(this, length, defaultOK, eras, function() {
+            var intl = {
+                era: length
+            };
+            // This is problematic. Different calendars are going to define eras totally differently. What I need is the minimum set of dates
+            // to definitely enumerate them.
+            if (!_this5.eraCache[length]) _this5.eraCache[length] = [
+                DateTime.utc(-40, 1, 1),
+                DateTime.utc(2017, 1, 1)
+            ].map(function(dt) {
+                return _this5.extract(dt, intl, "era");
+            });
+            return _this5.eraCache[length];
+        });
+    };
+    _proto4.extract = function extract(dt, intlOpts, field) {
+        var df = this.dtFormatter(dt, intlOpts), results = df.formatToParts(), matching = results.find(function(m) {
+            return m.type.toLowerCase() === field;
+        });
+        return matching ? matching.value : null;
+    };
+    _proto4.numberFormatter = function numberFormatter(opts) {
+        if (opts === void 0) opts = {};
+        // this forcesimple option is never used (the only caller short-circuits on it, but it seems safer to leave)
+        // (in contrast, the rest of the condition is used heavily)
+        return new PolyNumberFormatter(this.intl, opts.forceSimple || this.fastNumbers, opts);
+    };
+    _proto4.dtFormatter = function dtFormatter(dt, intlOpts) {
+        if (intlOpts === void 0) intlOpts = {};
+        return new PolyDateFormatter(dt, this.intl, intlOpts);
+    };
+    _proto4.relFormatter = function relFormatter(opts) {
+        if (opts === void 0) opts = {};
+        return new PolyRelFormatter(this.intl, this.isEnglish(), opts);
+    };
+    _proto4.listFormatter = function listFormatter(opts) {
+        if (opts === void 0) opts = {};
+        return getCachedLF(this.intl, opts);
+    };
+    _proto4.isEnglish = function isEnglish() {
+        return this.locale === "en" || this.locale.toLowerCase() === "en-us" || new Intl.DateTimeFormat(this.intl).resolvedOptions().locale.startsWith("en-us");
+    };
+    _proto4.equals = function equals(other) {
+        return this.locale === other.locale && this.numberingSystem === other.numberingSystem && this.outputCalendar === other.outputCalendar;
+    };
+    _createClass(Locale, [
+        {
+            key: "fastNumbers",
+            get: function get() {
+                if (this.fastNumbersCached == null) this.fastNumbersCached = supportsFastNumbers(this);
+                return this.fastNumbersCached;
+            }
+        }
+    ]);
+    return Locale;
+}();
+var singleton = null;
+/**
+ * A zone with a fixed offset (meaning no DST)
+ * @implements {Zone}
+ */ var FixedOffsetZone = /*#__PURE__*/ function(_Zone) {
+    _inheritsLoose(FixedOffsetZone, _Zone);
+    /**
+   * Get an instance with a specified offset
+   * @param {number} offset - The offset in minutes
+   * @return {FixedOffsetZone}
+   */ FixedOffsetZone.instance = function instance(offset) {
+        return offset === 0 ? FixedOffsetZone.utcInstance : new FixedOffsetZone(offset);
+    } /**
+   * Get an instance of FixedOffsetZone from a UTC offset string, like "UTC+6"
+   * @param {string} s - The offset string to parse
+   * @example FixedOffsetZone.parseSpecifier("UTC+6")
+   * @example FixedOffsetZone.parseSpecifier("UTC+06")
+   * @example FixedOffsetZone.parseSpecifier("UTC-6:00")
+   * @return {FixedOffsetZone}
+   */ ;
+    FixedOffsetZone.parseSpecifier = function parseSpecifier(s) {
+        if (s) {
+            var r = s.match(/^utc(?:([+-]\d{1,2})(?::(\d{2}))?)?$/i);
+            if (r) return new FixedOffsetZone(signedOffset(r[1], r[2]));
+        }
+        return null;
+    };
+    function FixedOffsetZone(offset) {
+        var _this;
+        _this = _Zone.call(this) || this;
+        /** @private **/ _this.fixed = offset;
+        return _this;
+    }
+    /** @override **/ var _proto = FixedOffsetZone.prototype;
+    /** @override **/ _proto.offsetName = function offsetName() {
+        return this.name;
+    } /** @override **/ ;
+    _proto.formatOffset = function formatOffset$1(ts, format) {
+        return formatOffset(this.fixed, format);
+    } /** @override **/ ;
+    /** @override **/ _proto.offset = function offset() {
+        return this.fixed;
+    } /** @override **/ ;
+    _proto.equals = function equals(otherZone) {
+        return otherZone.type === "fixed" && otherZone.fixed === this.fixed;
+    } /** @override **/ ;
+    _createClass(FixedOffsetZone, [
+        {
+            key: "type",
+            get: function get() {
+                return "fixed";
+            }
+        },
+        {
+            key: "name",
+            get: function get() {
+                return this.fixed === 0 ? "UTC" : "UTC" + formatOffset(this.fixed, "narrow");
+            }
+        },
+        {
+            key: "ianaName",
+            get: function get() {
+                if (this.fixed === 0) return "Etc/UTC";
+                else return "Etc/GMT" + formatOffset(-this.fixed, "narrow");
+            }
+        },
+        {
+            key: "isUniversal",
+            get: function get() {
+                return true;
+            }
+        },
+        {
+            key: "isValid",
+            get: function get() {
+                return true;
+            }
+        }
+    ], [
+        {
+            key: "utcInstance",
+            get: /**
+     * Get a singleton instance of UTC
+     * @return {FixedOffsetZone}
+     */ function get() {
+                if (singleton === null) singleton = new FixedOffsetZone(0);
+                return singleton;
+            }
+        }
+    ]);
+    return FixedOffsetZone;
+}(Zone);
+/**
+ * A zone that failed to parse. You should never need to instantiate this.
+ * @implements {Zone}
+ */ var InvalidZone = /*#__PURE__*/ function(_Zone) {
+    _inheritsLoose(InvalidZone, _Zone);
+    function InvalidZone(zoneName) {
+        var _this;
+        _this = _Zone.call(this) || this;
+        /**  @private */ _this.zoneName = zoneName;
+        return _this;
+    }
+    /** @override **/ var _proto = InvalidZone.prototype;
+    /** @override **/ _proto.offsetName = function offsetName() {
+        return null;
+    } /** @override **/ ;
+    _proto.formatOffset = function formatOffset() {
+        return "";
+    } /** @override **/ ;
+    _proto.offset = function offset() {
+        return NaN;
+    } /** @override **/ ;
+    _proto.equals = function equals() {
+        return false;
+    } /** @override **/ ;
+    _createClass(InvalidZone, [
+        {
+            key: "type",
+            get: function get() {
+                return "invalid";
+            }
+        },
+        {
+            key: "name",
+            get: function get() {
+                return this.zoneName;
+            }
+        },
+        {
+            key: "isUniversal",
+            get: function get() {
+                return false;
+            }
+        },
+        {
+            key: "isValid",
+            get: function get() {
+                return false;
+            }
+        }
+    ]);
+    return InvalidZone;
+}(Zone);
+/**
+ * @private
+ */ function normalizeZone(input, defaultZone) {
+    if (isUndefined(input) || input === null) return defaultZone;
+    else if (input instanceof Zone) return input;
+    else if (isString(input)) {
+        var lowered = input.toLowerCase();
+        if (lowered === "default") return defaultZone;
+        else if (lowered === "local" || lowered === "system") return SystemZone.instance;
+        else if (lowered === "utc" || lowered === "gmt") return FixedOffsetZone.utcInstance;
+        else return FixedOffsetZone.parseSpecifier(lowered) || IANAZone.create(input);
+    } else if (isNumber(input)) return FixedOffsetZone.instance(input);
+    else if (typeof input === "object" && input.offset && typeof input.offset === "number") // This is dumb, but the instanceof check above doesn't seem to really work
+    // so we're duck checking it
+    return input;
+    else return new InvalidZone(input);
+}
+var now = function now() {
+    return Date.now();
+}, defaultZone = "system", defaultLocale = null, defaultNumberingSystem = null, defaultOutputCalendar = null, twoDigitCutoffYear = 60, throwOnInvalid;
+/**
+ * Settings contains static getters and setters that control Luxon's overall behavior. Luxon is a simple library with few options, but the ones it does have live here.
+ */ var Settings = /*#__PURE__*/ function() {
+    function Settings() {}
+    /**
+   * Reset Luxon's global caches. Should only be necessary in testing scenarios.
+   * @return {void}
+   */ Settings.resetCaches = function resetCaches() {
+        Locale.resetCache();
+        IANAZone.resetCache();
+    };
+    _createClass(Settings, null, [
+        {
+            key: "now",
+            get: /**
+     * Get the callback for returning the current timestamp.
+     * @type {function}
+     */ function get() {
+                return now;
+            },
+            set: function set(n) {
+                now = n;
+            }
+        },
+        {
+            key: "defaultZone",
+            get: /**
+     * Get the default time zone object currently used to create DateTimes. Does not affect existing instances.
+     * The default value is the system's time zone (the one set on the machine that runs this code).
+     * @type {Zone}
+     */ function get() {
+                return normalizeZone(defaultZone, SystemZone.instance);
+            },
+            set: function set(zone) {
+                defaultZone = zone;
+            }
+        },
+        {
+            key: "defaultLocale",
+            get: function get() {
+                return defaultLocale;
+            },
+            set: function set(locale) {
+                defaultLocale = locale;
+            }
+        },
+        {
+            key: "defaultNumberingSystem",
+            get: function get() {
+                return defaultNumberingSystem;
+            },
+            set: function set(numberingSystem) {
+                defaultNumberingSystem = numberingSystem;
+            }
+        },
+        {
+            key: "defaultOutputCalendar",
+            get: function get() {
+                return defaultOutputCalendar;
+            },
+            set: function set(outputCalendar) {
+                defaultOutputCalendar = outputCalendar;
+            }
+        },
+        {
+            key: "twoDigitCutoffYear",
+            get: function get() {
+                return twoDigitCutoffYear;
+            },
+            set: function set(cutoffYear) {
+                twoDigitCutoffYear = cutoffYear % 100;
+            }
+        },
+        {
+            key: "throwOnInvalid",
+            get: function get() {
+                return throwOnInvalid;
+            },
+            set: function set(t) {
+                throwOnInvalid = t;
+            }
+        }
+    ]);
+    return Settings;
+}();
+/**
+ * @private
+ */ // TYPES
+function isUndefined(o) {
+    return typeof o === "undefined";
+}
+function isNumber(o) {
+    return typeof o === "number";
+}
+function isInteger(o) {
+    return typeof o === "number" && o % 1 === 0;
+}
+function isString(o) {
+    return typeof o === "string";
+}
+function isDate(o) {
+    return Object.prototype.toString.call(o) === "[object Date]";
+}
+// CAPABILITIES
+function hasRelative() {
+    try {
+        return typeof Intl !== "undefined" && !!Intl.RelativeTimeFormat;
+    } catch (e) {
+        return false;
+    }
+}
+// OBJECTS AND ARRAYS
+function maybeArray(thing) {
+    return Array.isArray(thing) ? thing : [
+        thing
+    ];
+}
+function bestBy(arr, by, compare) {
+    if (arr.length === 0) return undefined;
+    return arr.reduce(function(best, next) {
+        var pair = [
+            by(next),
+            next
+        ];
+        if (!best) return pair;
+        else if (compare(best[0], pair[0]) === best[0]) return best;
+        else return pair;
+    }, null)[1];
+}
+function pick(obj, keys) {
+    return keys.reduce(function(a, k) {
+        a[k] = obj[k];
+        return a;
+    }, {});
+}
+function hasOwnProperty(obj, prop) {
+    return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+// NUMBERS AND STRINGS
+function integerBetween(thing, bottom, top) {
+    return isInteger(thing) && thing >= bottom && thing <= top;
+}
+// x % n but takes the sign of n instead of x
+function floorMod(x, n) {
+    return x - n * Math.floor(x / n);
+}
+function padStart(input, n) {
+    if (n === void 0) n = 2;
+    var isNeg = input < 0;
+    var padded;
+    if (isNeg) padded = "-" + ("" + -input).padStart(n, "0");
+    else padded = ("" + input).padStart(n, "0");
+    return padded;
+}
+function parseInteger(string) {
+    if (isUndefined(string) || string === null || string === "") return undefined;
+    else return parseInt(string, 10);
+}
+function parseFloating(string) {
+    if (isUndefined(string) || string === null || string === "") return undefined;
+    else return parseFloat(string);
+}
+function parseMillis(fraction) {
+    // Return undefined (instead of 0) in these cases, where fraction is not set
+    if (isUndefined(fraction) || fraction === null || fraction === "") return undefined;
+    else {
+        var f = parseFloat("0." + fraction) * 1000;
+        return Math.floor(f);
+    }
+}
+function roundTo(number, digits, towardZero) {
+    if (towardZero === void 0) towardZero = false;
+    var factor = Math.pow(10, digits), rounder = towardZero ? Math.trunc : Math.round;
+    return rounder(number * factor) / factor;
+}
+// DATE BASICS
+function isLeapYear(year) {
+    return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+}
+function daysInYear(year) {
+    return isLeapYear(year) ? 366 : 365;
+}
+function daysInMonth(year, month) {
+    var modMonth = floorMod(month - 1, 12) + 1, modYear = year + (month - modMonth) / 12;
+    if (modMonth === 2) return isLeapYear(modYear) ? 29 : 28;
+    else return [
+        31,
+        null,
+        31,
+        30,
+        31,
+        30,
+        31,
+        31,
+        30,
+        31,
+        30,
+        31
+    ][modMonth - 1];
+}
+// covert a calendar object to a local timestamp (epoch, but with the offset baked in)
+function objToLocalTS(obj) {
+    var d = Date.UTC(obj.year, obj.month - 1, obj.day, obj.hour, obj.minute, obj.second, obj.millisecond);
+    // for legacy reasons, years between 0 and 99 are interpreted as 19XX; revert that
+    if (obj.year < 100 && obj.year >= 0) {
+        d = new Date(d);
+        // set the month and day again, this is necessary because year 2000 is a leap year, but year 100 is not
+        // so if obj.year is in 99, but obj.day makes it roll over into year 100,
+        // the calculations done by Date.UTC are using year 2000 - which is incorrect
+        d.setUTCFullYear(obj.year, obj.month - 1, obj.day);
+    }
+    return +d;
+}
+function weeksInWeekYear(weekYear) {
+    var p1 = (weekYear + Math.floor(weekYear / 4) - Math.floor(weekYear / 100) + Math.floor(weekYear / 400)) % 7, last = weekYear - 1, p2 = (last + Math.floor(last / 4) - Math.floor(last / 100) + Math.floor(last / 400)) % 7;
+    return p1 === 4 || p2 === 3 ? 53 : 52;
+}
+function untruncateYear(year) {
+    if (year > 99) return year;
+    else return year > Settings.twoDigitCutoffYear ? 1900 + year : 2000 + year;
+}
+// PARSING
+function parseZoneInfo(ts, offsetFormat, locale, timeZone) {
+    if (timeZone === void 0) timeZone = null;
+    var date = new Date(ts), intlOpts = {
+        hourCycle: "h23",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+    };
+    if (timeZone) intlOpts.timeZone = timeZone;
+    var modified = _extends({
+        timeZoneName: offsetFormat
+    }, intlOpts);
+    var parsed = new Intl.DateTimeFormat(locale, modified).formatToParts(date).find(function(m) {
+        return m.type.toLowerCase() === "timezonename";
+    });
+    return parsed ? parsed.value : null;
+}
+// signedOffset('-5', '30') -> -330
+function signedOffset(offHourStr, offMinuteStr) {
+    var offHour = parseInt(offHourStr, 10);
+    // don't || this because we want to preserve -0
+    if (Number.isNaN(offHour)) offHour = 0;
+    var offMin = parseInt(offMinuteStr, 10) || 0, offMinSigned = offHour < 0 || Object.is(offHour, -0) ? -offMin : offMin;
+    return offHour * 60 + offMinSigned;
+}
+// COERCION
+function asNumber(value) {
+    var numericValue = Number(value);
+    if (typeof value === "boolean" || value === "" || Number.isNaN(numericValue)) throw new InvalidArgumentError("Invalid unit value " + value);
+    return numericValue;
+}
+function normalizeObject(obj, normalizer) {
+    var normalized = {};
+    for(var u in obj)if (hasOwnProperty(obj, u)) {
+        var v = obj[u];
+        if (v === undefined || v === null) continue;
+        normalized[normalizer(u)] = asNumber(v);
+    }
+    return normalized;
+}
+function formatOffset(offset, format) {
+    var hours = Math.trunc(Math.abs(offset / 60)), minutes = Math.trunc(Math.abs(offset % 60)), sign = offset >= 0 ? "+" : "-";
+    switch(format){
+        case "short":
+            return "" + sign + padStart(hours, 2) + ":" + padStart(minutes, 2);
+        case "narrow":
+            return "" + sign + hours + (minutes > 0 ? ":" + minutes : "");
+        case "techie":
+            return "" + sign + padStart(hours, 2) + padStart(minutes, 2);
+        default:
+            throw new RangeError("Value format " + format + " is out of range for property format");
+    }
+}
+function timeObject(obj) {
+    return pick(obj, [
+        "hour",
+        "minute",
+        "second",
+        "millisecond"
+    ]);
+}
+/**
+ * @private
+ */ var monthsLong = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+];
+var monthsShort = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+];
+var monthsNarrow = [
+    "J",
+    "F",
+    "M",
+    "A",
+    "M",
+    "J",
+    "J",
+    "A",
+    "S",
+    "O",
+    "N",
+    "D"
+];
+function months(length) {
+    switch(length){
+        case "narrow":
+            return [].concat(monthsNarrow);
+        case "short":
+            return [].concat(monthsShort);
+        case "long":
+            return [].concat(monthsLong);
+        case "numeric":
+            return [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10",
+                "11",
+                "12"
+            ];
+        case "2-digit":
+            return [
+                "01",
+                "02",
+                "03",
+                "04",
+                "05",
+                "06",
+                "07",
+                "08",
+                "09",
+                "10",
+                "11",
+                "12"
+            ];
+        default:
+            return null;
+    }
+}
+var weekdaysLong = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday"
+];
+var weekdaysShort = [
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+    "Sun"
+];
+var weekdaysNarrow = [
+    "M",
+    "T",
+    "W",
+    "T",
+    "F",
+    "S",
+    "S"
+];
+function weekdays(length) {
+    switch(length){
+        case "narrow":
+            return [].concat(weekdaysNarrow);
+        case "short":
+            return [].concat(weekdaysShort);
+        case "long":
+            return [].concat(weekdaysLong);
+        case "numeric":
+            return [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7"
+            ];
+        default:
+            return null;
+    }
+}
+var meridiems = [
+    "AM",
+    "PM"
+];
+var erasLong = [
+    "Before Christ",
+    "Anno Domini"
+];
+var erasShort = [
+    "BC",
+    "AD"
+];
+var erasNarrow = [
+    "B",
+    "A"
+];
+function eras(length) {
+    switch(length){
+        case "narrow":
+            return [].concat(erasNarrow);
+        case "short":
+            return [].concat(erasShort);
+        case "long":
+            return [].concat(erasLong);
+        default:
+            return null;
+    }
+}
+function meridiemForDateTime(dt) {
+    return meridiems[dt.hour < 12 ? 0 : 1];
+}
+function weekdayForDateTime(dt, length) {
+    return weekdays(length)[dt.weekday - 1];
+}
+function monthForDateTime(dt, length) {
+    return months(length)[dt.month - 1];
+}
+function eraForDateTime(dt, length) {
+    return eras(length)[dt.year < 0 ? 0 : 1];
+}
+function formatRelativeTime(unit, count, numeric, narrow) {
+    if (numeric === void 0) numeric = "always";
+    if (narrow === void 0) narrow = false;
+    var units = {
+        years: [
+            "year",
+            "yr."
+        ],
+        quarters: [
+            "quarter",
+            "qtr."
+        ],
+        months: [
+            "month",
+            "mo."
+        ],
+        weeks: [
+            "week",
+            "wk."
+        ],
+        days: [
+            "day",
+            "day",
+            "days"
+        ],
+        hours: [
+            "hour",
+            "hr."
+        ],
+        minutes: [
+            "minute",
+            "min."
+        ],
+        seconds: [
+            "second",
+            "sec."
+        ]
+    };
+    var lastable = [
+        "hours",
+        "minutes",
+        "seconds"
+    ].indexOf(unit) === -1;
+    if (numeric === "auto" && lastable) {
+        var isDay = unit === "days";
+        switch(count){
+            case 1:
+                return isDay ? "tomorrow" : "next " + units[unit][0];
+            case -1:
+                return isDay ? "yesterday" : "last " + units[unit][0];
+            case 0:
+                return isDay ? "today" : "this " + units[unit][0];
+        }
+    }
+    var isInPast = Object.is(count, -0) || count < 0, fmtValue = Math.abs(count), singular = fmtValue === 1, lilUnits = units[unit], fmtUnit = narrow ? singular ? lilUnits[1] : lilUnits[2] || lilUnits[1] : singular ? units[unit][0] : unit;
+    return isInPast ? fmtValue + " " + fmtUnit + " ago" : "in " + fmtValue + " " + fmtUnit;
+}
+function stringifyTokens(splits, tokenToString) {
+    var s = "";
+    for(var _iterator = _createForOfIteratorHelperLoose(splits), _step; !(_step = _iterator()).done;){
+        var token = _step.value;
+        if (token.literal) s += token.val;
+        else s += tokenToString(token.val);
+    }
+    return s;
+}
+var _macroTokenToFormatOpts = {
+    D: DATE_SHORT,
+    DD: DATE_MED,
+    DDD: DATE_FULL,
+    DDDD: DATE_HUGE,
+    t: TIME_SIMPLE,
+    tt: TIME_WITH_SECONDS,
+    ttt: TIME_WITH_SHORT_OFFSET,
+    tttt: TIME_WITH_LONG_OFFSET,
+    T: TIME_24_SIMPLE,
+    TT: TIME_24_WITH_SECONDS,
+    TTT: TIME_24_WITH_SHORT_OFFSET,
+    TTTT: TIME_24_WITH_LONG_OFFSET,
+    f: DATETIME_SHORT,
+    ff: DATETIME_MED,
+    fff: DATETIME_FULL,
+    ffff: DATETIME_HUGE,
+    F: DATETIME_SHORT_WITH_SECONDS,
+    FF: DATETIME_MED_WITH_SECONDS,
+    FFF: DATETIME_FULL_WITH_SECONDS,
+    FFFF: DATETIME_HUGE_WITH_SECONDS
+};
+/**
+ * @private
+ */ var Formatter = /*#__PURE__*/ function() {
+    Formatter.create = function create(locale, opts) {
+        if (opts === void 0) opts = {};
+        return new Formatter(locale, opts);
+    };
+    Formatter.parseFormat = function parseFormat(fmt) {
+        // white-space is always considered a literal in user-provided formats
+        // the " " token has a special meaning (see unitForToken)
+        var current = null, currentFull = "", bracketed = false;
+        var splits = [];
+        for(var i = 0; i < fmt.length; i++){
+            var c = fmt.charAt(i);
+            if (c === "'") {
+                if (currentFull.length > 0) splits.push({
+                    literal: bracketed || /^\s+$/.test(currentFull),
+                    val: currentFull
+                });
+                current = null;
+                currentFull = "";
+                bracketed = !bracketed;
+            } else if (bracketed) currentFull += c;
+            else if (c === current) currentFull += c;
+            else {
+                if (currentFull.length > 0) splits.push({
+                    literal: /^\s+$/.test(currentFull),
+                    val: currentFull
+                });
+                currentFull = c;
+                current = c;
+            }
+        }
+        if (currentFull.length > 0) splits.push({
+            literal: bracketed || /^\s+$/.test(currentFull),
+            val: currentFull
+        });
+        return splits;
+    };
+    Formatter.macroTokenToFormatOpts = function macroTokenToFormatOpts(token) {
+        return _macroTokenToFormatOpts[token];
+    };
+    function Formatter(locale, formatOpts) {
+        this.opts = formatOpts;
+        this.loc = locale;
+        this.systemLoc = null;
+    }
+    var _proto = Formatter.prototype;
+    _proto.formatWithSystemDefault = function formatWithSystemDefault(dt, opts) {
+        if (this.systemLoc === null) this.systemLoc = this.loc.redefaultToSystem();
+        var df = this.systemLoc.dtFormatter(dt, _extends({}, this.opts, opts));
+        return df.format();
+    };
+    _proto.formatDateTime = function formatDateTime(dt, opts) {
+        if (opts === void 0) opts = {};
+        var df = this.loc.dtFormatter(dt, _extends({}, this.opts, opts));
+        return df.format();
+    };
+    _proto.formatDateTimeParts = function formatDateTimeParts(dt, opts) {
+        if (opts === void 0) opts = {};
+        var df = this.loc.dtFormatter(dt, _extends({}, this.opts, opts));
+        return df.formatToParts();
+    };
+    _proto.formatInterval = function formatInterval(interval, opts) {
+        if (opts === void 0) opts = {};
+        var df = this.loc.dtFormatter(interval.start, _extends({}, this.opts, opts));
+        return df.dtf.formatRange(interval.start.toJSDate(), interval.end.toJSDate());
+    };
+    _proto.resolvedOptions = function resolvedOptions(dt, opts) {
+        if (opts === void 0) opts = {};
+        var df = this.loc.dtFormatter(dt, _extends({}, this.opts, opts));
+        return df.resolvedOptions();
+    };
+    _proto.num = function num(n, p) {
+        if (p === void 0) p = 0;
+        // we get some perf out of doing this here, annoyingly
+        if (this.opts.forceSimple) return padStart(n, p);
+        var opts = _extends({}, this.opts);
+        if (p > 0) opts.padTo = p;
+        return this.loc.numberFormatter(opts).format(n);
+    };
+    _proto.formatDateTimeFromString = function formatDateTimeFromString(dt, fmt) {
+        var _this = this;
+        var knownEnglish = this.loc.listingMode() === "en", useDateTimeFormatter = this.loc.outputCalendar && this.loc.outputCalendar !== "gregory", string = function string(opts, extract) {
+            return _this.loc.extract(dt, opts, extract);
+        }, formatOffset = function formatOffset(opts) {
+            if (dt.isOffsetFixed && dt.offset === 0 && opts.allowZ) return "Z";
+            return dt.isValid ? dt.zone.formatOffset(dt.ts, opts.format) : "";
+        }, meridiem = function meridiem() {
+            return knownEnglish ? meridiemForDateTime(dt) : string({
+                hour: "numeric",
+                hourCycle: "h12"
+            }, "dayperiod");
+        }, month = function month(length, standalone) {
+            return knownEnglish ? monthForDateTime(dt, length) : string(standalone ? {
+                month: length
+            } : {
+                month: length,
+                day: "numeric"
+            }, "month");
+        }, weekday = function weekday(length, standalone) {
+            return knownEnglish ? weekdayForDateTime(dt, length) : string(standalone ? {
+                weekday: length
+            } : {
+                weekday: length,
+                month: "long",
+                day: "numeric"
+            }, "weekday");
+        }, maybeMacro = function maybeMacro(token) {
+            var formatOpts = Formatter.macroTokenToFormatOpts(token);
+            if (formatOpts) return _this.formatWithSystemDefault(dt, formatOpts);
+            else return token;
+        }, era = function era(length) {
+            return knownEnglish ? eraForDateTime(dt, length) : string({
+                era: length
+            }, "era");
+        }, tokenToString = function tokenToString(token) {
+            // Where possible: http://cldr.unicode.org/translation/date-time-1/date-time#TOC-Standalone-vs.-Format-Styles
+            switch(token){
+                // ms
+                case "S":
+                    return _this.num(dt.millisecond);
+                case "u":
+                // falls through
+                case "SSS":
+                    return _this.num(dt.millisecond, 3);
+                // seconds
+                case "s":
+                    return _this.num(dt.second);
+                case "ss":
+                    return _this.num(dt.second, 2);
+                // fractional seconds
+                case "uu":
+                    return _this.num(Math.floor(dt.millisecond / 10), 2);
+                case "uuu":
+                    return _this.num(Math.floor(dt.millisecond / 100));
+                // minutes
+                case "m":
+                    return _this.num(dt.minute);
+                case "mm":
+                    return _this.num(dt.minute, 2);
+                // hours
+                case "h":
+                    return _this.num(dt.hour % 12 === 0 ? 12 : dt.hour % 12);
+                case "hh":
+                    return _this.num(dt.hour % 12 === 0 ? 12 : dt.hour % 12, 2);
+                case "H":
+                    return _this.num(dt.hour);
+                case "HH":
+                    return _this.num(dt.hour, 2);
+                // offset
+                case "Z":
+                    // like +6
+                    return formatOffset({
+                        format: "narrow",
+                        allowZ: _this.opts.allowZ
+                    });
+                case "ZZ":
+                    // like +06:00
+                    return formatOffset({
+                        format: "short",
+                        allowZ: _this.opts.allowZ
+                    });
+                case "ZZZ":
+                    // like +0600
+                    return formatOffset({
+                        format: "techie",
+                        allowZ: _this.opts.allowZ
+                    });
+                case "ZZZZ":
+                    // like EST
+                    return dt.zone.offsetName(dt.ts, {
+                        format: "short",
+                        locale: _this.loc.locale
+                    });
+                case "ZZZZZ":
+                    // like Eastern Standard Time
+                    return dt.zone.offsetName(dt.ts, {
+                        format: "long",
+                        locale: _this.loc.locale
+                    });
+                // zone
+                case "z":
+                    // like America/New_York
+                    return dt.zoneName;
+                // meridiems
+                case "a":
+                    return meridiem();
+                // dates
+                case "d":
+                    return useDateTimeFormatter ? string({
+                        day: "numeric"
+                    }, "day") : _this.num(dt.day);
+                case "dd":
+                    return useDateTimeFormatter ? string({
+                        day: "2-digit"
+                    }, "day") : _this.num(dt.day, 2);
+                // weekdays - standalone
+                case "c":
+                    // like 1
+                    return _this.num(dt.weekday);
+                case "ccc":
+                    // like 'Tues'
+                    return weekday("short", true);
+                case "cccc":
+                    // like 'Tuesday'
+                    return weekday("long", true);
+                case "ccccc":
+                    // like 'T'
+                    return weekday("narrow", true);
+                // weekdays - format
+                case "E":
+                    // like 1
+                    return _this.num(dt.weekday);
+                case "EEE":
+                    // like 'Tues'
+                    return weekday("short", false);
+                case "EEEE":
+                    // like 'Tuesday'
+                    return weekday("long", false);
+                case "EEEEE":
+                    // like 'T'
+                    return weekday("narrow", false);
+                // months - standalone
+                case "L":
+                    // like 1
+                    return useDateTimeFormatter ? string({
+                        month: "numeric",
+                        day: "numeric"
+                    }, "month") : _this.num(dt.month);
+                case "LL":
+                    // like 01, doesn't seem to work
+                    return useDateTimeFormatter ? string({
+                        month: "2-digit",
+                        day: "numeric"
+                    }, "month") : _this.num(dt.month, 2);
+                case "LLL":
+                    // like Jan
+                    return month("short", true);
+                case "LLLL":
+                    // like January
+                    return month("long", true);
+                case "LLLLL":
+                    // like J
+                    return month("narrow", true);
+                // months - format
+                case "M":
+                    // like 1
+                    return useDateTimeFormatter ? string({
+                        month: "numeric"
+                    }, "month") : _this.num(dt.month);
+                case "MM":
+                    // like 01
+                    return useDateTimeFormatter ? string({
+                        month: "2-digit"
+                    }, "month") : _this.num(dt.month, 2);
+                case "MMM":
+                    // like Jan
+                    return month("short", false);
+                case "MMMM":
+                    // like January
+                    return month("long", false);
+                case "MMMMM":
+                    // like J
+                    return month("narrow", false);
+                // years
+                case "y":
+                    // like 2014
+                    return useDateTimeFormatter ? string({
+                        year: "numeric"
+                    }, "year") : _this.num(dt.year);
+                case "yy":
+                    // like 14
+                    return useDateTimeFormatter ? string({
+                        year: "2-digit"
+                    }, "year") : _this.num(dt.year.toString().slice(-2), 2);
+                case "yyyy":
+                    // like 0012
+                    return useDateTimeFormatter ? string({
+                        year: "numeric"
+                    }, "year") : _this.num(dt.year, 4);
+                case "yyyyyy":
+                    // like 000012
+                    return useDateTimeFormatter ? string({
+                        year: "numeric"
+                    }, "year") : _this.num(dt.year, 6);
+                // eras
+                case "G":
+                    // like AD
+                    return era("short");
+                case "GG":
+                    // like Anno Domini
+                    return era("long");
+                case "GGGGG":
+                    return era("narrow");
+                case "kk":
+                    return _this.num(dt.weekYear.toString().slice(-2), 2);
+                case "kkkk":
+                    return _this.num(dt.weekYear, 4);
+                case "W":
+                    return _this.num(dt.weekNumber);
+                case "WW":
+                    return _this.num(dt.weekNumber, 2);
+                case "o":
+                    return _this.num(dt.ordinal);
+                case "ooo":
+                    return _this.num(dt.ordinal, 3);
+                case "q":
+                    // like 1
+                    return _this.num(dt.quarter);
+                case "qq":
+                    // like 01
+                    return _this.num(dt.quarter, 2);
+                case "X":
+                    return _this.num(Math.floor(dt.ts / 1000));
+                case "x":
+                    return _this.num(dt.ts);
+                default:
+                    return maybeMacro(token);
+            }
+        };
+        return stringifyTokens(Formatter.parseFormat(fmt), tokenToString);
+    };
+    _proto.formatDurationFromString = function formatDurationFromString(dur, fmt) {
+        var _this2 = this;
+        var tokenToField = function tokenToField(token) {
+            switch(token[0]){
+                case "S":
+                    return "millisecond";
+                case "s":
+                    return "second";
+                case "m":
+                    return "minute";
+                case "h":
+                    return "hour";
+                case "d":
+                    return "day";
+                case "w":
+                    return "week";
+                case "M":
+                    return "month";
+                case "y":
+                    return "year";
+                default:
+                    return null;
+            }
+        }, tokenToString = function tokenToString(lildur) {
+            return function(token) {
+                var mapped = tokenToField(token);
+                if (mapped) return _this2.num(lildur.get(mapped), token.length);
+                else return token;
+            };
+        }, tokens = Formatter.parseFormat(fmt), realTokens = tokens.reduce(function(found, _ref) {
+            var literal = _ref.literal, val = _ref.val;
+            return literal ? found : found.concat(val);
+        }, []), collapsed = dur.shiftTo.apply(dur, realTokens.map(tokenToField).filter(function(t) {
+            return t;
+        }));
+        return stringifyTokens(tokens, tokenToString(collapsed));
+    };
+    return Formatter;
+}();
+var Invalid = /*#__PURE__*/ function() {
+    function Invalid(reason, explanation) {
+        this.reason = reason;
+        this.explanation = explanation;
+    }
+    var _proto = Invalid.prototype;
+    _proto.toMessage = function toMessage() {
+        if (this.explanation) return this.reason + ": " + this.explanation;
+        else return this.reason;
+    };
+    return Invalid;
+}();
+/*
+ * This file handles parsing for well-specified formats. Here's how it works:
+ * Two things go into parsing: a regex to match with and an extractor to take apart the groups in the match.
+ * An extractor is just a function that takes a regex match array and returns a { year: ..., month: ... } object
+ * parse() does the work of executing the regex and applying the extractor. It takes multiple regex/extractor pairs to try in sequence.
+ * Extractors can take a "cursor" representing the offset in the match to look at. This makes it easy to combine extractors.
+ * combineExtractors() does the work of combining them, keeping track of the cursor through multiple extractions.
+ * Some extractions are super dumb and simpleParse and fromStrings help DRY them.
+ */ var ianaRegex = /[A-Za-z_+-]{1,256}(?::?\/[A-Za-z0-9_+-]{1,256}(?:\/[A-Za-z0-9_+-]{1,256})?)?/;
+function combineRegexes() {
+    for(var _len = arguments.length, regexes = new Array(_len), _key = 0; _key < _len; _key++)regexes[_key] = arguments[_key];
+    var full = regexes.reduce(function(f, r) {
+        return f + r.source;
+    }, "");
+    return RegExp("^" + full + "$");
+}
+function combineExtractors() {
+    for(var _len2 = arguments.length, extractors = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++)extractors[_key2] = arguments[_key2];
+    return function(m) {
+        return extractors.reduce(function(_ref, ex) {
+            var mergedVals = _ref[0], mergedZone = _ref[1], cursor = _ref[2];
+            var _ex = ex(m, cursor), val = _ex[0], zone = _ex[1], next = _ex[2];
+            return [
+                _extends({}, mergedVals, val),
+                zone || mergedZone,
+                next
+            ];
+        }, [
+            {},
+            null,
+            1
+        ]).slice(0, 2);
+    };
+}
+function parse(s) {
+    if (s == null) return [
+        null,
+        null
+    ];
+    for(var _len3 = arguments.length, patterns = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++)patterns[_key3 - 1] = arguments[_key3];
+    for(var _i = 0, _patterns = patterns; _i < _patterns.length; _i++){
+        var _patterns$_i = _patterns[_i], regex = _patterns$_i[0], extractor = _patterns$_i[1];
+        var m = regex.exec(s);
+        if (m) return extractor(m);
+    }
+    return [
+        null,
+        null
+    ];
+}
+function simpleParse() {
+    for(var _len4 = arguments.length, keys = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++)keys[_key4] = arguments[_key4];
+    return function(match, cursor) {
+        var ret = {};
+        var i;
+        for(i = 0; i < keys.length; i++)ret[keys[i]] = parseInteger(match[cursor + i]);
+        return [
+            ret,
+            null,
+            cursor + i
+        ];
+    };
+}
+// ISO and SQL parsing
+var offsetRegex = /(?:(Z)|([+-]\d\d)(?::?(\d\d))?)/;
+var isoExtendedZone = "(?:" + offsetRegex.source + "?(?:\\[(" + ianaRegex.source + ")\\])?)?";
+var isoTimeBaseRegex = /(\d\d)(?::?(\d\d)(?::?(\d\d)(?:[.,](\d{1,30}))?)?)?/;
+var isoTimeRegex = RegExp("" + isoTimeBaseRegex.source + isoExtendedZone);
+var isoTimeExtensionRegex = RegExp("(?:T" + isoTimeRegex.source + ")?");
+var isoYmdRegex = /([+-]\d{6}|\d{4})(?:-?(\d\d)(?:-?(\d\d))?)?/;
+var isoWeekRegex = /(\d{4})-?W(\d\d)(?:-?(\d))?/;
+var isoOrdinalRegex = /(\d{4})-?(\d{3})/;
+var extractISOWeekData = simpleParse("weekYear", "weekNumber", "weekDay");
+var extractISOOrdinalData = simpleParse("year", "ordinal");
+var sqlYmdRegex = /(\d{4})-(\d\d)-(\d\d)/; // dumbed-down version of the ISO one
+var sqlTimeRegex = RegExp(isoTimeBaseRegex.source + " ?(?:" + offsetRegex.source + "|(" + ianaRegex.source + "))?");
+var sqlTimeExtensionRegex = RegExp("(?: " + sqlTimeRegex.source + ")?");
+function int(match, pos, fallback) {
+    var m = match[pos];
+    return isUndefined(m) ? fallback : parseInteger(m);
+}
+function extractISOYmd(match, cursor) {
+    var item = {
+        year: int(match, cursor),
+        month: int(match, cursor + 1, 1),
+        day: int(match, cursor + 2, 1)
+    };
+    return [
+        item,
+        null,
+        cursor + 3
+    ];
+}
+function extractISOTime(match, cursor) {
+    var item = {
+        hours: int(match, cursor, 0),
+        minutes: int(match, cursor + 1, 0),
+        seconds: int(match, cursor + 2, 0),
+        milliseconds: parseMillis(match[cursor + 3])
+    };
+    return [
+        item,
+        null,
+        cursor + 4
+    ];
+}
+function extractISOOffset(match, cursor) {
+    var local = !match[cursor] && !match[cursor + 1], fullOffset = signedOffset(match[cursor + 1], match[cursor + 2]), zone = local ? null : FixedOffsetZone.instance(fullOffset);
+    return [
+        {},
+        zone,
+        cursor + 3
+    ];
+}
+function extractIANAZone(match, cursor) {
+    var zone = match[cursor] ? IANAZone.create(match[cursor]) : null;
+    return [
+        {},
+        zone,
+        cursor + 1
+    ];
+}
+// ISO time parsing
+var isoTimeOnly = RegExp("^T?" + isoTimeBaseRegex.source + "$");
+// ISO duration parsing
+var isoDuration = /^-?P(?:(?:(-?\d{1,20}(?:\.\d{1,20})?)Y)?(?:(-?\d{1,20}(?:\.\d{1,20})?)M)?(?:(-?\d{1,20}(?:\.\d{1,20})?)W)?(?:(-?\d{1,20}(?:\.\d{1,20})?)D)?(?:T(?:(-?\d{1,20}(?:\.\d{1,20})?)H)?(?:(-?\d{1,20}(?:\.\d{1,20})?)M)?(?:(-?\d{1,20})(?:[.,](-?\d{1,20}))?S)?)?)$/;
+function extractISODuration(match) {
+    var s = match[0], yearStr = match[1], monthStr = match[2], weekStr = match[3], dayStr = match[4], hourStr = match[5], minuteStr = match[6], secondStr = match[7], millisecondsStr = match[8];
+    var hasNegativePrefix = s[0] === "-";
+    var negativeSeconds = secondStr && secondStr[0] === "-";
+    var maybeNegate = function maybeNegate(num, force) {
+        if (force === void 0) force = false;
+        return num !== undefined && (force || num && hasNegativePrefix) ? -num : num;
+    };
+    return [
+        {
+            years: maybeNegate(parseFloating(yearStr)),
+            months: maybeNegate(parseFloating(monthStr)),
+            weeks: maybeNegate(parseFloating(weekStr)),
+            days: maybeNegate(parseFloating(dayStr)),
+            hours: maybeNegate(parseFloating(hourStr)),
+            minutes: maybeNegate(parseFloating(minuteStr)),
+            seconds: maybeNegate(parseFloating(secondStr), secondStr === "-0"),
+            milliseconds: maybeNegate(parseMillis(millisecondsStr), negativeSeconds)
+        }
+    ];
+}
+// These are a little braindead. EDT *should* tell us that we're in, say, America/New_York
+// and not just that we're in -240 *right now*. But since I don't think these are used that often
+// I'm just going to ignore that
+var obsOffsets = {
+    GMT: 0,
+    EDT: -240,
+    EST: -300,
+    CDT: -300,
+    CST: -360,
+    MDT: -360,
+    MST: -420,
+    PDT: -420,
+    PST: -480
+};
+function fromStrings(weekdayStr, yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr) {
+    var result = {
+        year: yearStr.length === 2 ? untruncateYear(parseInteger(yearStr)) : parseInteger(yearStr),
+        month: monthsShort.indexOf(monthStr) + 1,
+        day: parseInteger(dayStr),
+        hour: parseInteger(hourStr),
+        minute: parseInteger(minuteStr)
+    };
+    if (secondStr) result.second = parseInteger(secondStr);
+    if (weekdayStr) result.weekday = weekdayStr.length > 3 ? weekdaysLong.indexOf(weekdayStr) + 1 : weekdaysShort.indexOf(weekdayStr) + 1;
+    return result;
+}
+// RFC 2822/5322
+var rfc2822 = /^(?:(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s)?(\d{1,2})\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(\d{2,4})\s(\d\d):(\d\d)(?::(\d\d))?\s(?:(UT|GMT|[ECMP][SD]T)|([Zz])|(?:([+-]\d\d)(\d\d)))$/;
+function extractRFC2822(match) {
+    var weekdayStr = match[1], dayStr = match[2], monthStr = match[3], yearStr = match[4], hourStr = match[5], minuteStr = match[6], secondStr = match[7], obsOffset = match[8], milOffset = match[9], offHourStr = match[10], offMinuteStr = match[11], result = fromStrings(weekdayStr, yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr);
+    var offset;
+    if (obsOffset) offset = obsOffsets[obsOffset];
+    else if (milOffset) offset = 0;
+    else offset = signedOffset(offHourStr, offMinuteStr);
+    return [
+        result,
+        new FixedOffsetZone(offset)
+    ];
+}
+function preprocessRFC2822(s) {
+    // Remove comments and folding whitespace and replace multiple-spaces with a single space
+    return s.replace(/\([^()]*\)|[\n\t]/g, " ").replace(/(\s\s+)/g, " ").trim();
+}
+// http date
+var rfc1123 = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), (\d\d) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4}) (\d\d):(\d\d):(\d\d) GMT$/, rfc850 = /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), (\d\d)-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-(\d\d) (\d\d):(\d\d):(\d\d) GMT$/, ascii = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) ( \d|\d\d) (\d\d):(\d\d):(\d\d) (\d{4})$/;
+function extractRFC1123Or850(match) {
+    var weekdayStr = match[1], dayStr = match[2], monthStr = match[3], yearStr = match[4], hourStr = match[5], minuteStr = match[6], secondStr = match[7], result = fromStrings(weekdayStr, yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr);
+    return [
+        result,
+        FixedOffsetZone.utcInstance
+    ];
+}
+function extractASCII(match) {
+    var weekdayStr = match[1], monthStr = match[2], dayStr = match[3], hourStr = match[4], minuteStr = match[5], secondStr = match[6], yearStr = match[7], result = fromStrings(weekdayStr, yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr);
+    return [
+        result,
+        FixedOffsetZone.utcInstance
+    ];
+}
+var isoYmdWithTimeExtensionRegex = combineRegexes(isoYmdRegex, isoTimeExtensionRegex);
+var isoWeekWithTimeExtensionRegex = combineRegexes(isoWeekRegex, isoTimeExtensionRegex);
+var isoOrdinalWithTimeExtensionRegex = combineRegexes(isoOrdinalRegex, isoTimeExtensionRegex);
+var isoTimeCombinedRegex = combineRegexes(isoTimeRegex);
+var extractISOYmdTimeAndOffset = combineExtractors(extractISOYmd, extractISOTime, extractISOOffset, extractIANAZone);
+var extractISOWeekTimeAndOffset = combineExtractors(extractISOWeekData, extractISOTime, extractISOOffset, extractIANAZone);
+var extractISOOrdinalDateAndTime = combineExtractors(extractISOOrdinalData, extractISOTime, extractISOOffset, extractIANAZone);
+var extractISOTimeAndOffset = combineExtractors(extractISOTime, extractISOOffset, extractIANAZone);
+/*
+ * @private
+ */ function parseISODate(s) {
+    return parse(s, [
+        isoYmdWithTimeExtensionRegex,
+        extractISOYmdTimeAndOffset
+    ], [
+        isoWeekWithTimeExtensionRegex,
+        extractISOWeekTimeAndOffset
+    ], [
+        isoOrdinalWithTimeExtensionRegex,
+        extractISOOrdinalDateAndTime
+    ], [
+        isoTimeCombinedRegex,
+        extractISOTimeAndOffset
+    ]);
+}
+function parseRFC2822Date(s) {
+    return parse(preprocessRFC2822(s), [
+        rfc2822,
+        extractRFC2822
+    ]);
+}
+function parseHTTPDate(s) {
+    return parse(s, [
+        rfc1123,
+        extractRFC1123Or850
+    ], [
+        rfc850,
+        extractRFC1123Or850
+    ], [
+        ascii,
+        extractASCII
+    ]);
+}
+function parseISODuration(s) {
+    return parse(s, [
+        isoDuration,
+        extractISODuration
+    ]);
+}
+var extractISOTimeOnly = combineExtractors(extractISOTime);
+function parseISOTimeOnly(s) {
+    return parse(s, [
+        isoTimeOnly,
+        extractISOTimeOnly
+    ]);
+}
+var sqlYmdWithTimeExtensionRegex = combineRegexes(sqlYmdRegex, sqlTimeExtensionRegex);
+var sqlTimeCombinedRegex = combineRegexes(sqlTimeRegex);
+var extractISOTimeOffsetAndIANAZone = combineExtractors(extractISOTime, extractISOOffset, extractIANAZone);
+function parseSQL(s) {
+    return parse(s, [
+        sqlYmdWithTimeExtensionRegex,
+        extractISOYmdTimeAndOffset
+    ], [
+        sqlTimeCombinedRegex,
+        extractISOTimeOffsetAndIANAZone
+    ]);
+}
+var INVALID$2 = "Invalid Duration";
+// unit conversion constants
+var lowOrderMatrix = {
+    weeks: {
+        days: 7,
+        hours: 168,
+        minutes: 10080,
+        seconds: 604800,
+        milliseconds: 604800000
+    },
+    days: {
+        hours: 24,
+        minutes: 1440,
+        seconds: 86400,
+        milliseconds: 86400000
+    },
+    hours: {
+        minutes: 60,
+        seconds: 3600,
+        milliseconds: 3600000
+    },
+    minutes: {
+        seconds: 60,
+        milliseconds: 60000
+    },
+    seconds: {
+        milliseconds: 1000
+    }
+}, casualMatrix = _extends({
+    years: {
+        quarters: 4,
+        months: 12,
+        weeks: 52,
+        days: 365,
+        hours: 8760,
+        minutes: 525600,
+        seconds: 31536000,
+        milliseconds: 31536000000
+    },
+    quarters: {
+        months: 3,
+        weeks: 13,
+        days: 91,
+        hours: 2184,
+        minutes: 131040,
+        seconds: 7862400,
+        milliseconds: 7862400000
+    },
+    months: {
+        weeks: 4,
+        days: 30,
+        hours: 720,
+        minutes: 43200,
+        seconds: 2592000,
+        milliseconds: 2592000000
+    }
+}, lowOrderMatrix), daysInYearAccurate = 365.2425, daysInMonthAccurate = 30.436875, accurateMatrix = _extends({
+    years: {
+        quarters: 4,
+        months: 12,
+        weeks: daysInYearAccurate / 7,
+        days: daysInYearAccurate,
+        hours: daysInYearAccurate * 24,
+        minutes: daysInYearAccurate * 1440,
+        seconds: daysInYearAccurate * 86400,
+        milliseconds: daysInYearAccurate * 86400000
+    },
+    quarters: {
+        months: 3,
+        weeks: daysInYearAccurate / 28,
+        days: daysInYearAccurate / 4,
+        hours: daysInYearAccurate * 24 / 4,
+        minutes: daysInYearAccurate * 1440 / 4,
+        seconds: daysInYearAccurate * 86400 / 4,
+        milliseconds: daysInYearAccurate * 86400000 / 4
+    },
+    months: {
+        weeks: daysInMonthAccurate / 7,
+        days: daysInMonthAccurate,
+        hours: daysInMonthAccurate * 24,
+        minutes: daysInMonthAccurate * 1440,
+        seconds: daysInMonthAccurate * 86400,
+        milliseconds: daysInMonthAccurate * 86400000
+    }
+}, lowOrderMatrix);
+// units ordered by size
+var orderedUnits$1 = [
+    "years",
+    "quarters",
+    "months",
+    "weeks",
+    "days",
+    "hours",
+    "minutes",
+    "seconds",
+    "milliseconds"
+];
+var reverseUnits = orderedUnits$1.slice(0).reverse();
+// clone really means "create another instance just like this one, but with these changes"
+function clone$1(dur, alts, clear) {
+    if (clear === void 0) clear = false;
+    // deep merge for vals
+    var conf = {
+        values: clear ? alts.values : _extends({}, dur.values, alts.values || {}),
+        loc: dur.loc.clone(alts.loc),
+        conversionAccuracy: alts.conversionAccuracy || dur.conversionAccuracy,
+        matrix: alts.matrix || dur.matrix
+    };
+    return new Duration(conf);
+}
+function antiTrunc(n) {
+    return n < 0 ? Math.floor(n) : Math.ceil(n);
+}
+// NB: mutates parameters
+function convert(matrix, fromMap, fromUnit, toMap, toUnit) {
+    var conv = matrix[toUnit][fromUnit], raw = fromMap[fromUnit] / conv, sameSign = Math.sign(raw) === Math.sign(toMap[toUnit]), // ok, so this is wild, but see the matrix in the tests
+    added = !sameSign && toMap[toUnit] !== 0 && Math.abs(raw) <= 1 ? antiTrunc(raw) : Math.trunc(raw);
+    toMap[toUnit] += added;
+    fromMap[fromUnit] -= added * conv;
+}
+// NB: mutates parameters
+function normalizeValues(matrix, vals) {
+    reverseUnits.reduce(function(previous, current) {
+        if (!isUndefined(vals[current])) {
+            if (previous) convert(matrix, vals, previous, vals, current);
+            return current;
+        } else return previous;
+    }, null);
+}
+// Remove all properties with a value of 0 from an object
+function removeZeroes(vals) {
+    var newVals = {};
+    for(var _i = 0, _Object$entries = Object.entries(vals); _i < _Object$entries.length; _i++){
+        var _Object$entries$_i = _Object$entries[_i], key = _Object$entries$_i[0], value = _Object$entries$_i[1];
+        if (value !== 0) newVals[key] = value;
+    }
+    return newVals;
+}
+/**
+ * A Duration object represents a period of time, like "2 months" or "1 day, 1 hour". Conceptually, it's just a map of units to their quantities, accompanied by some additional configuration and methods for creating, parsing, interrogating, transforming, and formatting them. They can be used on their own or in conjunction with other Luxon types; for example, you can use {@link DateTime#plus} to add a Duration object to a DateTime, producing another DateTime.
+ *
+ * Here is a brief overview of commonly used methods and getters in Duration:
+ *
+ * * **Creation** To create a Duration, use {@link Duration.fromMillis}, {@link Duration.fromObject}, or {@link Duration.fromISO}.
+ * * **Unit values** See the {@link Duration#years}, {@link Duration#months}, {@link Duration#weeks}, {@link Duration#days}, {@link Duration#hours}, {@link Duration#minutes}, {@link Duration#seconds}, {@link Duration#milliseconds} accessors.
+ * * **Configuration** See  {@link Duration#locale} and {@link Duration#numberingSystem} accessors.
+ * * **Transformation** To create new Durations out of old ones use {@link Duration#plus}, {@link Duration#minus}, {@link Duration#normalize}, {@link Duration#set}, {@link Duration#reconfigure}, {@link Duration#shiftTo}, and {@link Duration#negate}.
+ * * **Output** To convert the Duration into other representations, see {@link Duration#as}, {@link Duration#toISO}, {@link Duration#toFormat}, and {@link Duration#toJSON}
+ *
+ * There's are more methods documented below. In addition, for more information on subtler topics like internationalization and validity, see the external documentation.
+ */ var Duration = /*#__PURE__*/ function() {
+    /**
+   * @private
+   */ function Duration(config) {
+        var accurate = config.conversionAccuracy === "longterm" || false;
+        var matrix = accurate ? accurateMatrix : casualMatrix;
+        if (config.matrix) matrix = config.matrix;
+        /**
+     * @access private
+     */ this.values = config.values;
+        /**
+     * @access private
+     */ this.loc = config.loc || Locale.create();
+        /**
+     * @access private
+     */ this.conversionAccuracy = accurate ? "longterm" : "casual";
+        /**
+     * @access private
+     */ this.invalid = config.invalid || null;
+        /**
+     * @access private
+     */ this.matrix = matrix;
+        /**
+     * @access private
+     */ this.isLuxonDuration = true;
+    }
+    /**
+   * Create Duration from a number of milliseconds.
+   * @param {number} count of milliseconds
+   * @param {Object} opts - options for parsing
+   * @param {string} [opts.locale='en-US'] - the locale to use
+   * @param {string} opts.numberingSystem - the numbering system to use
+   * @param {string} [opts.conversionAccuracy='casual'] - the conversion system to use
+   * @return {Duration}
+   */ Duration.fromMillis = function fromMillis(count, opts) {
+        return Duration.fromObject({
+            milliseconds: count
+        }, opts);
+    } /**
+   * Create a Duration from a JavaScript object with keys like 'years' and 'hours'.
+   * If this object is empty then a zero milliseconds duration is returned.
+   * @param {Object} obj - the object to create the DateTime from
+   * @param {number} obj.years
+   * @param {number} obj.quarters
+   * @param {number} obj.months
+   * @param {number} obj.weeks
+   * @param {number} obj.days
+   * @param {number} obj.hours
+   * @param {number} obj.minutes
+   * @param {number} obj.seconds
+   * @param {number} obj.milliseconds
+   * @param {Object} [opts=[]] - options for creating this Duration
+   * @param {string} [opts.locale='en-US'] - the locale to use
+   * @param {string} opts.numberingSystem - the numbering system to use
+   * @param {string} [opts.conversionAccuracy='casual'] - the preset conversion system to use
+   * @param {string} [opts.matrix=Object] - the custom conversion system to use
+   * @return {Duration}
+   */ ;
+    Duration.fromObject = function fromObject(obj, opts) {
+        if (opts === void 0) opts = {};
+        if (obj == null || typeof obj !== "object") throw new InvalidArgumentError("Duration.fromObject: argument expected to be an object, got " + (obj === null ? "null" : typeof obj));
+        return new Duration({
+            values: normalizeObject(obj, Duration.normalizeUnit),
+            loc: Locale.fromObject(opts),
+            conversionAccuracy: opts.conversionAccuracy,
+            matrix: opts.matrix
+        });
+    } /**
+   * Create a Duration from DurationLike.
+   *
+   * @param {Object | number | Duration} durationLike
+   * One of:
+   * - object with keys like 'years' and 'hours'.
+   * - number representing milliseconds
+   * - Duration instance
+   * @return {Duration}
+   */ ;
+    Duration.fromDurationLike = function fromDurationLike(durationLike) {
+        if (isNumber(durationLike)) return Duration.fromMillis(durationLike);
+        else if (Duration.isDuration(durationLike)) return durationLike;
+        else if (typeof durationLike === "object") return Duration.fromObject(durationLike);
+        else throw new InvalidArgumentError("Unknown duration argument " + durationLike + " of type " + typeof durationLike);
+    } /**
+   * Create a Duration from an ISO 8601 duration string.
+   * @param {string} text - text to parse
+   * @param {Object} opts - options for parsing
+   * @param {string} [opts.locale='en-US'] - the locale to use
+   * @param {string} opts.numberingSystem - the numbering system to use
+   * @param {string} [opts.conversionAccuracy='casual'] - the preset conversion system to use
+   * @param {string} [opts.matrix=Object] - the preset conversion system to use
+   * @see https://en.wikipedia.org/wiki/ISO_8601#Durations
+   * @example Duration.fromISO('P3Y6M1W4DT12H30M5S').toObject() //=> { years: 3, months: 6, weeks: 1, days: 4, hours: 12, minutes: 30, seconds: 5 }
+   * @example Duration.fromISO('PT23H').toObject() //=> { hours: 23 }
+   * @example Duration.fromISO('P5Y3M').toObject() //=> { years: 5, months: 3 }
+   * @return {Duration}
+   */ ;
+    Duration.fromISO = function fromISO(text, opts) {
+        var _parseISODuration = parseISODuration(text), parsed = _parseISODuration[0];
+        if (parsed) return Duration.fromObject(parsed, opts);
+        else return Duration.invalid("unparsable", 'the input "' + text + "\" can't be parsed as ISO 8601");
+    } /**
+   * Create a Duration from an ISO 8601 time string.
+   * @param {string} text - text to parse
+   * @param {Object} opts - options for parsing
+   * @param {string} [opts.locale='en-US'] - the locale to use
+   * @param {string} opts.numberingSystem - the numbering system to use
+   * @param {string} [opts.conversionAccuracy='casual'] - the preset conversion system to use
+   * @param {string} [opts.matrix=Object] - the conversion system to use
+   * @see https://en.wikipedia.org/wiki/ISO_8601#Times
+   * @example Duration.fromISOTime('11:22:33.444').toObject() //=> { hours: 11, minutes: 22, seconds: 33, milliseconds: 444 }
+   * @example Duration.fromISOTime('11:00').toObject() //=> { hours: 11, minutes: 0, seconds: 0 }
+   * @example Duration.fromISOTime('T11:00').toObject() //=> { hours: 11, minutes: 0, seconds: 0 }
+   * @example Duration.fromISOTime('1100').toObject() //=> { hours: 11, minutes: 0, seconds: 0 }
+   * @example Duration.fromISOTime('T1100').toObject() //=> { hours: 11, minutes: 0, seconds: 0 }
+   * @return {Duration}
+   */ ;
+    Duration.fromISOTime = function fromISOTime(text, opts) {
+        var _parseISOTimeOnly = parseISOTimeOnly(text), parsed = _parseISOTimeOnly[0];
+        if (parsed) return Duration.fromObject(parsed, opts);
+        else return Duration.invalid("unparsable", 'the input "' + text + "\" can't be parsed as ISO 8601");
+    } /**
+   * Create an invalid Duration.
+   * @param {string} reason - simple string of why this datetime is invalid. Should not contain parameters or anything else data-dependent
+   * @param {string} [explanation=null] - longer explanation, may include parameters and other useful debugging information
+   * @return {Duration}
+   */ ;
+    Duration.invalid = function invalid(reason, explanation) {
+        if (explanation === void 0) explanation = null;
+        if (!reason) throw new InvalidArgumentError("need to specify a reason the Duration is invalid");
+        var invalid = reason instanceof Invalid ? reason : new Invalid(reason, explanation);
+        if (Settings.throwOnInvalid) throw new InvalidDurationError(invalid);
+        else return new Duration({
+            invalid: invalid
+        });
+    } /**
+   * @private
+   */ ;
+    Duration.normalizeUnit = function normalizeUnit(unit) {
+        var normalized = {
+            year: "years",
+            years: "years",
+            quarter: "quarters",
+            quarters: "quarters",
+            month: "months",
+            months: "months",
+            week: "weeks",
+            weeks: "weeks",
+            day: "days",
+            days: "days",
+            hour: "hours",
+            hours: "hours",
+            minute: "minutes",
+            minutes: "minutes",
+            second: "seconds",
+            seconds: "seconds",
+            millisecond: "milliseconds",
+            milliseconds: "milliseconds"
+        }[unit ? unit.toLowerCase() : unit];
+        if (!normalized) throw new InvalidUnitError(unit);
+        return normalized;
+    } /**
+   * Check if an object is a Duration. Works across context boundaries
+   * @param {object} o
+   * @return {boolean}
+   */ ;
+    Duration.isDuration = function isDuration(o) {
+        return o && o.isLuxonDuration || false;
+    } /**
+   * Get  the locale of a Duration, such 'en-GB'
+   * @type {string}
+   */ ;
+    var _proto = Duration.prototype;
+    /**
+   * Returns a string representation of this Duration formatted according to the specified format string. You may use these tokens:
+   * * `S` for milliseconds
+   * * `s` for seconds
+   * * `m` for minutes
+   * * `h` for hours
+   * * `d` for days
+   * * `w` for weeks
+   * * `M` for months
+   * * `y` for years
+   * Notes:
+   * * Add padding by repeating the token, e.g. "yy" pads the years to two digits, "hhhh" pads the hours out to four digits
+   * * Tokens can be escaped by wrapping with single quotes.
+   * * The duration will be converted to the set of units in the format string using {@link Duration#shiftTo} and the Durations's conversion accuracy setting.
+   * @param {string} fmt - the format string
+   * @param {Object} opts - options
+   * @param {boolean} [opts.floor=true] - floor numerical values
+   * @example Duration.fromObject({ years: 1, days: 6, seconds: 2 }).toFormat("y d s") //=> "1 6 2"
+   * @example Duration.fromObject({ years: 1, days: 6, seconds: 2 }).toFormat("yy dd sss") //=> "01 06 002"
+   * @example Duration.fromObject({ years: 1, days: 6, seconds: 2 }).toFormat("M S") //=> "12 518402000"
+   * @return {string}
+   */ _proto.toFormat = function toFormat(fmt, opts) {
+        if (opts === void 0) opts = {};
+        // reverse-compat since 1.2; we always round down now, never up, and we do it by default
+        var fmtOpts = _extends({}, opts, {
+            floor: opts.round !== false && opts.floor !== false
+        });
+        return this.isValid ? Formatter.create(this.loc, fmtOpts).formatDurationFromString(this, fmt) : INVALID$2;
+    } /**
+   * Returns a string representation of a Duration with all units included.
+   * To modify its behavior use the `listStyle` and any Intl.NumberFormat option, though `unitDisplay` is especially relevant.
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat
+   * @param opts - On option object to override the formatting. Accepts the same keys as the options parameter of the native `Int.NumberFormat` constructor, as well as `listStyle`.
+   * @example
+   * ```js
+   * var dur = Duration.fromObject({ days: 1, hours: 5, minutes: 6 })
+   * dur.toHuman() //=> '1 day, 5 hours, 6 minutes'
+   * dur.toHuman({ listStyle: "long" }) //=> '1 day, 5 hours, and 6 minutes'
+   * dur.toHuman({ unitDisplay: "short" }) //=> '1 day, 5 hr, 6 min'
+   * ```
+   */ ;
+    _proto.toHuman = function toHuman(opts) {
+        var _this = this;
+        if (opts === void 0) opts = {};
+        var l = orderedUnits$1.map(function(unit) {
+            var val = _this.values[unit];
+            if (isUndefined(val)) return null;
+            return _this.loc.numberFormatter(_extends({
+                style: "unit",
+                unitDisplay: "long"
+            }, opts, {
+                unit: unit.slice(0, -1)
+            })).format(val);
+        }).filter(function(n) {
+            return n;
+        });
+        return this.loc.listFormatter(_extends({
+            type: "conjunction",
+            style: opts.listStyle || "narrow"
+        }, opts)).format(l);
+    } /**
+   * Returns a JavaScript object with this Duration's values.
+   * @example Duration.fromObject({ years: 1, days: 6, seconds: 2 }).toObject() //=> { years: 1, days: 6, seconds: 2 }
+   * @return {Object}
+   */ ;
+    _proto.toObject = function toObject() {
+        if (!this.isValid) return {};
+        return _extends({}, this.values);
+    } /**
+   * Returns an ISO 8601-compliant string representation of this Duration.
+   * @see https://en.wikipedia.org/wiki/ISO_8601#Durations
+   * @example Duration.fromObject({ years: 3, seconds: 45 }).toISO() //=> 'P3YT45S'
+   * @example Duration.fromObject({ months: 4, seconds: 45 }).toISO() //=> 'P4MT45S'
+   * @example Duration.fromObject({ months: 5 }).toISO() //=> 'P5M'
+   * @example Duration.fromObject({ minutes: 5 }).toISO() //=> 'PT5M'
+   * @example Duration.fromObject({ milliseconds: 6 }).toISO() //=> 'PT0.006S'
+   * @return {string}
+   */ ;
+    _proto.toISO = function toISO() {
+        // we could use the formatter, but this is an easier way to get the minimum string
+        if (!this.isValid) return null;
+        var s = "P";
+        if (this.years !== 0) s += this.years + "Y";
+        if (this.months !== 0 || this.quarters !== 0) s += this.months + this.quarters * 3 + "M";
+        if (this.weeks !== 0) s += this.weeks + "W";
+        if (this.days !== 0) s += this.days + "D";
+        if (this.hours !== 0 || this.minutes !== 0 || this.seconds !== 0 || this.milliseconds !== 0) s += "T";
+        if (this.hours !== 0) s += this.hours + "H";
+        if (this.minutes !== 0) s += this.minutes + "M";
+        if (this.seconds !== 0 || this.milliseconds !== 0) // this will handle "floating point madness" by removing extra decimal places
+        // https://stackoverflow.com/questions/588004/is-floating-point-math-broken
+        s += roundTo(this.seconds + this.milliseconds / 1000, 3) + "S";
+        if (s === "P") s += "T0S";
+        return s;
+    } /**
+   * Returns an ISO 8601-compliant string representation of this Duration, formatted as a time of day.
+   * Note that this will return null if the duration is invalid, negative, or equal to or greater than 24 hours.
+   * @see https://en.wikipedia.org/wiki/ISO_8601#Times
+   * @param {Object} opts - options
+   * @param {boolean} [opts.suppressMilliseconds=false] - exclude milliseconds from the format if they're 0
+   * @param {boolean} [opts.suppressSeconds=false] - exclude seconds from the format if they're 0
+   * @param {boolean} [opts.includePrefix=false] - include the `T` prefix
+   * @param {string} [opts.format='extended'] - choose between the basic and extended format
+   * @example Duration.fromObject({ hours: 11 }).toISOTime() //=> '11:00:00.000'
+   * @example Duration.fromObject({ hours: 11 }).toISOTime({ suppressMilliseconds: true }) //=> '11:00:00'
+   * @example Duration.fromObject({ hours: 11 }).toISOTime({ suppressSeconds: true }) //=> '11:00'
+   * @example Duration.fromObject({ hours: 11 }).toISOTime({ includePrefix: true }) //=> 'T11:00:00.000'
+   * @example Duration.fromObject({ hours: 11 }).toISOTime({ format: 'basic' }) //=> '110000.000'
+   * @return {string}
+   */ ;
+    _proto.toISOTime = function toISOTime(opts) {
+        if (opts === void 0) opts = {};
+        if (!this.isValid) return null;
+        var millis = this.toMillis();
+        if (millis < 0 || millis >= 86400000) return null;
+        opts = _extends({
+            suppressMilliseconds: false,
+            suppressSeconds: false,
+            includePrefix: false,
+            format: "extended"
+        }, opts);
+        var value = this.shiftTo("hours", "minutes", "seconds", "milliseconds");
+        var fmt = opts.format === "basic" ? "hhmm" : "hh:mm";
+        if (!opts.suppressSeconds || value.seconds !== 0 || value.milliseconds !== 0) {
+            fmt += opts.format === "basic" ? "ss" : ":ss";
+            if (!opts.suppressMilliseconds || value.milliseconds !== 0) fmt += ".SSS";
+        }
+        var str = value.toFormat(fmt);
+        if (opts.includePrefix) str = "T" + str;
+        return str;
+    } /**
+   * Returns an ISO 8601 representation of this Duration appropriate for use in JSON.
+   * @return {string}
+   */ ;
+    _proto.toJSON = function toJSON() {
+        return this.toISO();
+    } /**
+   * Returns an ISO 8601 representation of this Duration appropriate for use in debugging.
+   * @return {string}
+   */ ;
+    _proto.toString = function toString() {
+        return this.toISO();
+    } /**
+   * Returns an milliseconds value of this Duration.
+   * @return {number}
+   */ ;
+    _proto.toMillis = function toMillis() {
+        return this.as("milliseconds");
+    } /**
+   * Returns an milliseconds value of this Duration. Alias of {@link toMillis}
+   * @return {number}
+   */ ;
+    _proto.valueOf = function valueOf() {
+        return this.toMillis();
+    } /**
+   * Make this Duration longer by the specified amount. Return a newly-constructed Duration.
+   * @param {Duration|Object|number} duration - The amount to add. Either a Luxon Duration, a number of milliseconds, the object argument to Duration.fromObject()
+   * @return {Duration}
+   */ ;
+    _proto.plus = function plus(duration) {
+        if (!this.isValid) return this;
+        var dur = Duration.fromDurationLike(duration), result = {};
+        for(var _i2 = 0, _orderedUnits = orderedUnits$1; _i2 < _orderedUnits.length; _i2++){
+            var k = _orderedUnits[_i2];
+            if (hasOwnProperty(dur.values, k) || hasOwnProperty(this.values, k)) result[k] = dur.get(k) + this.get(k);
+        }
+        return clone$1(this, {
+            values: result
+        }, true);
+    } /**
+   * Make this Duration shorter by the specified amount. Return a newly-constructed Duration.
+   * @param {Duration|Object|number} duration - The amount to subtract. Either a Luxon Duration, a number of milliseconds, the object argument to Duration.fromObject()
+   * @return {Duration}
+   */ ;
+    _proto.minus = function minus(duration) {
+        if (!this.isValid) return this;
+        var dur = Duration.fromDurationLike(duration);
+        return this.plus(dur.negate());
+    } /**
+   * Scale this Duration by the specified amount. Return a newly-constructed Duration.
+   * @param {function} fn - The function to apply to each unit. Arity is 1 or 2: the value of the unit and, optionally, the unit name. Must return a number.
+   * @example Duration.fromObject({ hours: 1, minutes: 30 }).mapUnits(x => x * 2) //=> { hours: 2, minutes: 60 }
+   * @example Duration.fromObject({ hours: 1, minutes: 30 }).mapUnits((x, u) => u === "hours" ? x * 2 : x) //=> { hours: 2, minutes: 30 }
+   * @return {Duration}
+   */ ;
+    _proto.mapUnits = function mapUnits(fn) {
+        if (!this.isValid) return this;
+        var result = {};
+        for(var _i3 = 0, _Object$keys = Object.keys(this.values); _i3 < _Object$keys.length; _i3++){
+            var k = _Object$keys[_i3];
+            result[k] = asNumber(fn(this.values[k], k));
+        }
+        return clone$1(this, {
+            values: result
+        }, true);
+    } /**
+   * Get the value of unit.
+   * @param {string} unit - a unit such as 'minute' or 'day'
+   * @example Duration.fromObject({years: 2, days: 3}).get('years') //=> 2
+   * @example Duration.fromObject({years: 2, days: 3}).get('months') //=> 0
+   * @example Duration.fromObject({years: 2, days: 3}).get('days') //=> 3
+   * @return {number}
+   */ ;
+    _proto.get = function get(unit) {
+        return this[Duration.normalizeUnit(unit)];
+    } /**
+   * "Set" the values of specified units. Return a newly-constructed Duration.
+   * @param {Object} values - a mapping of units to numbers
+   * @example dur.set({ years: 2017 })
+   * @example dur.set({ hours: 8, minutes: 30 })
+   * @return {Duration}
+   */ ;
+    _proto.set = function set(values) {
+        if (!this.isValid) return this;
+        var mixed = _extends({}, this.values, normalizeObject(values, Duration.normalizeUnit));
+        return clone$1(this, {
+            values: mixed
+        });
+    } /**
+   * "Set" the locale and/or numberingSystem.  Returns a newly-constructed Duration.
+   * @example dur.reconfigure({ locale: 'en-GB' })
+   * @return {Duration}
+   */ ;
+    _proto.reconfigure = function reconfigure(_temp) {
+        var _ref = _temp === void 0 ? {} : _temp, locale = _ref.locale, numberingSystem = _ref.numberingSystem, conversionAccuracy = _ref.conversionAccuracy, matrix = _ref.matrix;
+        var loc = this.loc.clone({
+            locale: locale,
+            numberingSystem: numberingSystem
+        });
+        var opts = {
+            loc: loc,
+            matrix: matrix,
+            conversionAccuracy: conversionAccuracy
+        };
+        return clone$1(this, opts);
+    } /**
+   * Return the length of the duration in the specified unit.
+   * @param {string} unit - a unit such as 'minutes' or 'days'
+   * @example Duration.fromObject({years: 1}).as('days') //=> 365
+   * @example Duration.fromObject({years: 1}).as('months') //=> 12
+   * @example Duration.fromObject({hours: 60}).as('days') //=> 2.5
+   * @return {number}
+   */ ;
+    _proto.as = function as(unit) {
+        return this.isValid ? this.shiftTo(unit).get(unit) : NaN;
+    } /**
+   * Reduce this Duration to its canonical representation in its current units.
+   * @example Duration.fromObject({ years: 2, days: 5000 }).normalize().toObject() //=> { years: 15, days: 255 }
+   * @example Duration.fromObject({ hours: 12, minutes: -45 }).normalize().toObject() //=> { hours: 11, minutes: 15 }
+   * @return {Duration}
+   */ ;
+    _proto.normalize = function normalize() {
+        if (!this.isValid) return this;
+        var vals = this.toObject();
+        normalizeValues(this.matrix, vals);
+        return clone$1(this, {
+            values: vals
+        }, true);
+    } /**
+   * Rescale units to its largest representation
+   * @example Duration.fromObject({ milliseconds: 90000 }).rescale().toObject() //=> { minutes: 1, seconds: 30 }
+   * @return {Duration}
+   */ ;
+    _proto.rescale = function rescale() {
+        if (!this.isValid) return this;
+        var vals = removeZeroes(this.normalize().shiftToAll().toObject());
+        return clone$1(this, {
+            values: vals
+        }, true);
+    } /**
+   * Convert this Duration into its representation in a different set of units.
+   * @example Duration.fromObject({ hours: 1, seconds: 30 }).shiftTo('minutes', 'milliseconds').toObject() //=> { minutes: 60, milliseconds: 30000 }
+   * @return {Duration}
+   */ ;
+    _proto.shiftTo = function shiftTo() {
+        for(var _len = arguments.length, units = new Array(_len), _key = 0; _key < _len; _key++)units[_key] = arguments[_key];
+        if (!this.isValid) return this;
+        if (units.length === 0) return this;
+        units = units.map(function(u) {
+            return Duration.normalizeUnit(u);
+        });
+        var built = {}, accumulated = {}, vals = this.toObject();
+        var lastUnit;
+        for(var _i4 = 0, _orderedUnits2 = orderedUnits$1; _i4 < _orderedUnits2.length; _i4++){
+            var k = _orderedUnits2[_i4];
+            if (units.indexOf(k) >= 0) {
+                lastUnit = k;
+                var own = 0;
+                // anything we haven't boiled down yet should get boiled to this unit
+                for(var ak in accumulated){
+                    own += this.matrix[ak][k] * accumulated[ak];
+                    accumulated[ak] = 0;
+                }
+                // plus anything that's already in this unit
+                if (isNumber(vals[k])) own += vals[k];
+                var i = Math.trunc(own);
+                built[k] = i;
+                accumulated[k] = (own * 1000 - i * 1000) / 1000;
+                // plus anything further down the chain that should be rolled up in to this
+                for(var down in vals)if (orderedUnits$1.indexOf(down) > orderedUnits$1.indexOf(k)) convert(this.matrix, vals, down, built, k);
+            // otherwise, keep it in the wings to boil it later
+            } else if (isNumber(vals[k])) accumulated[k] = vals[k];
+        }
+        // anything leftover becomes the decimal for the last unit
+        // lastUnit must be defined since units is not empty
+        for(var key in accumulated)if (accumulated[key] !== 0) built[lastUnit] += key === lastUnit ? accumulated[key] : accumulated[key] / this.matrix[lastUnit][key];
+        return clone$1(this, {
+            values: built
+        }, true).normalize();
+    } /**
+   * Shift this Duration to all available units.
+   * Same as shiftTo("years", "months", "weeks", "days", "hours", "minutes", "seconds", "milliseconds")
+   * @return {Duration}
+   */ ;
+    _proto.shiftToAll = function shiftToAll() {
+        if (!this.isValid) return this;
+        return this.shiftTo("years", "months", "weeks", "days", "hours", "minutes", "seconds", "milliseconds");
+    } /**
+   * Return the negative of this Duration.
+   * @example Duration.fromObject({ hours: 1, seconds: 30 }).negate().toObject() //=> { hours: -1, seconds: -30 }
+   * @return {Duration}
+   */ ;
+    _proto.negate = function negate() {
+        if (!this.isValid) return this;
+        var negated = {};
+        for(var _i5 = 0, _Object$keys2 = Object.keys(this.values); _i5 < _Object$keys2.length; _i5++){
+            var k = _Object$keys2[_i5];
+            negated[k] = this.values[k] === 0 ? 0 : -this.values[k];
+        }
+        return clone$1(this, {
+            values: negated
+        }, true);
+    } /**
+   * Get the years.
+   * @type {number}
+   */ ;
+    /**
+   * Equality check
+   * Two Durations are equal iff they have the same units and the same values for each unit.
+   * @param {Duration} other
+   * @return {boolean}
+   */ _proto.equals = function equals(other) {
+        if (!this.isValid || !other.isValid) return false;
+        if (!this.loc.equals(other.loc)) return false;
+        function eq(v1, v2) {
+            // Consider 0 and undefined as equal
+            if (v1 === undefined || v1 === 0) return v2 === undefined || v2 === 0;
+            return v1 === v2;
+        }
+        for(var _i6 = 0, _orderedUnits3 = orderedUnits$1; _i6 < _orderedUnits3.length; _i6++){
+            var u = _orderedUnits3[_i6];
+            if (!eq(this.values[u], other.values[u])) return false;
+        }
+        return true;
+    };
+    _createClass(Duration, [
+        {
+            key: "locale",
+            get: function get() {
+                return this.isValid ? this.loc.locale : null;
+            }
+        },
+        {
+            key: "numberingSystem",
+            get: function get() {
+                return this.isValid ? this.loc.numberingSystem : null;
+            }
+        },
+        {
+            key: "years",
+            get: function get() {
+                return this.isValid ? this.values.years || 0 : NaN;
+            }
+        },
+        {
+            key: "quarters",
+            get: function get() {
+                return this.isValid ? this.values.quarters || 0 : NaN;
+            }
+        },
+        {
+            key: "months",
+            get: function get() {
+                return this.isValid ? this.values.months || 0 : NaN;
+            }
+        },
+        {
+            key: "weeks",
+            get: function get() {
+                return this.isValid ? this.values.weeks || 0 : NaN;
+            }
+        },
+        {
+            key: "days",
+            get: function get() {
+                return this.isValid ? this.values.days || 0 : NaN;
+            }
+        },
+        {
+            key: "hours",
+            get: function get() {
+                return this.isValid ? this.values.hours || 0 : NaN;
+            }
+        },
+        {
+            key: "minutes",
+            get: function get() {
+                return this.isValid ? this.values.minutes || 0 : NaN;
+            }
+        },
+        {
+            key: "seconds",
+            get: function get() {
+                return this.isValid ? this.values.seconds || 0 : NaN;
+            }
+        },
+        {
+            key: "milliseconds",
+            get: function get() {
+                return this.isValid ? this.values.milliseconds || 0 : NaN;
+            }
+        },
+        {
+            key: "isValid",
+            get: function get() {
+                return this.invalid === null;
+            }
+        },
+        {
+            key: "invalidReason",
+            get: function get() {
+                return this.invalid ? this.invalid.reason : null;
+            }
+        },
+        {
+            key: "invalidExplanation",
+            get: function get() {
+                return this.invalid ? this.invalid.explanation : null;
+            }
+        }
+    ]);
+    return Duration;
+}();
+var INVALID$1 = "Invalid Interval";
+// checks if the start is equal to or before the end
+function validateStartEnd(start, end) {
+    if (!start || !start.isValid) return Interval.invalid("missing or invalid start");
+    else if (!end || !end.isValid) return Interval.invalid("missing or invalid end");
+    else if (end < start) return Interval.invalid("end before start", "The end of an interval must be after its start, but you had start=" + start.toISO() + " and end=" + end.toISO());
+    else return null;
+}
+/**
+ * An Interval object represents a half-open interval of time, where each endpoint is a {@link DateTime}. Conceptually, it's a container for those two endpoints, accompanied by methods for creating, parsing, interrogating, comparing, transforming, and formatting them.
+ *
+ * Here is a brief overview of the most commonly used methods and getters in Interval:
+ *
+ * * **Creation** To create an Interval, use {@link Interval.fromDateTimes}, {@link Interval.after}, {@link Interval.before}, or {@link Interval.fromISO}.
+ * * **Accessors** Use {@link Interval#start} and {@link Interval#end} to get the start and end.
+ * * **Interrogation** To analyze the Interval, use {@link Interval#count}, {@link Interval#length}, {@link Interval#hasSame}, {@link Interval#contains}, {@link Interval#isAfter}, or {@link Interval#isBefore}.
+ * * **Transformation** To create other Intervals out of this one, use {@link Interval#set}, {@link Interval#splitAt}, {@link Interval#splitBy}, {@link Interval#divideEqually}, {@link Interval.merge}, {@link Interval.xor}, {@link Interval#union}, {@link Interval#intersection}, or {@link Interval#difference}.
+ * * **Comparison** To compare this Interval to another one, use {@link Interval#equals}, {@link Interval#overlaps}, {@link Interval#abutsStart}, {@link Interval#abutsEnd}, {@link Interval#engulfs}
+ * * **Output** To convert the Interval into other representations, see {@link Interval#toString}, {@link Interval#toLocaleString}, {@link Interval#toISO}, {@link Interval#toISODate}, {@link Interval#toISOTime}, {@link Interval#toFormat}, and {@link Interval#toDuration}.
+ */ var Interval = /*#__PURE__*/ function() {
+    /**
+   * @private
+   */ function Interval(config) {
+        /**
+     * @access private
+     */ this.s = config.start;
+        /**
+     * @access private
+     */ this.e = config.end;
+        /**
+     * @access private
+     */ this.invalid = config.invalid || null;
+        /**
+     * @access private
+     */ this.isLuxonInterval = true;
+    }
+    /**
+   * Create an invalid Interval.
+   * @param {string} reason - simple string of why this Interval is invalid. Should not contain parameters or anything else data-dependent
+   * @param {string} [explanation=null] - longer explanation, may include parameters and other useful debugging information
+   * @return {Interval}
+   */ Interval.invalid = function invalid(reason, explanation) {
+        if (explanation === void 0) explanation = null;
+        if (!reason) throw new InvalidArgumentError("need to specify a reason the Interval is invalid");
+        var invalid = reason instanceof Invalid ? reason : new Invalid(reason, explanation);
+        if (Settings.throwOnInvalid) throw new InvalidIntervalError(invalid);
+        else return new Interval({
+            invalid: invalid
+        });
+    } /**
+   * Create an Interval from a start DateTime and an end DateTime. Inclusive of the start but not the end.
+   * @param {DateTime|Date|Object} start
+   * @param {DateTime|Date|Object} end
+   * @return {Interval}
+   */ ;
+    Interval.fromDateTimes = function fromDateTimes(start, end) {
+        var builtStart = friendlyDateTime(start), builtEnd = friendlyDateTime(end);
+        var validateError = validateStartEnd(builtStart, builtEnd);
+        if (validateError == null) return new Interval({
+            start: builtStart,
+            end: builtEnd
+        });
+        else return validateError;
+    } /**
+   * Create an Interval from a start DateTime and a Duration to extend to.
+   * @param {DateTime|Date|Object} start
+   * @param {Duration|Object|number} duration - the length of the Interval.
+   * @return {Interval}
+   */ ;
+    Interval.after = function after(start, duration) {
+        var dur = Duration.fromDurationLike(duration), dt = friendlyDateTime(start);
+        return Interval.fromDateTimes(dt, dt.plus(dur));
+    } /**
+   * Create an Interval from an end DateTime and a Duration to extend backwards to.
+   * @param {DateTime|Date|Object} end
+   * @param {Duration|Object|number} duration - the length of the Interval.
+   * @return {Interval}
+   */ ;
+    Interval.before = function before(end, duration) {
+        var dur = Duration.fromDurationLike(duration), dt = friendlyDateTime(end);
+        return Interval.fromDateTimes(dt.minus(dur), dt);
+    } /**
+   * Create an Interval from an ISO 8601 string.
+   * Accepts `<start>/<end>`, `<start>/<duration>`, and `<duration>/<end>` formats.
+   * @param {string} text - the ISO string to parse
+   * @param {Object} [opts] - options to pass {@link DateTime#fromISO} and optionally {@link Duration#fromISO}
+   * @see https://en.wikipedia.org/wiki/ISO_8601#Time_intervals
+   * @return {Interval}
+   */ ;
+    Interval.fromISO = function fromISO(text, opts) {
+        var _split = (text || "").split("/", 2), s = _split[0], e = _split[1];
+        if (s && e) {
+            var start, startIsValid;
+            try {
+                start = DateTime.fromISO(s, opts);
+                startIsValid = start.isValid;
+            } catch (e) {
+                startIsValid = false;
+            }
+            var end, endIsValid;
+            try {
+                end = DateTime.fromISO(e, opts);
+                endIsValid = end.isValid;
+            } catch (e) {
+                endIsValid = false;
+            }
+            if (startIsValid && endIsValid) return Interval.fromDateTimes(start, end);
+            if (startIsValid) {
+                var dur = Duration.fromISO(e, opts);
+                if (dur.isValid) return Interval.after(start, dur);
+            } else if (endIsValid) {
+                var _dur = Duration.fromISO(s, opts);
+                if (_dur.isValid) return Interval.before(end, _dur);
+            }
+        }
+        return Interval.invalid("unparsable", 'the input "' + text + "\" can't be parsed as ISO 8601");
+    } /**
+   * Check if an object is an Interval. Works across context boundaries
+   * @param {object} o
+   * @return {boolean}
+   */ ;
+    Interval.isInterval = function isInterval(o) {
+        return o && o.isLuxonInterval || false;
+    } /**
+   * Returns the start of the Interval
+   * @type {DateTime}
+   */ ;
+    var _proto = Interval.prototype;
+    /**
+   * Returns the length of the Interval in the specified unit.
+   * @param {string} unit - the unit (such as 'hours' or 'days') to return the length in.
+   * @return {number}
+   */ _proto.length = function length(unit) {
+        if (unit === void 0) unit = "milliseconds";
+        return this.isValid ? this.toDuration.apply(this, [
+            unit
+        ]).get(unit) : NaN;
+    } /**
+   * Returns the count of minutes, hours, days, months, or years included in the Interval, even in part.
+   * Unlike {@link Interval#length} this counts sections of the calendar, not periods of time, e.g. specifying 'day'
+   * asks 'what dates are included in this interval?', not 'how many days long is this interval?'
+   * @param {string} [unit='milliseconds'] - the unit of time to count.
+   * @return {number}
+   */ ;
+    _proto.count = function count(unit) {
+        if (unit === void 0) unit = "milliseconds";
+        if (!this.isValid) return NaN;
+        var start = this.start.startOf(unit), end = this.end.startOf(unit);
+        return Math.floor(end.diff(start, unit).get(unit)) + (end.valueOf() !== this.end.valueOf());
+    } /**
+   * Returns whether this Interval's start and end are both in the same unit of time
+   * @param {string} unit - the unit of time to check sameness on
+   * @return {boolean}
+   */ ;
+    _proto.hasSame = function hasSame(unit) {
+        return this.isValid ? this.isEmpty() || this.e.minus(1).hasSame(this.s, unit) : false;
+    } /**
+   * Return whether this Interval has the same start and end DateTimes.
+   * @return {boolean}
+   */ ;
+    _proto.isEmpty = function isEmpty() {
+        return this.s.valueOf() === this.e.valueOf();
+    } /**
+   * Return whether this Interval's start is after the specified DateTime.
+   * @param {DateTime} dateTime
+   * @return {boolean}
+   */ ;
+    _proto.isAfter = function isAfter(dateTime) {
+        if (!this.isValid) return false;
+        return this.s > dateTime;
+    } /**
+   * Return whether this Interval's end is before the specified DateTime.
+   * @param {DateTime} dateTime
+   * @return {boolean}
+   */ ;
+    _proto.isBefore = function isBefore(dateTime) {
+        if (!this.isValid) return false;
+        return this.e <= dateTime;
+    } /**
+   * Return whether this Interval contains the specified DateTime.
+   * @param {DateTime} dateTime
+   * @return {boolean}
+   */ ;
+    _proto.contains = function contains(dateTime) {
+        if (!this.isValid) return false;
+        return this.s <= dateTime && this.e > dateTime;
+    } /**
+   * "Sets" the start and/or end dates. Returns a newly-constructed Interval.
+   * @param {Object} values - the values to set
+   * @param {DateTime} values.start - the starting DateTime
+   * @param {DateTime} values.end - the ending DateTime
+   * @return {Interval}
+   */ ;
+    _proto.set = function set(_temp) {
+        var _ref = _temp === void 0 ? {} : _temp, start = _ref.start, end = _ref.end;
+        if (!this.isValid) return this;
+        return Interval.fromDateTimes(start || this.s, end || this.e);
+    } /**
+   * Split this Interval at each of the specified DateTimes
+   * @param {...DateTime} dateTimes - the unit of time to count.
+   * @return {Array}
+   */ ;
+    _proto.splitAt = function splitAt() {
+        var _this = this;
+        if (!this.isValid) return [];
+        for(var _len = arguments.length, dateTimes = new Array(_len), _key = 0; _key < _len; _key++)dateTimes[_key] = arguments[_key];
+        var sorted = dateTimes.map(friendlyDateTime).filter(function(d) {
+            return _this.contains(d);
+        }).sort(), results = [];
+        var s = this.s, i = 0;
+        while(s < this.e){
+            var added = sorted[i] || this.e, next = +added > +this.e ? this.e : added;
+            results.push(Interval.fromDateTimes(s, next));
+            s = next;
+            i += 1;
+        }
+        return results;
+    } /**
+   * Split this Interval into smaller Intervals, each of the specified length.
+   * Left over time is grouped into a smaller interval
+   * @param {Duration|Object|number} duration - The length of each resulting interval.
+   * @return {Array}
+   */ ;
+    _proto.splitBy = function splitBy(duration) {
+        var dur = Duration.fromDurationLike(duration);
+        if (!this.isValid || !dur.isValid || dur.as("milliseconds") === 0) return [];
+        var s = this.s, idx = 1, next;
+        var results = [];
+        while(s < this.e){
+            var added = this.start.plus(dur.mapUnits(function(x) {
+                return x * idx;
+            }));
+            next = +added > +this.e ? this.e : added;
+            results.push(Interval.fromDateTimes(s, next));
+            s = next;
+            idx += 1;
+        }
+        return results;
+    } /**
+   * Split this Interval into the specified number of smaller intervals.
+   * @param {number} numberOfParts - The number of Intervals to divide the Interval into.
+   * @return {Array}
+   */ ;
+    _proto.divideEqually = function divideEqually(numberOfParts) {
+        if (!this.isValid) return [];
+        return this.splitBy(this.length() / numberOfParts).slice(0, numberOfParts);
+    } /**
+   * Return whether this Interval overlaps with the specified Interval
+   * @param {Interval} other
+   * @return {boolean}
+   */ ;
+    _proto.overlaps = function overlaps(other) {
+        return this.e > other.s && this.s < other.e;
+    } /**
+   * Return whether this Interval's end is adjacent to the specified Interval's start.
+   * @param {Interval} other
+   * @return {boolean}
+   */ ;
+    _proto.abutsStart = function abutsStart(other) {
+        if (!this.isValid) return false;
+        return +this.e === +other.s;
+    } /**
+   * Return whether this Interval's start is adjacent to the specified Interval's end.
+   * @param {Interval} other
+   * @return {boolean}
+   */ ;
+    _proto.abutsEnd = function abutsEnd(other) {
+        if (!this.isValid) return false;
+        return +other.e === +this.s;
+    } /**
+   * Return whether this Interval engulfs the start and end of the specified Interval.
+   * @param {Interval} other
+   * @return {boolean}
+   */ ;
+    _proto.engulfs = function engulfs(other) {
+        if (!this.isValid) return false;
+        return this.s <= other.s && this.e >= other.e;
+    } /**
+   * Return whether this Interval has the same start and end as the specified Interval.
+   * @param {Interval} other
+   * @return {boolean}
+   */ ;
+    _proto.equals = function equals(other) {
+        if (!this.isValid || !other.isValid) return false;
+        return this.s.equals(other.s) && this.e.equals(other.e);
+    } /**
+   * Return an Interval representing the intersection of this Interval and the specified Interval.
+   * Specifically, the resulting Interval has the maximum start time and the minimum end time of the two Intervals.
+   * Returns null if the intersection is empty, meaning, the intervals don't intersect.
+   * @param {Interval} other
+   * @return {Interval}
+   */ ;
+    _proto.intersection = function intersection(other) {
+        if (!this.isValid) return this;
+        var s = this.s > other.s ? this.s : other.s, e = this.e < other.e ? this.e : other.e;
+        if (s >= e) return null;
+        else return Interval.fromDateTimes(s, e);
+    } /**
+   * Return an Interval representing the union of this Interval and the specified Interval.
+   * Specifically, the resulting Interval has the minimum start time and the maximum end time of the two Intervals.
+   * @param {Interval} other
+   * @return {Interval}
+   */ ;
+    _proto.union = function union(other) {
+        if (!this.isValid) return this;
+        var s = this.s < other.s ? this.s : other.s, e = this.e > other.e ? this.e : other.e;
+        return Interval.fromDateTimes(s, e);
+    } /**
+   * Merge an array of Intervals into a equivalent minimal set of Intervals.
+   * Combines overlapping and adjacent Intervals.
+   * @param {Array} intervals
+   * @return {Array}
+   */ ;
+    Interval.merge = function merge(intervals) {
+        var _intervals$sort$reduc = intervals.sort(function(a, b) {
+            return a.s - b.s;
+        }).reduce(function(_ref2, item) {
+            var sofar = _ref2[0], current = _ref2[1];
+            if (!current) return [
+                sofar,
+                item
+            ];
+            else if (current.overlaps(item) || current.abutsStart(item)) return [
+                sofar,
+                current.union(item)
+            ];
+            else return [
+                sofar.concat([
+                    current
+                ]),
+                item
+            ];
+        }, [
+            [],
+            null
+        ]), found = _intervals$sort$reduc[0], final = _intervals$sort$reduc[1];
+        if (final) found.push(final);
+        return found;
+    } /**
+   * Return an array of Intervals representing the spans of time that only appear in one of the specified Intervals.
+   * @param {Array} intervals
+   * @return {Array}
+   */ ;
+    Interval.xor = function xor(intervals) {
+        var _Array$prototype;
+        var start = null, currentCount = 0;
+        var results = [], ends = intervals.map(function(i) {
+            return [
+                {
+                    time: i.s,
+                    type: "s"
+                },
+                {
+                    time: i.e,
+                    type: "e"
+                }
+            ];
+        }), flattened = (_Array$prototype = Array.prototype).concat.apply(_Array$prototype, ends), arr = flattened.sort(function(a, b) {
+            return a.time - b.time;
+        });
+        for(var _iterator = _createForOfIteratorHelperLoose(arr), _step; !(_step = _iterator()).done;){
+            var i = _step.value;
+            currentCount += i.type === "s" ? 1 : -1;
+            if (currentCount === 1) start = i.time;
+            else {
+                if (start && +start !== +i.time) results.push(Interval.fromDateTimes(start, i.time));
+                start = null;
+            }
+        }
+        return Interval.merge(results);
+    } /**
+   * Return an Interval representing the span of time in this Interval that doesn't overlap with any of the specified Intervals.
+   * @param {...Interval} intervals
+   * @return {Array}
+   */ ;
+    _proto.difference = function difference() {
+        var _this2 = this;
+        for(var _len2 = arguments.length, intervals = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++)intervals[_key2] = arguments[_key2];
+        return Interval.xor([
+            this
+        ].concat(intervals)).map(function(i) {
+            return _this2.intersection(i);
+        }).filter(function(i) {
+            return i && !i.isEmpty();
+        });
+    } /**
+   * Returns a string representation of this Interval appropriate for debugging.
+   * @return {string}
+   */ ;
+    _proto.toString = function toString() {
+        if (!this.isValid) return INVALID$1;
+        return "[" + this.s.toISO() + " – " + this.e.toISO() + ")";
+    } /**
+   * Returns a localized string representing this Interval. Accepts the same options as the
+   * Intl.DateTimeFormat constructor and any presets defined by Luxon, such as
+   * {@link DateTime.DATE_FULL} or {@link DateTime.TIME_SIMPLE}. The exact behavior of this method
+   * is browser-specific, but in general it will return an appropriate representation of the
+   * Interval in the assigned locale. Defaults to the system's locale if no locale has been
+   * specified.
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat
+   * @param {Object} [formatOpts=DateTime.DATE_SHORT] - Either a DateTime preset or
+   * Intl.DateTimeFormat constructor options.
+   * @param {Object} opts - Options to override the configuration of the start DateTime.
+   * @example Interval.fromISO('2022-11-07T09:00Z/2022-11-08T09:00Z').toLocaleString(); //=> 11/7/2022 – 11/8/2022
+   * @example Interval.fromISO('2022-11-07T09:00Z/2022-11-08T09:00Z').toLocaleString(DateTime.DATE_FULL); //=> November 7 – 8, 2022
+   * @example Interval.fromISO('2022-11-07T09:00Z/2022-11-08T09:00Z').toLocaleString(DateTime.DATE_FULL, { locale: 'fr-FR' }); //=> 7–8 novembre 2022
+   * @example Interval.fromISO('2022-11-07T17:00Z/2022-11-07T19:00Z').toLocaleString(DateTime.TIME_SIMPLE); //=> 6:00 – 8:00 PM
+   * @example Interval.fromISO('2022-11-07T17:00Z/2022-11-07T19:00Z').toLocaleString({ weekday: 'short', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' }); //=> Mon, Nov 07, 6:00 – 8:00 p
+   * @return {string}
+   */ ;
+    _proto.toLocaleString = function toLocaleString(formatOpts, opts) {
+        if (formatOpts === void 0) formatOpts = DATE_SHORT;
+        if (opts === void 0) opts = {};
+        return this.isValid ? Formatter.create(this.s.loc.clone(opts), formatOpts).formatInterval(this) : INVALID$1;
+    } /**
+   * Returns an ISO 8601-compliant string representation of this Interval.
+   * @see https://en.wikipedia.org/wiki/ISO_8601#Time_intervals
+   * @param {Object} opts - The same options as {@link DateTime#toISO}
+   * @return {string}
+   */ ;
+    _proto.toISO = function toISO(opts) {
+        if (!this.isValid) return INVALID$1;
+        return this.s.toISO(opts) + "/" + this.e.toISO(opts);
+    } /**
+   * Returns an ISO 8601-compliant string representation of date of this Interval.
+   * The time components are ignored.
+   * @see https://en.wikipedia.org/wiki/ISO_8601#Time_intervals
+   * @return {string}
+   */ ;
+    _proto.toISODate = function toISODate() {
+        if (!this.isValid) return INVALID$1;
+        return this.s.toISODate() + "/" + this.e.toISODate();
+    } /**
+   * Returns an ISO 8601-compliant string representation of time of this Interval.
+   * The date components are ignored.
+   * @see https://en.wikipedia.org/wiki/ISO_8601#Time_intervals
+   * @param {Object} opts - The same options as {@link DateTime#toISO}
+   * @return {string}
+   */ ;
+    _proto.toISOTime = function toISOTime(opts) {
+        if (!this.isValid) return INVALID$1;
+        return this.s.toISOTime(opts) + "/" + this.e.toISOTime(opts);
+    } /**
+   * Returns a string representation of this Interval formatted according to the specified format
+   * string. **You may not want this.** See {@link Interval#toLocaleString} for a more flexible
+   * formatting tool.
+   * @param {string} dateFormat - The format string. This string formats the start and end time.
+   * See {@link DateTime#toFormat} for details.
+   * @param {Object} opts - Options.
+   * @param {string} [opts.separator =  ' – '] - A separator to place between the start and end
+   * representations.
+   * @return {string}
+   */ ;
+    _proto.toFormat = function toFormat(dateFormat, _temp2) {
+        var _ref3 = _temp2 === void 0 ? {} : _temp2, _ref3$separator = _ref3.separator, separator = _ref3$separator === void 0 ? " – " : _ref3$separator;
+        if (!this.isValid) return INVALID$1;
+        return "" + this.s.toFormat(dateFormat) + separator + this.e.toFormat(dateFormat);
+    } /**
+   * Return a Duration representing the time spanned by this interval.
+   * @param {string|string[]} [unit=['milliseconds']] - the unit or units (such as 'hours' or 'days') to include in the duration.
+   * @param {Object} opts - options that affect the creation of the Duration
+   * @param {string} [opts.conversionAccuracy='casual'] - the conversion system to use
+   * @example Interval.fromDateTimes(dt1, dt2).toDuration().toObject() //=> { milliseconds: 88489257 }
+   * @example Interval.fromDateTimes(dt1, dt2).toDuration('days').toObject() //=> { days: 1.0241812152777778 }
+   * @example Interval.fromDateTimes(dt1, dt2).toDuration(['hours', 'minutes']).toObject() //=> { hours: 24, minutes: 34.82095 }
+   * @example Interval.fromDateTimes(dt1, dt2).toDuration(['hours', 'minutes', 'seconds']).toObject() //=> { hours: 24, minutes: 34, seconds: 49.257 }
+   * @example Interval.fromDateTimes(dt1, dt2).toDuration('seconds').toObject() //=> { seconds: 88489.257 }
+   * @return {Duration}
+   */ ;
+    _proto.toDuration = function toDuration(unit, opts) {
+        if (!this.isValid) return Duration.invalid(this.invalidReason);
+        return this.e.diff(this.s, unit, opts);
+    } /**
+   * Run mapFn on the interval start and end, returning a new Interval from the resulting DateTimes
+   * @param {function} mapFn
+   * @return {Interval}
+   * @example Interval.fromDateTimes(dt1, dt2).mapEndpoints(endpoint => endpoint.toUTC())
+   * @example Interval.fromDateTimes(dt1, dt2).mapEndpoints(endpoint => endpoint.plus({ hours: 2 }))
+   */ ;
+    _proto.mapEndpoints = function mapEndpoints(mapFn) {
+        return Interval.fromDateTimes(mapFn(this.s), mapFn(this.e));
+    };
+    _createClass(Interval, [
+        {
+            key: "start",
+            get: function get() {
+                return this.isValid ? this.s : null;
+            }
+        },
+        {
+            key: "end",
+            get: function get() {
+                return this.isValid ? this.e : null;
+            }
+        },
+        {
+            key: "isValid",
+            get: function get() {
+                return this.invalidReason === null;
+            }
+        },
+        {
+            key: "invalidReason",
+            get: function get() {
+                return this.invalid ? this.invalid.reason : null;
+            }
+        },
+        {
+            key: "invalidExplanation",
+            get: function get() {
+                return this.invalid ? this.invalid.explanation : null;
+            }
+        }
+    ]);
+    return Interval;
+}();
+/**
+ * The Info class contains static methods for retrieving general time and date related data. For example, it has methods for finding out if a time zone has a DST, for listing the months in any supported locale, and for discovering which of Luxon features are available in the current environment.
+ */ var Info = /*#__PURE__*/ function() {
+    function Info() {}
+    /**
+   * Return whether the specified zone contains a DST.
+   * @param {string|Zone} [zone='local'] - Zone to check. Defaults to the environment's local zone.
+   * @return {boolean}
+   */ Info.hasDST = function hasDST(zone) {
+        if (zone === void 0) zone = Settings.defaultZone;
+        var proto = DateTime.now().setZone(zone).set({
+            month: 12
+        });
+        return !zone.isUniversal && proto.offset !== proto.set({
+            month: 6
+        }).offset;
+    } /**
+   * Return whether the specified zone is a valid IANA specifier.
+   * @param {string} zone - Zone to check
+   * @return {boolean}
+   */ ;
+    Info.isValidIANAZone = function isValidIANAZone(zone) {
+        return IANAZone.isValidZone(zone);
+    } /**
+   * Converts the input into a {@link Zone} instance.
+   *
+   * * If `input` is already a Zone instance, it is returned unchanged.
+   * * If `input` is a string containing a valid time zone name, a Zone instance
+   *   with that name is returned.
+   * * If `input` is a string that doesn't refer to a known time zone, a Zone
+   *   instance with {@link Zone#isValid} == false is returned.
+   * * If `input is a number, a Zone instance with the specified fixed offset
+   *   in minutes is returned.
+   * * If `input` is `null` or `undefined`, the default zone is returned.
+   * @param {string|Zone|number} [input] - the value to be converted
+   * @return {Zone}
+   */ ;
+    Info.normalizeZone = function normalizeZone$1(input) {
+        return normalizeZone(input, Settings.defaultZone);
+    } /**
+   * Return an array of standalone month names.
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat
+   * @param {string} [length='long'] - the length of the month representation, such as "numeric", "2-digit", "narrow", "short", "long"
+   * @param {Object} opts - options
+   * @param {string} [opts.locale] - the locale code
+   * @param {string} [opts.numberingSystem=null] - the numbering system
+   * @param {string} [opts.locObj=null] - an existing locale object to use
+   * @param {string} [opts.outputCalendar='gregory'] - the calendar
+   * @example Info.months()[0] //=> 'January'
+   * @example Info.months('short')[0] //=> 'Jan'
+   * @example Info.months('numeric')[0] //=> '1'
+   * @example Info.months('short', { locale: 'fr-CA' } )[0] //=> 'janv.'
+   * @example Info.months('numeric', { locale: 'ar' })[0] //=> '١'
+   * @example Info.months('long', { outputCalendar: 'islamic' })[0] //=> 'Rabiʻ I'
+   * @return {Array}
+   */ ;
+    Info.months = function months(length, _temp) {
+        if (length === void 0) length = "long";
+        var _ref = _temp === void 0 ? {} : _temp, _ref$locale = _ref.locale, locale = _ref$locale === void 0 ? null : _ref$locale, _ref$numberingSystem = _ref.numberingSystem, numberingSystem = _ref$numberingSystem === void 0 ? null : _ref$numberingSystem, _ref$locObj = _ref.locObj, locObj = _ref$locObj === void 0 ? null : _ref$locObj, _ref$outputCalendar = _ref.outputCalendar, outputCalendar = _ref$outputCalendar === void 0 ? "gregory" : _ref$outputCalendar;
+        return (locObj || Locale.create(locale, numberingSystem, outputCalendar)).months(length);
+    } /**
+   * Return an array of format month names.
+   * Format months differ from standalone months in that they're meant to appear next to the day of the month. In some languages, that
+   * changes the string.
+   * See {@link Info#months}
+   * @param {string} [length='long'] - the length of the month representation, such as "numeric", "2-digit", "narrow", "short", "long"
+   * @param {Object} opts - options
+   * @param {string} [opts.locale] - the locale code
+   * @param {string} [opts.numberingSystem=null] - the numbering system
+   * @param {string} [opts.locObj=null] - an existing locale object to use
+   * @param {string} [opts.outputCalendar='gregory'] - the calendar
+   * @return {Array}
+   */ ;
+    Info.monthsFormat = function monthsFormat(length, _temp2) {
+        if (length === void 0) length = "long";
+        var _ref2 = _temp2 === void 0 ? {} : _temp2, _ref2$locale = _ref2.locale, locale = _ref2$locale === void 0 ? null : _ref2$locale, _ref2$numberingSystem = _ref2.numberingSystem, numberingSystem = _ref2$numberingSystem === void 0 ? null : _ref2$numberingSystem, _ref2$locObj = _ref2.locObj, locObj = _ref2$locObj === void 0 ? null : _ref2$locObj, _ref2$outputCalendar = _ref2.outputCalendar, outputCalendar = _ref2$outputCalendar === void 0 ? "gregory" : _ref2$outputCalendar;
+        return (locObj || Locale.create(locale, numberingSystem, outputCalendar)).months(length, true);
+    } /**
+   * Return an array of standalone week names.
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat
+   * @param {string} [length='long'] - the length of the weekday representation, such as "narrow", "short", "long".
+   * @param {Object} opts - options
+   * @param {string} [opts.locale] - the locale code
+   * @param {string} [opts.numberingSystem=null] - the numbering system
+   * @param {string} [opts.locObj=null] - an existing locale object to use
+   * @example Info.weekdays()[0] //=> 'Monday'
+   * @example Info.weekdays('short')[0] //=> 'Mon'
+   * @example Info.weekdays('short', { locale: 'fr-CA' })[0] //=> 'lun.'
+   * @example Info.weekdays('short', { locale: 'ar' })[0] //=> 'الاثنين'
+   * @return {Array}
+   */ ;
+    Info.weekdays = function weekdays(length, _temp3) {
+        if (length === void 0) length = "long";
+        var _ref3 = _temp3 === void 0 ? {} : _temp3, _ref3$locale = _ref3.locale, locale = _ref3$locale === void 0 ? null : _ref3$locale, _ref3$numberingSystem = _ref3.numberingSystem, numberingSystem = _ref3$numberingSystem === void 0 ? null : _ref3$numberingSystem, _ref3$locObj = _ref3.locObj, locObj = _ref3$locObj === void 0 ? null : _ref3$locObj;
+        return (locObj || Locale.create(locale, numberingSystem, null)).weekdays(length);
+    } /**
+   * Return an array of format week names.
+   * Format weekdays differ from standalone weekdays in that they're meant to appear next to more date information. In some languages, that
+   * changes the string.
+   * See {@link Info#weekdays}
+   * @param {string} [length='long'] - the length of the month representation, such as "narrow", "short", "long".
+   * @param {Object} opts - options
+   * @param {string} [opts.locale=null] - the locale code
+   * @param {string} [opts.numberingSystem=null] - the numbering system
+   * @param {string} [opts.locObj=null] - an existing locale object to use
+   * @return {Array}
+   */ ;
+    Info.weekdaysFormat = function weekdaysFormat(length, _temp4) {
+        if (length === void 0) length = "long";
+        var _ref4 = _temp4 === void 0 ? {} : _temp4, _ref4$locale = _ref4.locale, locale = _ref4$locale === void 0 ? null : _ref4$locale, _ref4$numberingSystem = _ref4.numberingSystem, numberingSystem = _ref4$numberingSystem === void 0 ? null : _ref4$numberingSystem, _ref4$locObj = _ref4.locObj, locObj = _ref4$locObj === void 0 ? null : _ref4$locObj;
+        return (locObj || Locale.create(locale, numberingSystem, null)).weekdays(length, true);
+    } /**
+   * Return an array of meridiems.
+   * @param {Object} opts - options
+   * @param {string} [opts.locale] - the locale code
+   * @example Info.meridiems() //=> [ 'AM', 'PM' ]
+   * @example Info.meridiems({ locale: 'my' }) //=> [ 'နံနက်', 'ညနေ' ]
+   * @return {Array}
+   */ ;
+    Info.meridiems = function meridiems(_temp5) {
+        var _ref5 = _temp5 === void 0 ? {} : _temp5, _ref5$locale = _ref5.locale, locale = _ref5$locale === void 0 ? null : _ref5$locale;
+        return Locale.create(locale).meridiems();
+    } /**
+   * Return an array of eras, such as ['BC', 'AD']. The locale can be specified, but the calendar system is always Gregorian.
+   * @param {string} [length='short'] - the length of the era representation, such as "short" or "long".
+   * @param {Object} opts - options
+   * @param {string} [opts.locale] - the locale code
+   * @example Info.eras() //=> [ 'BC', 'AD' ]
+   * @example Info.eras('long') //=> [ 'Before Christ', 'Anno Domini' ]
+   * @example Info.eras('long', { locale: 'fr' }) //=> [ 'avant Jésus-Christ', 'après Jésus-Christ' ]
+   * @return {Array}
+   */ ;
+    Info.eras = function eras(length, _temp6) {
+        if (length === void 0) length = "short";
+        var _ref6 = _temp6 === void 0 ? {} : _temp6, _ref6$locale = _ref6.locale, locale = _ref6$locale === void 0 ? null : _ref6$locale;
+        return Locale.create(locale, null, "gregory").eras(length);
+    } /**
+   * Return the set of available features in this environment.
+   * Some features of Luxon are not available in all environments. For example, on older browsers, relative time formatting support is not available. Use this function to figure out if that's the case.
+   * Keys:
+   * * `relative`: whether this environment supports relative time formatting
+   * @example Info.features() //=> { relative: false }
+   * @return {Object}
+   */ ;
+    Info.features = function features() {
+        return {
+            relative: hasRelative()
+        };
+    };
+    return Info;
+}();
+function dayDiff(earlier, later) {
+    var utcDayStart = function utcDayStart(dt) {
+        return dt.toUTC(0, {
+            keepLocalTime: true
+        }).startOf("day").valueOf();
+    }, ms = utcDayStart(later) - utcDayStart(earlier);
+    return Math.floor(Duration.fromMillis(ms).as("days"));
+}
+function highOrderDiffs(cursor, later, units) {
+    var differs = [
+        [
+            "years",
+            function(a, b) {
+                return b.year - a.year;
+            }
+        ],
+        [
+            "quarters",
+            function(a, b) {
+                return b.quarter - a.quarter + (b.year - a.year) * 4;
+            }
+        ],
+        [
+            "months",
+            function(a, b) {
+                return b.month - a.month + (b.year - a.year) * 12;
+            }
+        ],
+        [
+            "weeks",
+            function(a, b) {
+                var days = dayDiff(a, b);
+                return (days - days % 7) / 7;
+            }
+        ],
+        [
+            "days",
+            dayDiff
+        ]
+    ];
+    var results = {};
+    var earlier = cursor;
+    var lowestOrder, highWater;
+    for(var _i = 0, _differs = differs; _i < _differs.length; _i++){
+        var _differs$_i = _differs[_i], unit = _differs$_i[0], differ = _differs$_i[1];
+        if (units.indexOf(unit) >= 0) {
+            lowestOrder = unit;
+            results[unit] = differ(cursor, later);
+            highWater = earlier.plus(results);
+            if (highWater > later) {
+                results[unit]--;
+                cursor = earlier.plus(results);
+            } else cursor = highWater;
+        }
+    }
+    return [
+        cursor,
+        results,
+        highWater,
+        lowestOrder
+    ];
+}
+function _diff(earlier, later, units, opts) {
+    var _highOrderDiffs = highOrderDiffs(earlier, later, units), cursor = _highOrderDiffs[0], results = _highOrderDiffs[1], highWater = _highOrderDiffs[2], lowestOrder = _highOrderDiffs[3];
+    var remainingMillis = later - cursor;
+    var lowerOrderUnits = units.filter(function(u) {
+        return [
+            "hours",
+            "minutes",
+            "seconds",
+            "milliseconds"
+        ].indexOf(u) >= 0;
+    });
+    if (lowerOrderUnits.length === 0) {
+        if (highWater < later) {
+            var _cursor$plus;
+            highWater = cursor.plus((_cursor$plus = {}, _cursor$plus[lowestOrder] = 1, _cursor$plus));
+        }
+        if (highWater !== cursor) results[lowestOrder] = (results[lowestOrder] || 0) + remainingMillis / (highWater - cursor);
+    }
+    var duration = Duration.fromObject(results, opts);
+    if (lowerOrderUnits.length > 0) {
+        var _Duration$fromMillis;
+        return (_Duration$fromMillis = Duration.fromMillis(remainingMillis, opts)).shiftTo.apply(_Duration$fromMillis, lowerOrderUnits).plus(duration);
+    } else return duration;
+}
+var numberingSystems = {
+    arab: "[٠-٩]",
+    arabext: "[۰-۹]",
+    bali: "[᭐-᭙]",
+    beng: "[০-৯]",
+    deva: "[०-९]",
+    fullwide: "[０-９]",
+    gujr: "[૦-૯]",
+    hanidec: "[〇|一|二|三|四|五|六|七|八|九]",
+    khmr: "[០-៩]",
+    knda: "[೦-೯]",
+    laoo: "[໐-໙]",
+    limb: "[᥆-᥏]",
+    mlym: "[൦-൯]",
+    mong: "[᠐-᠙]",
+    mymr: "[၀-၉]",
+    orya: "[୦-୯]",
+    tamldec: "[௦-௯]",
+    telu: "[౦-౯]",
+    thai: "[๐-๙]",
+    tibt: "[༠-༩]",
+    latn: "\\d"
+};
+var numberingSystemsUTF16 = {
+    arab: [
+        1632,
+        1641
+    ],
+    arabext: [
+        1776,
+        1785
+    ],
+    bali: [
+        6992,
+        7001
+    ],
+    beng: [
+        2534,
+        2543
+    ],
+    deva: [
+        2406,
+        2415
+    ],
+    fullwide: [
+        65296,
+        65303
+    ],
+    gujr: [
+        2790,
+        2799
+    ],
+    khmr: [
+        6112,
+        6121
+    ],
+    knda: [
+        3302,
+        3311
+    ],
+    laoo: [
+        3792,
+        3801
+    ],
+    limb: [
+        6470,
+        6479
+    ],
+    mlym: [
+        3430,
+        3439
+    ],
+    mong: [
+        6160,
+        6169
+    ],
+    mymr: [
+        4160,
+        4169
+    ],
+    orya: [
+        2918,
+        2927
+    ],
+    tamldec: [
+        3046,
+        3055
+    ],
+    telu: [
+        3174,
+        3183
+    ],
+    thai: [
+        3664,
+        3673
+    ],
+    tibt: [
+        3872,
+        3881
+    ]
+};
+var hanidecChars = numberingSystems.hanidec.replace(/[\[|\]]/g, "").split("");
+function parseDigits(str) {
+    var value = parseInt(str, 10);
+    if (isNaN(value)) {
+        value = "";
+        for(var i = 0; i < str.length; i++){
+            var code = str.charCodeAt(i);
+            if (str[i].search(numberingSystems.hanidec) !== -1) value += hanidecChars.indexOf(str[i]);
+            else for(var key in numberingSystemsUTF16){
+                var _numberingSystemsUTF = numberingSystemsUTF16[key], min = _numberingSystemsUTF[0], max = _numberingSystemsUTF[1];
+                if (code >= min && code <= max) value += code - min;
+            }
+        }
+        return parseInt(value, 10);
+    } else return value;
+}
+function digitRegex(_ref, append) {
+    var numberingSystem = _ref.numberingSystem;
+    if (append === void 0) append = "";
+    return new RegExp("" + numberingSystems[numberingSystem || "latn"] + append);
+}
+var MISSING_FTP = "missing Intl.DateTimeFormat.formatToParts support";
+function intUnit(regex, post) {
+    if (post === void 0) post = function post(i) {
+        return i;
+    };
+    return {
+        regex: regex,
+        deser: function deser(_ref) {
+            var s = _ref[0];
+            return post(parseDigits(s));
+        }
+    };
+}
+var NBSP = String.fromCharCode(160);
+var spaceOrNBSP = "[ " + NBSP + "]";
+var spaceOrNBSPRegExp = new RegExp(spaceOrNBSP, "g");
+function fixListRegex(s) {
+    // make dots optional and also make them literal
+    // make space and non breakable space characters interchangeable
+    return s.replace(/\./g, "\\.?").replace(spaceOrNBSPRegExp, spaceOrNBSP);
+}
+function stripInsensitivities(s) {
+    return s.replace(/\./g, "") // ignore dots that were made optional
+    .replace(spaceOrNBSPRegExp, " ") // interchange space and nbsp
+    .toLowerCase();
+}
+function oneOf(strings, startIndex) {
+    if (strings === null) return null;
+    else return {
+        regex: RegExp(strings.map(fixListRegex).join("|")),
+        deser: function deser(_ref2) {
+            var s = _ref2[0];
+            return strings.findIndex(function(i) {
+                return stripInsensitivities(s) === stripInsensitivities(i);
+            }) + startIndex;
+        }
+    };
+}
+function offset(regex, groups) {
+    return {
+        regex: regex,
+        deser: function deser(_ref3) {
+            var h = _ref3[1], m = _ref3[2];
+            return signedOffset(h, m);
+        },
+        groups: groups
+    };
+}
+function simple(regex) {
+    return {
+        regex: regex,
+        deser: function deser(_ref4) {
+            var s = _ref4[0];
+            return s;
+        }
+    };
+}
+function escapeToken(value) {
+    return value.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&");
+}
+function unitForToken(token, loc) {
+    var one = digitRegex(loc), two = digitRegex(loc, "{2}"), three = digitRegex(loc, "{3}"), four = digitRegex(loc, "{4}"), six = digitRegex(loc, "{6}"), oneOrTwo = digitRegex(loc, "{1,2}"), oneToThree = digitRegex(loc, "{1,3}"), oneToSix = digitRegex(loc, "{1,6}"), oneToNine = digitRegex(loc, "{1,9}"), twoToFour = digitRegex(loc, "{2,4}"), fourToSix = digitRegex(loc, "{4,6}"), literal = function literal(t) {
+        return {
+            regex: RegExp(escapeToken(t.val)),
+            deser: function deser(_ref5) {
+                var s = _ref5[0];
+                return s;
+            },
+            literal: true
+        };
+    }, unitate = function unitate(t) {
+        if (token.literal) return literal(t);
+        switch(t.val){
+            // era
+            case "G":
+                return oneOf(loc.eras("short", false), 0);
+            case "GG":
+                return oneOf(loc.eras("long", false), 0);
+            // years
+            case "y":
+                return intUnit(oneToSix);
+            case "yy":
+                return intUnit(twoToFour, untruncateYear);
+            case "yyyy":
+                return intUnit(four);
+            case "yyyyy":
+                return intUnit(fourToSix);
+            case "yyyyyy":
+                return intUnit(six);
+            // months
+            case "M":
+                return intUnit(oneOrTwo);
+            case "MM":
+                return intUnit(two);
+            case "MMM":
+                return oneOf(loc.months("short", true, false), 1);
+            case "MMMM":
+                return oneOf(loc.months("long", true, false), 1);
+            case "L":
+                return intUnit(oneOrTwo);
+            case "LL":
+                return intUnit(two);
+            case "LLL":
+                return oneOf(loc.months("short", false, false), 1);
+            case "LLLL":
+                return oneOf(loc.months("long", false, false), 1);
+            // dates
+            case "d":
+                return intUnit(oneOrTwo);
+            case "dd":
+                return intUnit(two);
+            // ordinals
+            case "o":
+                return intUnit(oneToThree);
+            case "ooo":
+                return intUnit(three);
+            // time
+            case "HH":
+                return intUnit(two);
+            case "H":
+                return intUnit(oneOrTwo);
+            case "hh":
+                return intUnit(two);
+            case "h":
+                return intUnit(oneOrTwo);
+            case "mm":
+                return intUnit(two);
+            case "m":
+                return intUnit(oneOrTwo);
+            case "q":
+                return intUnit(oneOrTwo);
+            case "qq":
+                return intUnit(two);
+            case "s":
+                return intUnit(oneOrTwo);
+            case "ss":
+                return intUnit(two);
+            case "S":
+                return intUnit(oneToThree);
+            case "SSS":
+                return intUnit(three);
+            case "u":
+                return simple(oneToNine);
+            case "uu":
+                return simple(oneOrTwo);
+            case "uuu":
+                return intUnit(one);
+            // meridiem
+            case "a":
+                return oneOf(loc.meridiems(), 0);
+            // weekYear (k)
+            case "kkkk":
+                return intUnit(four);
+            case "kk":
+                return intUnit(twoToFour, untruncateYear);
+            // weekNumber (W)
+            case "W":
+                return intUnit(oneOrTwo);
+            case "WW":
+                return intUnit(two);
+            // weekdays
+            case "E":
+            case "c":
+                return intUnit(one);
+            case "EEE":
+                return oneOf(loc.weekdays("short", false, false), 1);
+            case "EEEE":
+                return oneOf(loc.weekdays("long", false, false), 1);
+            case "ccc":
+                return oneOf(loc.weekdays("short", true, false), 1);
+            case "cccc":
+                return oneOf(loc.weekdays("long", true, false), 1);
+            // offset/zone
+            case "Z":
+            case "ZZ":
+                return offset(new RegExp("([+-]" + oneOrTwo.source + ")(?::(" + two.source + "))?"), 2);
+            case "ZZZ":
+                return offset(new RegExp("([+-]" + oneOrTwo.source + ")(" + two.source + ")?"), 2);
+            // we don't support ZZZZ (PST) or ZZZZZ (Pacific Standard Time) in parsing
+            // because we don't have any way to figure out what they are
+            case "z":
+                return simple(/[a-z_+-/]{1,256}?/i);
+            // this special-case "token" represents a place where a macro-token expanded into a white-space literal
+            // in this case we accept any non-newline white-space
+            case " ":
+                return simple(/[^\S\n\r]/);
+            default:
+                return literal(t);
+        }
+    };
+    var unit = unitate(token) || {
+        invalidReason: MISSING_FTP
+    };
+    unit.token = token;
+    return unit;
+}
+var partTypeStyleToTokenVal = {
+    year: {
+        "2-digit": "yy",
+        numeric: "yyyyy"
+    },
+    month: {
+        numeric: "M",
+        "2-digit": "MM",
+        short: "MMM",
+        long: "MMMM"
+    },
+    day: {
+        numeric: "d",
+        "2-digit": "dd"
+    },
+    weekday: {
+        short: "EEE",
+        long: "EEEE"
+    },
+    dayperiod: "a",
+    dayPeriod: "a",
+    hour: {
+        numeric: "h",
+        "2-digit": "hh"
+    },
+    minute: {
+        numeric: "m",
+        "2-digit": "mm"
+    },
+    second: {
+        numeric: "s",
+        "2-digit": "ss"
+    },
+    timeZoneName: {
+        long: "ZZZZZ",
+        short: "ZZZ"
+    }
+};
+function tokenForPart(part, formatOpts) {
+    var type = part.type, value = part.value;
+    if (type === "literal") {
+        var isSpace = /^\s+$/.test(value);
+        return {
+            literal: !isSpace,
+            val: isSpace ? " " : value
+        };
+    }
+    var style = formatOpts[type];
+    var val = partTypeStyleToTokenVal[type];
+    if (typeof val === "object") val = val[style];
+    if (val) return {
+        literal: false,
+        val: val
+    };
+    return undefined;
+}
+function buildRegex(units) {
+    var re = units.map(function(u) {
+        return u.regex;
+    }).reduce(function(f, r) {
+        return f + "(" + r.source + ")";
+    }, "");
+    return [
+        "^" + re + "$",
+        units
+    ];
+}
+function match(input, regex, handlers) {
+    var matches = input.match(regex);
+    if (matches) {
+        var all = {};
+        var matchIndex = 1;
+        for(var i in handlers)if (hasOwnProperty(handlers, i)) {
+            var h = handlers[i], groups = h.groups ? h.groups + 1 : 1;
+            if (!h.literal && h.token) all[h.token.val[0]] = h.deser(matches.slice(matchIndex, matchIndex + groups));
+            matchIndex += groups;
+        }
+        return [
+            matches,
+            all
+        ];
+    } else return [
+        matches,
+        {}
+    ];
+}
+function dateTimeFromMatches(matches) {
+    var toField = function toField(token) {
+        switch(token){
+            case "S":
+                return "millisecond";
+            case "s":
+                return "second";
+            case "m":
+                return "minute";
+            case "h":
+            case "H":
+                return "hour";
+            case "d":
+                return "day";
+            case "o":
+                return "ordinal";
+            case "L":
+            case "M":
+                return "month";
+            case "y":
+                return "year";
+            case "E":
+            case "c":
+                return "weekday";
+            case "W":
+                return "weekNumber";
+            case "k":
+                return "weekYear";
+            case "q":
+                return "quarter";
+            default:
+                return null;
+        }
+    };
+    var zone = null;
+    var specificOffset;
+    if (!isUndefined(matches.z)) zone = IANAZone.create(matches.z);
+    if (!isUndefined(matches.Z)) {
+        if (!zone) zone = new FixedOffsetZone(matches.Z);
+        specificOffset = matches.Z;
+    }
+    if (!isUndefined(matches.q)) matches.M = (matches.q - 1) * 3 + 1;
+    if (!isUndefined(matches.h)) {
+        if (matches.h < 12 && matches.a === 1) matches.h += 12;
+        else if (matches.h === 12 && matches.a === 0) matches.h = 0;
+    }
+    if (matches.G === 0 && matches.y) matches.y = -matches.y;
+    if (!isUndefined(matches.u)) matches.S = parseMillis(matches.u);
+    var vals = Object.keys(matches).reduce(function(r, k) {
+        var f = toField(k);
+        if (f) r[f] = matches[k];
+        return r;
+    }, {});
+    return [
+        vals,
+        zone,
+        specificOffset
+    ];
+}
+var dummyDateTimeCache = null;
+function getDummyDateTime() {
+    if (!dummyDateTimeCache) dummyDateTimeCache = DateTime.fromMillis(1555555555555);
+    return dummyDateTimeCache;
+}
+function maybeExpandMacroToken(token, locale) {
+    if (token.literal) return token;
+    var formatOpts = Formatter.macroTokenToFormatOpts(token.val);
+    var tokens = formatOptsToTokens(formatOpts, locale);
+    if (tokens == null || tokens.includes(undefined)) return token;
+    return tokens;
+}
+function expandMacroTokens(tokens, locale) {
+    var _Array$prototype;
+    return (_Array$prototype = Array.prototype).concat.apply(_Array$prototype, tokens.map(function(t) {
+        return maybeExpandMacroToken(t, locale);
+    }));
+}
+/**
+ * @private
+ */ function explainFromTokens(locale, input, format) {
+    var tokens = expandMacroTokens(Formatter.parseFormat(format), locale), units = tokens.map(function(t) {
+        return unitForToken(t, locale);
+    }), disqualifyingUnit = units.find(function(t) {
+        return t.invalidReason;
+    });
+    if (disqualifyingUnit) return {
+        input: input,
+        tokens: tokens,
+        invalidReason: disqualifyingUnit.invalidReason
+    };
+    else {
+        var _buildRegex = buildRegex(units), regexString = _buildRegex[0], handlers = _buildRegex[1], regex = RegExp(regexString, "i"), _match = match(input, regex, handlers), rawMatches = _match[0], matches = _match[1], _ref6 = matches ? dateTimeFromMatches(matches) : [
+            null,
+            null,
+            undefined
+        ], result = _ref6[0], zone = _ref6[1], specificOffset = _ref6[2];
+        if (hasOwnProperty(matches, "a") && hasOwnProperty(matches, "H")) throw new ConflictingSpecificationError("Can't include meridiem when specifying 24-hour format");
+        return {
+            input: input,
+            tokens: tokens,
+            regex: regex,
+            rawMatches: rawMatches,
+            matches: matches,
+            result: result,
+            zone: zone,
+            specificOffset: specificOffset
+        };
+    }
+}
+function parseFromTokens(locale, input, format) {
+    var _explainFromTokens = explainFromTokens(locale, input, format), result = _explainFromTokens.result, zone = _explainFromTokens.zone, specificOffset = _explainFromTokens.specificOffset, invalidReason = _explainFromTokens.invalidReason;
+    return [
+        result,
+        zone,
+        specificOffset,
+        invalidReason
+    ];
+}
+function formatOptsToTokens(formatOpts, locale) {
+    if (!formatOpts) return null;
+    var formatter = Formatter.create(locale, formatOpts);
+    var parts = formatter.formatDateTimeParts(getDummyDateTime());
+    return parts.map(function(p) {
+        return tokenForPart(p, formatOpts);
+    });
+}
+var nonLeapLadder = [
+    0,
+    31,
+    59,
+    90,
+    120,
+    151,
+    181,
+    212,
+    243,
+    273,
+    304,
+    334
+], leapLadder = [
+    0,
+    31,
+    60,
+    91,
+    121,
+    152,
+    182,
+    213,
+    244,
+    274,
+    305,
+    335
+];
+function unitOutOfRange(unit, value) {
+    return new Invalid("unit out of range", "you specified " + value + " (of type " + typeof value + ") as a " + unit + ", which is invalid");
+}
+function dayOfWeek(year, month, day) {
+    var d = new Date(Date.UTC(year, month - 1, day));
+    if (year < 100 && year >= 0) d.setUTCFullYear(d.getUTCFullYear() - 1900);
+    var js = d.getUTCDay();
+    return js === 0 ? 7 : js;
+}
+function computeOrdinal(year, month, day) {
+    return day + (isLeapYear(year) ? leapLadder : nonLeapLadder)[month - 1];
+}
+function uncomputeOrdinal(year, ordinal) {
+    var table = isLeapYear(year) ? leapLadder : nonLeapLadder, month0 = table.findIndex(function(i) {
+        return i < ordinal;
+    }), day = ordinal - table[month0];
+    return {
+        month: month0 + 1,
+        day: day
+    };
+}
+/**
+ * @private
+ */ function gregorianToWeek(gregObj) {
+    var year = gregObj.year, month = gregObj.month, day = gregObj.day, ordinal = computeOrdinal(year, month, day), weekday = dayOfWeek(year, month, day);
+    var weekNumber = Math.floor((ordinal - weekday + 10) / 7), weekYear;
+    if (weekNumber < 1) {
+        weekYear = year - 1;
+        weekNumber = weeksInWeekYear(weekYear);
+    } else if (weekNumber > weeksInWeekYear(year)) {
+        weekYear = year + 1;
+        weekNumber = 1;
+    } else weekYear = year;
+    return _extends({
+        weekYear: weekYear,
+        weekNumber: weekNumber,
+        weekday: weekday
+    }, timeObject(gregObj));
+}
+function weekToGregorian(weekData) {
+    var weekYear = weekData.weekYear, weekNumber = weekData.weekNumber, weekday = weekData.weekday, weekdayOfJan4 = dayOfWeek(weekYear, 1, 4), yearInDays = daysInYear(weekYear);
+    var ordinal = weekNumber * 7 + weekday - weekdayOfJan4 - 3, year;
+    if (ordinal < 1) {
+        year = weekYear - 1;
+        ordinal += daysInYear(year);
+    } else if (ordinal > yearInDays) {
+        year = weekYear + 1;
+        ordinal -= daysInYear(weekYear);
+    } else year = weekYear;
+    var _uncomputeOrdinal = uncomputeOrdinal(year, ordinal), month = _uncomputeOrdinal.month, day = _uncomputeOrdinal.day;
+    return _extends({
+        year: year,
+        month: month,
+        day: day
+    }, timeObject(weekData));
+}
+function gregorianToOrdinal(gregData) {
+    var year = gregData.year, month = gregData.month, day = gregData.day;
+    var ordinal = computeOrdinal(year, month, day);
+    return _extends({
+        year: year,
+        ordinal: ordinal
+    }, timeObject(gregData));
+}
+function ordinalToGregorian(ordinalData) {
+    var year = ordinalData.year, ordinal = ordinalData.ordinal;
+    var _uncomputeOrdinal2 = uncomputeOrdinal(year, ordinal), month = _uncomputeOrdinal2.month, day = _uncomputeOrdinal2.day;
+    return _extends({
+        year: year,
+        month: month,
+        day: day
+    }, timeObject(ordinalData));
+}
+function hasInvalidWeekData(obj) {
+    var validYear = isInteger(obj.weekYear), validWeek = integerBetween(obj.weekNumber, 1, weeksInWeekYear(obj.weekYear)), validWeekday = integerBetween(obj.weekday, 1, 7);
+    if (!validYear) return unitOutOfRange("weekYear", obj.weekYear);
+    else if (!validWeek) return unitOutOfRange("week", obj.week);
+    else if (!validWeekday) return unitOutOfRange("weekday", obj.weekday);
+    else return false;
+}
+function hasInvalidOrdinalData(obj) {
+    var validYear = isInteger(obj.year), validOrdinal = integerBetween(obj.ordinal, 1, daysInYear(obj.year));
+    if (!validYear) return unitOutOfRange("year", obj.year);
+    else if (!validOrdinal) return unitOutOfRange("ordinal", obj.ordinal);
+    else return false;
+}
+function hasInvalidGregorianData(obj) {
+    var validYear = isInteger(obj.year), validMonth = integerBetween(obj.month, 1, 12), validDay = integerBetween(obj.day, 1, daysInMonth(obj.year, obj.month));
+    if (!validYear) return unitOutOfRange("year", obj.year);
+    else if (!validMonth) return unitOutOfRange("month", obj.month);
+    else if (!validDay) return unitOutOfRange("day", obj.day);
+    else return false;
+}
+function hasInvalidTimeData(obj) {
+    var hour = obj.hour, minute = obj.minute, second = obj.second, millisecond = obj.millisecond;
+    var validHour = integerBetween(hour, 0, 23) || hour === 24 && minute === 0 && second === 0 && millisecond === 0, validMinute = integerBetween(minute, 0, 59), validSecond = integerBetween(second, 0, 59), validMillisecond = integerBetween(millisecond, 0, 999);
+    if (!validHour) return unitOutOfRange("hour", hour);
+    else if (!validMinute) return unitOutOfRange("minute", minute);
+    else if (!validSecond) return unitOutOfRange("second", second);
+    else if (!validMillisecond) return unitOutOfRange("millisecond", millisecond);
+    else return false;
+}
+var INVALID = "Invalid DateTime";
+var MAX_DATE = 8.64e15;
+function unsupportedZone(zone) {
+    return new Invalid("unsupported zone", 'the zone "' + zone.name + '" is not supported');
+}
+// we cache week data on the DT object and this intermediates the cache
+function possiblyCachedWeekData(dt) {
+    if (dt.weekData === null) dt.weekData = gregorianToWeek(dt.c);
+    return dt.weekData;
+}
+// clone really means, "make a new object with these modifications". all "setters" really use this
+// to create a new object while only changing some of the properties
+function clone(inst, alts) {
+    var current = {
+        ts: inst.ts,
+        zone: inst.zone,
+        c: inst.c,
+        o: inst.o,
+        loc: inst.loc,
+        invalid: inst.invalid
+    };
+    return new DateTime(_extends({}, current, alts, {
+        old: current
+    }));
+}
+// find the right offset a given local time. The o input is our guess, which determines which
+// offset we'll pick in ambiguous cases (e.g. there are two 3 AMs b/c Fallback DST)
+function fixOffset(localTS, o, tz) {
+    // Our UTC time is just a guess because our offset is just a guess
+    var utcGuess = localTS - o * 60000;
+    // Test whether the zone matches the offset for this ts
+    var o2 = tz.offset(utcGuess);
+    // If so, offset didn't change and we're done
+    if (o === o2) return [
+        utcGuess,
+        o
+    ];
+    // If not, change the ts by the difference in the offset
+    utcGuess -= (o2 - o) * 60000;
+    // If that gives us the local time we want, we're done
+    var o3 = tz.offset(utcGuess);
+    if (o2 === o3) return [
+        utcGuess,
+        o2
+    ];
+    // If it's different, we're in a hole time. The offset has changed, but the we don't adjust the time
+    return [
+        localTS - Math.min(o2, o3) * 60000,
+        Math.max(o2, o3)
+    ];
+}
+// convert an epoch timestamp into a calendar object with the given offset
+function tsToObj(ts, offset) {
+    ts += offset * 60000;
+    var d = new Date(ts);
+    return {
+        year: d.getUTCFullYear(),
+        month: d.getUTCMonth() + 1,
+        day: d.getUTCDate(),
+        hour: d.getUTCHours(),
+        minute: d.getUTCMinutes(),
+        second: d.getUTCSeconds(),
+        millisecond: d.getUTCMilliseconds()
+    };
+}
+// convert a calendar object to a epoch timestamp
+function objToTS(obj, offset, zone) {
+    return fixOffset(objToLocalTS(obj), offset, zone);
+}
+// create a new DT instance by adding a duration, adjusting for DSTs
+function adjustTime(inst, dur) {
+    var oPre = inst.o, year = inst.c.year + Math.trunc(dur.years), month = inst.c.month + Math.trunc(dur.months) + Math.trunc(dur.quarters) * 3, c = _extends({}, inst.c, {
+        year: year,
+        month: month,
+        day: Math.min(inst.c.day, daysInMonth(year, month)) + Math.trunc(dur.days) + Math.trunc(dur.weeks) * 7
+    }), millisToAdd = Duration.fromObject({
+        years: dur.years - Math.trunc(dur.years),
+        quarters: dur.quarters - Math.trunc(dur.quarters),
+        months: dur.months - Math.trunc(dur.months),
+        weeks: dur.weeks - Math.trunc(dur.weeks),
+        days: dur.days - Math.trunc(dur.days),
+        hours: dur.hours,
+        minutes: dur.minutes,
+        seconds: dur.seconds,
+        milliseconds: dur.milliseconds
+    }).as("milliseconds"), localTS = objToLocalTS(c);
+    var _fixOffset = fixOffset(localTS, oPre, inst.zone), ts = _fixOffset[0], o = _fixOffset[1];
+    if (millisToAdd !== 0) {
+        ts += millisToAdd;
+        // that could have changed the offset by going over a DST, but we want to keep the ts the same
+        o = inst.zone.offset(ts);
+    }
+    return {
+        ts: ts,
+        o: o
+    };
+}
+// helper useful in turning the results of parsing into real dates
+// by handling the zone options
+function parseDataToDateTime(parsed, parsedZone, opts, format, text, specificOffset) {
+    var setZone = opts.setZone, zone = opts.zone;
+    if (parsed && Object.keys(parsed).length !== 0 || parsedZone) {
+        var interpretationZone = parsedZone || zone, inst = DateTime.fromObject(parsed, _extends({}, opts, {
+            zone: interpretationZone,
+            specificOffset: specificOffset
+        }));
+        return setZone ? inst : inst.setZone(zone);
+    } else return DateTime.invalid(new Invalid("unparsable", 'the input "' + text + "\" can't be parsed as " + format));
+}
+// if you want to output a technical format (e.g. RFC 2822), this helper
+// helps handle the details
+function toTechFormat(dt, format, allowZ) {
+    if (allowZ === void 0) allowZ = true;
+    return dt.isValid ? Formatter.create(Locale.create("en-US"), {
+        allowZ: allowZ,
+        forceSimple: true
+    }).formatDateTimeFromString(dt, format) : null;
+}
+function _toISODate(o, extended) {
+    var longFormat = o.c.year > 9999 || o.c.year < 0;
+    var c = "";
+    if (longFormat && o.c.year >= 0) c += "+";
+    c += padStart(o.c.year, longFormat ? 6 : 4);
+    if (extended) {
+        c += "-";
+        c += padStart(o.c.month);
+        c += "-";
+        c += padStart(o.c.day);
+    } else {
+        c += padStart(o.c.month);
+        c += padStart(o.c.day);
+    }
+    return c;
+}
+function _toISOTime(o, extended, suppressSeconds, suppressMilliseconds, includeOffset, extendedZone) {
+    var c = padStart(o.c.hour);
+    if (extended) {
+        c += ":";
+        c += padStart(o.c.minute);
+        if (o.c.second !== 0 || !suppressSeconds) c += ":";
+    } else c += padStart(o.c.minute);
+    if (o.c.second !== 0 || !suppressSeconds) {
+        c += padStart(o.c.second);
+        if (o.c.millisecond !== 0 || !suppressMilliseconds) {
+            c += ".";
+            c += padStart(o.c.millisecond, 3);
+        }
+    }
+    if (includeOffset) {
+        if (o.isOffsetFixed && o.offset === 0 && !extendedZone) c += "Z";
+        else if (o.o < 0) {
+            c += "-";
+            c += padStart(Math.trunc(-o.o / 60));
+            c += ":";
+            c += padStart(Math.trunc(-o.o % 60));
+        } else {
+            c += "+";
+            c += padStart(Math.trunc(o.o / 60));
+            c += ":";
+            c += padStart(Math.trunc(o.o % 60));
+        }
+    }
+    if (extendedZone) c += "[" + o.zone.ianaName + "]";
+    return c;
+}
+// defaults for unspecified units in the supported calendars
+var defaultUnitValues = {
+    month: 1,
+    day: 1,
+    hour: 0,
+    minute: 0,
+    second: 0,
+    millisecond: 0
+}, defaultWeekUnitValues = {
+    weekNumber: 1,
+    weekday: 1,
+    hour: 0,
+    minute: 0,
+    second: 0,
+    millisecond: 0
+}, defaultOrdinalUnitValues = {
+    ordinal: 1,
+    hour: 0,
+    minute: 0,
+    second: 0,
+    millisecond: 0
+};
+// Units in the supported calendars, sorted by bigness
+var orderedUnits = [
+    "year",
+    "month",
+    "day",
+    "hour",
+    "minute",
+    "second",
+    "millisecond"
+], orderedWeekUnits = [
+    "weekYear",
+    "weekNumber",
+    "weekday",
+    "hour",
+    "minute",
+    "second",
+    "millisecond"
+], orderedOrdinalUnits = [
+    "year",
+    "ordinal",
+    "hour",
+    "minute",
+    "second",
+    "millisecond"
+];
+// standardize case and plurality in units
+function normalizeUnit(unit) {
+    var normalized = {
+        year: "year",
+        years: "year",
+        month: "month",
+        months: "month",
+        day: "day",
+        days: "day",
+        hour: "hour",
+        hours: "hour",
+        minute: "minute",
+        minutes: "minute",
+        quarter: "quarter",
+        quarters: "quarter",
+        second: "second",
+        seconds: "second",
+        millisecond: "millisecond",
+        milliseconds: "millisecond",
+        weekday: "weekday",
+        weekdays: "weekday",
+        weeknumber: "weekNumber",
+        weeksnumber: "weekNumber",
+        weeknumbers: "weekNumber",
+        weekyear: "weekYear",
+        weekyears: "weekYear",
+        ordinal: "ordinal"
+    }[unit.toLowerCase()];
+    if (!normalized) throw new InvalidUnitError(unit);
+    return normalized;
+}
+// this is a dumbed down version of fromObject() that runs about 60% faster
+// but doesn't do any validation, makes a bunch of assumptions about what units
+// are present, and so on.
+function quickDT(obj, opts) {
+    var zone = normalizeZone(opts.zone, Settings.defaultZone), loc = Locale.fromObject(opts), tsNow = Settings.now();
+    var ts, o;
+    // assume we have the higher-order units
+    if (!isUndefined(obj.year)) {
+        for(var _i = 0, _orderedUnits = orderedUnits; _i < _orderedUnits.length; _i++){
+            var u = _orderedUnits[_i];
+            if (isUndefined(obj[u])) obj[u] = defaultUnitValues[u];
+        }
+        var invalid = hasInvalidGregorianData(obj) || hasInvalidTimeData(obj);
+        if (invalid) return DateTime.invalid(invalid);
+        var offsetProvis = zone.offset(tsNow);
+        var _objToTS = objToTS(obj, offsetProvis, zone);
+        ts = _objToTS[0];
+        o = _objToTS[1];
+    } else ts = tsNow;
+    return new DateTime({
+        ts: ts,
+        zone: zone,
+        loc: loc,
+        o: o
+    });
+}
+function diffRelative(start, end, opts) {
+    var round = isUndefined(opts.round) ? true : opts.round, format = function format(c, unit) {
+        c = roundTo(c, round || opts.calendary ? 0 : 2, true);
+        var formatter = end.loc.clone(opts).relFormatter(opts);
+        return formatter.format(c, unit);
+    }, differ = function differ(unit) {
+        if (opts.calendary) {
+            if (!end.hasSame(start, unit)) return end.startOf(unit).diff(start.startOf(unit), unit).get(unit);
+            else return 0;
+        } else return end.diff(start, unit).get(unit);
+    };
+    if (opts.unit) return format(differ(opts.unit), opts.unit);
+    for(var _iterator = _createForOfIteratorHelperLoose(opts.units), _step; !(_step = _iterator()).done;){
+        var unit = _step.value;
+        var count = differ(unit);
+        if (Math.abs(count) >= 1) return format(count, unit);
+    }
+    return format(start > end ? -0 : 0, opts.units[opts.units.length - 1]);
+}
+function lastOpts(argList) {
+    var opts = {}, args;
+    if (argList.length > 0 && typeof argList[argList.length - 1] === "object") {
+        opts = argList[argList.length - 1];
+        args = Array.from(argList).slice(0, argList.length - 1);
+    } else args = Array.from(argList);
+    return [
+        opts,
+        args
+    ];
+}
+/**
+ * A DateTime is an immutable data structure representing a specific date and time and accompanying methods. It contains class and instance methods for creating, parsing, interrogating, transforming, and formatting them.
+ *
+ * A DateTime comprises of:
+ * * A timestamp. Each DateTime instance refers to a specific millisecond of the Unix epoch.
+ * * A time zone. Each instance is considered in the context of a specific zone (by default the local system's zone).
+ * * Configuration properties that effect how output strings are formatted, such as `locale`, `numberingSystem`, and `outputCalendar`.
+ *
+ * Here is a brief overview of the most commonly used functionality it provides:
+ *
+ * * **Creation**: To create a DateTime from its components, use one of its factory class methods: {@link DateTime.local}, {@link DateTime.utc}, and (most flexibly) {@link DateTime.fromObject}. To create one from a standard string format, use {@link DateTime.fromISO}, {@link DateTime.fromHTTP}, and {@link DateTime.fromRFC2822}. To create one from a custom string format, use {@link DateTime.fromFormat}. To create one from a native JS date, use {@link DateTime.fromJSDate}.
+ * * **Gregorian calendar and time**: To examine the Gregorian properties of a DateTime individually (i.e as opposed to collectively through {@link DateTime#toObject}), use the {@link DateTime#year}, {@link DateTime#month},
+ * {@link DateTime#day}, {@link DateTime#hour}, {@link DateTime#minute}, {@link DateTime#second}, {@link DateTime#millisecond} accessors.
+ * * **Week calendar**: For ISO week calendar attributes, see the {@link DateTime#weekYear}, {@link DateTime#weekNumber}, and {@link DateTime#weekday} accessors.
+ * * **Configuration** See the {@link DateTime#locale} and {@link DateTime#numberingSystem} accessors.
+ * * **Transformation**: To transform the DateTime into other DateTimes, use {@link DateTime#set}, {@link DateTime#reconfigure}, {@link DateTime#setZone}, {@link DateTime#setLocale}, {@link DateTime.plus}, {@link DateTime#minus}, {@link DateTime#endOf}, {@link DateTime#startOf}, {@link DateTime#toUTC}, and {@link DateTime#toLocal}.
+ * * **Output**: To convert the DateTime to other representations, use the {@link DateTime#toRelative}, {@link DateTime#toRelativeCalendar}, {@link DateTime#toJSON}, {@link DateTime#toISO}, {@link DateTime#toHTTP}, {@link DateTime#toObject}, {@link DateTime#toRFC2822}, {@link DateTime#toString}, {@link DateTime#toLocaleString}, {@link DateTime#toFormat}, {@link DateTime#toMillis} and {@link DateTime#toJSDate}.
+ *
+ * There's plenty others documented below. In addition, for more information on subtler topics like internationalization, time zones, alternative calendars, validity, and so on, see the external documentation.
+ */ var DateTime = /*#__PURE__*/ function() {
+    /**
+   * @access private
+   */ function DateTime(config) {
+        var zone = config.zone || Settings.defaultZone;
+        var invalid = config.invalid || (Number.isNaN(config.ts) ? new Invalid("invalid input") : null) || (!zone.isValid ? unsupportedZone(zone) : null);
+        /**
+     * @access private
+     */ this.ts = isUndefined(config.ts) ? Settings.now() : config.ts;
+        var c = null, o = null;
+        if (!invalid) {
+            var unchanged = config.old && config.old.ts === this.ts && config.old.zone.equals(zone);
+            if (unchanged) {
+                var _ref = [
+                    config.old.c,
+                    config.old.o
+                ];
+                c = _ref[0];
+                o = _ref[1];
+            } else {
+                var ot = zone.offset(this.ts);
+                c = tsToObj(this.ts, ot);
+                invalid = Number.isNaN(c.year) ? new Invalid("invalid input") : null;
+                c = invalid ? null : c;
+                o = invalid ? null : ot;
+            }
+        }
+        /**
+     * @access private
+     */ this._zone = zone;
+        /**
+     * @access private
+     */ this.loc = config.loc || Locale.create();
+        /**
+     * @access private
+     */ this.invalid = invalid;
+        /**
+     * @access private
+     */ this.weekData = null;
+        /**
+     * @access private
+     */ this.c = c;
+        /**
+     * @access private
+     */ this.o = o;
+        /**
+     * @access private
+     */ this.isLuxonDateTime = true;
+    }
+    // CONSTRUCT
+    /**
+   * Create a DateTime for the current instant, in the system's time zone.
+   *
+   * Use Settings to override these default values if needed.
+   * @example DateTime.now().toISO() //~> now in the ISO format
+   * @return {DateTime}
+   */ DateTime.now = function now() {
+        return new DateTime({});
+    } /**
+   * Create a local DateTime
+   * @param {number} [year] - The calendar year. If omitted (as in, call `local()` with no arguments), the current time will be used
+   * @param {number} [month=1] - The month, 1-indexed
+   * @param {number} [day=1] - The day of the month, 1-indexed
+   * @param {number} [hour=0] - The hour of the day, in 24-hour time
+   * @param {number} [minute=0] - The minute of the hour, meaning a number between 0 and 59
+   * @param {number} [second=0] - The second of the minute, meaning a number between 0 and 59
+   * @param {number} [millisecond=0] - The millisecond of the second, meaning a number between 0 and 999
+   * @example DateTime.local()                                  //~> now
+   * @example DateTime.local({ zone: "America/New_York" })      //~> now, in US east coast time
+   * @example DateTime.local(2017)                              //~> 2017-01-01T00:00:00
+   * @example DateTime.local(2017, 3)                           //~> 2017-03-01T00:00:00
+   * @example DateTime.local(2017, 3, 12, { locale: "fr" })     //~> 2017-03-12T00:00:00, with a French locale
+   * @example DateTime.local(2017, 3, 12, 5)                    //~> 2017-03-12T05:00:00
+   * @example DateTime.local(2017, 3, 12, 5, { zone: "utc" })   //~> 2017-03-12T05:00:00, in UTC
+   * @example DateTime.local(2017, 3, 12, 5, 45)                //~> 2017-03-12T05:45:00
+   * @example DateTime.local(2017, 3, 12, 5, 45, 10)            //~> 2017-03-12T05:45:10
+   * @example DateTime.local(2017, 3, 12, 5, 45, 10, 765)       //~> 2017-03-12T05:45:10.765
+   * @return {DateTime}
+   */ ;
+    DateTime.local = function local() {
+        var _lastOpts = lastOpts(arguments), opts = _lastOpts[0], args = _lastOpts[1], year = args[0], month = args[1], day = args[2], hour = args[3], minute = args[4], second = args[5], millisecond = args[6];
+        return quickDT({
+            year: year,
+            month: month,
+            day: day,
+            hour: hour,
+            minute: minute,
+            second: second,
+            millisecond: millisecond
+        }, opts);
+    } /**
+   * Create a DateTime in UTC
+   * @param {number} [year] - The calendar year. If omitted (as in, call `utc()` with no arguments), the current time will be used
+   * @param {number} [month=1] - The month, 1-indexed
+   * @param {number} [day=1] - The day of the month
+   * @param {number} [hour=0] - The hour of the day, in 24-hour time
+   * @param {number} [minute=0] - The minute of the hour, meaning a number between 0 and 59
+   * @param {number} [second=0] - The second of the minute, meaning a number between 0 and 59
+   * @param {number} [millisecond=0] - The millisecond of the second, meaning a number between 0 and 999
+   * @param {Object} options - configuration options for the DateTime
+   * @param {string} [options.locale] - a locale to set on the resulting DateTime instance
+   * @param {string} [options.outputCalendar] - the output calendar to set on the resulting DateTime instance
+   * @param {string} [options.numberingSystem] - the numbering system to set on the resulting DateTime instance
+   * @example DateTime.utc()                                              //~> now
+   * @example DateTime.utc(2017)                                          //~> 2017-01-01T00:00:00Z
+   * @example DateTime.utc(2017, 3)                                       //~> 2017-03-01T00:00:00Z
+   * @example DateTime.utc(2017, 3, 12)                                   //~> 2017-03-12T00:00:00Z
+   * @example DateTime.utc(2017, 3, 12, 5)                                //~> 2017-03-12T05:00:00Z
+   * @example DateTime.utc(2017, 3, 12, 5, 45)                            //~> 2017-03-12T05:45:00Z
+   * @example DateTime.utc(2017, 3, 12, 5, 45, { locale: "fr" })          //~> 2017-03-12T05:45:00Z with a French locale
+   * @example DateTime.utc(2017, 3, 12, 5, 45, 10)                        //~> 2017-03-12T05:45:10Z
+   * @example DateTime.utc(2017, 3, 12, 5, 45, 10, 765, { locale: "fr" }) //~> 2017-03-12T05:45:10.765Z with a French locale
+   * @return {DateTime}
+   */ ;
+    DateTime.utc = function utc() {
+        var _lastOpts2 = lastOpts(arguments), opts = _lastOpts2[0], args = _lastOpts2[1], year = args[0], month = args[1], day = args[2], hour = args[3], minute = args[4], second = args[5], millisecond = args[6];
+        opts.zone = FixedOffsetZone.utcInstance;
+        return quickDT({
+            year: year,
+            month: month,
+            day: day,
+            hour: hour,
+            minute: minute,
+            second: second,
+            millisecond: millisecond
+        }, opts);
+    } /**
+   * Create a DateTime from a JavaScript Date object. Uses the default zone.
+   * @param {Date} date - a JavaScript Date object
+   * @param {Object} options - configuration options for the DateTime
+   * @param {string|Zone} [options.zone='local'] - the zone to place the DateTime into
+   * @return {DateTime}
+   */ ;
+    DateTime.fromJSDate = function fromJSDate(date, options) {
+        if (options === void 0) options = {};
+        var ts = isDate(date) ? date.valueOf() : NaN;
+        if (Number.isNaN(ts)) return DateTime.invalid("invalid input");
+        var zoneToUse = normalizeZone(options.zone, Settings.defaultZone);
+        if (!zoneToUse.isValid) return DateTime.invalid(unsupportedZone(zoneToUse));
+        return new DateTime({
+            ts: ts,
+            zone: zoneToUse,
+            loc: Locale.fromObject(options)
+        });
+    } /**
+   * Create a DateTime from a number of milliseconds since the epoch (meaning since 1 January 1970 00:00:00 UTC). Uses the default zone.
+   * @param {number} milliseconds - a number of milliseconds since 1970 UTC
+   * @param {Object} options - configuration options for the DateTime
+   * @param {string|Zone} [options.zone='local'] - the zone to place the DateTime into
+   * @param {string} [options.locale] - a locale to set on the resulting DateTime instance
+   * @param {string} options.outputCalendar - the output calendar to set on the resulting DateTime instance
+   * @param {string} options.numberingSystem - the numbering system to set on the resulting DateTime instance
+   * @return {DateTime}
+   */ ;
+    DateTime.fromMillis = function fromMillis(milliseconds, options) {
+        if (options === void 0) options = {};
+        if (!isNumber(milliseconds)) throw new InvalidArgumentError("fromMillis requires a numerical input, but received a " + typeof milliseconds + " with value " + milliseconds);
+        else if (milliseconds < -MAX_DATE || milliseconds > MAX_DATE) // this isn't perfect because because we can still end up out of range because of additional shifting, but it's a start
+        return DateTime.invalid("Timestamp out of range");
+        else return new DateTime({
+            ts: milliseconds,
+            zone: normalizeZone(options.zone, Settings.defaultZone),
+            loc: Locale.fromObject(options)
+        });
+    } /**
+   * Create a DateTime from a number of seconds since the epoch (meaning since 1 January 1970 00:00:00 UTC). Uses the default zone.
+   * @param {number} seconds - a number of seconds since 1970 UTC
+   * @param {Object} options - configuration options for the DateTime
+   * @param {string|Zone} [options.zone='local'] - the zone to place the DateTime into
+   * @param {string} [options.locale] - a locale to set on the resulting DateTime instance
+   * @param {string} options.outputCalendar - the output calendar to set on the resulting DateTime instance
+   * @param {string} options.numberingSystem - the numbering system to set on the resulting DateTime instance
+   * @return {DateTime}
+   */ ;
+    DateTime.fromSeconds = function fromSeconds(seconds, options) {
+        if (options === void 0) options = {};
+        if (!isNumber(seconds)) throw new InvalidArgumentError("fromSeconds requires a numerical input");
+        else return new DateTime({
+            ts: seconds * 1000,
+            zone: normalizeZone(options.zone, Settings.defaultZone),
+            loc: Locale.fromObject(options)
+        });
+    } /**
+   * Create a DateTime from a JavaScript object with keys like 'year' and 'hour' with reasonable defaults.
+   * @param {Object} obj - the object to create the DateTime from
+   * @param {number} obj.year - a year, such as 1987
+   * @param {number} obj.month - a month, 1-12
+   * @param {number} obj.day - a day of the month, 1-31, depending on the month
+   * @param {number} obj.ordinal - day of the year, 1-365 or 366
+   * @param {number} obj.weekYear - an ISO week year
+   * @param {number} obj.weekNumber - an ISO week number, between 1 and 52 or 53, depending on the year
+   * @param {number} obj.weekday - an ISO weekday, 1-7, where 1 is Monday and 7 is Sunday
+   * @param {number} obj.hour - hour of the day, 0-23
+   * @param {number} obj.minute - minute of the hour, 0-59
+   * @param {number} obj.second - second of the minute, 0-59
+   * @param {number} obj.millisecond - millisecond of the second, 0-999
+   * @param {Object} opts - options for creating this DateTime
+   * @param {string|Zone} [opts.zone='local'] - interpret the numbers in the context of a particular zone. Can take any value taken as the first argument to setZone()
+   * @param {string} [opts.locale='system's locale'] - a locale to set on the resulting DateTime instance
+   * @param {string} opts.outputCalendar - the output calendar to set on the resulting DateTime instance
+   * @param {string} opts.numberingSystem - the numbering system to set on the resulting DateTime instance
+   * @example DateTime.fromObject({ year: 1982, month: 5, day: 25}).toISODate() //=> '1982-05-25'
+   * @example DateTime.fromObject({ year: 1982 }).toISODate() //=> '1982-01-01'
+   * @example DateTime.fromObject({ hour: 10, minute: 26, second: 6 }) //~> today at 10:26:06
+   * @example DateTime.fromObject({ hour: 10, minute: 26, second: 6 }, { zone: 'utc' }),
+   * @example DateTime.fromObject({ hour: 10, minute: 26, second: 6 }, { zone: 'local' })
+   * @example DateTime.fromObject({ hour: 10, minute: 26, second: 6 }, { zone: 'America/New_York' })
+   * @example DateTime.fromObject({ weekYear: 2016, weekNumber: 2, weekday: 3 }).toISODate() //=> '2016-01-13'
+   * @return {DateTime}
+   */ ;
+    DateTime.fromObject = function fromObject(obj, opts) {
+        if (opts === void 0) opts = {};
+        obj = obj || {};
+        var zoneToUse = normalizeZone(opts.zone, Settings.defaultZone);
+        if (!zoneToUse.isValid) return DateTime.invalid(unsupportedZone(zoneToUse));
+        var tsNow = Settings.now(), offsetProvis = !isUndefined(opts.specificOffset) ? opts.specificOffset : zoneToUse.offset(tsNow), normalized = normalizeObject(obj, normalizeUnit), containsOrdinal = !isUndefined(normalized.ordinal), containsGregorYear = !isUndefined(normalized.year), containsGregorMD = !isUndefined(normalized.month) || !isUndefined(normalized.day), containsGregor = containsGregorYear || containsGregorMD, definiteWeekDef = normalized.weekYear || normalized.weekNumber, loc = Locale.fromObject(opts);
+        // cases:
+        // just a weekday -> this week's instance of that weekday, no worries
+        // (gregorian data or ordinal) + (weekYear or weekNumber) -> error
+        // (gregorian month or day) + ordinal -> error
+        // otherwise just use weeks or ordinals or gregorian, depending on what's specified
+        if ((containsGregor || containsOrdinal) && definiteWeekDef) throw new ConflictingSpecificationError("Can't mix weekYear/weekNumber units with year/month/day or ordinals");
+        if (containsGregorMD && containsOrdinal) throw new ConflictingSpecificationError("Can't mix ordinal dates with month/day");
+        var useWeekData = definiteWeekDef || normalized.weekday && !containsGregor;
+        // configure ourselves to deal with gregorian dates or week stuff
+        var units, defaultValues, objNow = tsToObj(tsNow, offsetProvis);
+        if (useWeekData) {
+            units = orderedWeekUnits;
+            defaultValues = defaultWeekUnitValues;
+            objNow = gregorianToWeek(objNow);
+        } else if (containsOrdinal) {
+            units = orderedOrdinalUnits;
+            defaultValues = defaultOrdinalUnitValues;
+            objNow = gregorianToOrdinal(objNow);
+        } else {
+            units = orderedUnits;
+            defaultValues = defaultUnitValues;
+        }
+        // set default values for missing stuff
+        var foundFirst = false;
+        for(var _iterator2 = _createForOfIteratorHelperLoose(units), _step2; !(_step2 = _iterator2()).done;){
+            var u = _step2.value;
+            var v = normalized[u];
+            if (!isUndefined(v)) foundFirst = true;
+            else if (foundFirst) normalized[u] = defaultValues[u];
+            else normalized[u] = objNow[u];
+        }
+        // make sure the values we have are in range
+        var higherOrderInvalid = useWeekData ? hasInvalidWeekData(normalized) : containsOrdinal ? hasInvalidOrdinalData(normalized) : hasInvalidGregorianData(normalized), invalid = higherOrderInvalid || hasInvalidTimeData(normalized);
+        if (invalid) return DateTime.invalid(invalid);
+        // compute the actual time
+        var gregorian = useWeekData ? weekToGregorian(normalized) : containsOrdinal ? ordinalToGregorian(normalized) : normalized, _objToTS2 = objToTS(gregorian, offsetProvis, zoneToUse), tsFinal = _objToTS2[0], offsetFinal = _objToTS2[1], inst = new DateTime({
+            ts: tsFinal,
+            zone: zoneToUse,
+            o: offsetFinal,
+            loc: loc
+        });
+        // gregorian data + weekday serves only to validate
+        if (normalized.weekday && containsGregor && obj.weekday !== inst.weekday) return DateTime.invalid("mismatched weekday", "you can't specify both a weekday of " + normalized.weekday + " and a date of " + inst.toISO());
+        return inst;
+    } /**
+   * Create a DateTime from an ISO 8601 string
+   * @param {string} text - the ISO string
+   * @param {Object} opts - options to affect the creation
+   * @param {string|Zone} [opts.zone='local'] - use this zone if no offset is specified in the input string itself. Will also convert the time to this zone
+   * @param {boolean} [opts.setZone=false] - override the zone with a fixed-offset zone specified in the string itself, if it specifies one
+   * @param {string} [opts.locale='system's locale'] - a locale to set on the resulting DateTime instance
+   * @param {string} [opts.outputCalendar] - the output calendar to set on the resulting DateTime instance
+   * @param {string} [opts.numberingSystem] - the numbering system to set on the resulting DateTime instance
+   * @example DateTime.fromISO('2016-05-25T09:08:34.123')
+   * @example DateTime.fromISO('2016-05-25T09:08:34.123+06:00')
+   * @example DateTime.fromISO('2016-05-25T09:08:34.123+06:00', {setZone: true})
+   * @example DateTime.fromISO('2016-05-25T09:08:34.123', {zone: 'utc'})
+   * @example DateTime.fromISO('2016-W05-4')
+   * @return {DateTime}
+   */ ;
+    DateTime.fromISO = function fromISO(text, opts) {
+        if (opts === void 0) opts = {};
+        var _parseISODate = parseISODate(text), vals = _parseISODate[0], parsedZone = _parseISODate[1];
+        return parseDataToDateTime(vals, parsedZone, opts, "ISO 8601", text);
+    } /**
+   * Create a DateTime from an RFC 2822 string
+   * @param {string} text - the RFC 2822 string
+   * @param {Object} opts - options to affect the creation
+   * @param {string|Zone} [opts.zone='local'] - convert the time to this zone. Since the offset is always specified in the string itself, this has no effect on the interpretation of string, merely the zone the resulting DateTime is expressed in.
+   * @param {boolean} [opts.setZone=false] - override the zone with a fixed-offset zone specified in the string itself, if it specifies one
+   * @param {string} [opts.locale='system's locale'] - a locale to set on the resulting DateTime instance
+   * @param {string} opts.outputCalendar - the output calendar to set on the resulting DateTime instance
+   * @param {string} opts.numberingSystem - the numbering system to set on the resulting DateTime instance
+   * @example DateTime.fromRFC2822('25 Nov 2016 13:23:12 GMT')
+   * @example DateTime.fromRFC2822('Fri, 25 Nov 2016 13:23:12 +0600')
+   * @example DateTime.fromRFC2822('25 Nov 2016 13:23 Z')
+   * @return {DateTime}
+   */ ;
+    DateTime.fromRFC2822 = function fromRFC2822(text, opts) {
+        if (opts === void 0) opts = {};
+        var _parseRFC2822Date = parseRFC2822Date(text), vals = _parseRFC2822Date[0], parsedZone = _parseRFC2822Date[1];
+        return parseDataToDateTime(vals, parsedZone, opts, "RFC 2822", text);
+    } /**
+   * Create a DateTime from an HTTP header date
+   * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3.1
+   * @param {string} text - the HTTP header date
+   * @param {Object} opts - options to affect the creation
+   * @param {string|Zone} [opts.zone='local'] - convert the time to this zone. Since HTTP dates are always in UTC, this has no effect on the interpretation of string, merely the zone the resulting DateTime is expressed in.
+   * @param {boolean} [opts.setZone=false] - override the zone with the fixed-offset zone specified in the string. For HTTP dates, this is always UTC, so this option is equivalent to setting the `zone` option to 'utc', but this option is included for consistency with similar methods.
+   * @param {string} [opts.locale='system's locale'] - a locale to set on the resulting DateTime instance
+   * @param {string} opts.outputCalendar - the output calendar to set on the resulting DateTime instance
+   * @param {string} opts.numberingSystem - the numbering system to set on the resulting DateTime instance
+   * @example DateTime.fromHTTP('Sun, 06 Nov 1994 08:49:37 GMT')
+   * @example DateTime.fromHTTP('Sunday, 06-Nov-94 08:49:37 GMT')
+   * @example DateTime.fromHTTP('Sun Nov  6 08:49:37 1994')
+   * @return {DateTime}
+   */ ;
+    DateTime.fromHTTP = function fromHTTP(text, opts) {
+        if (opts === void 0) opts = {};
+        var _parseHTTPDate = parseHTTPDate(text), vals = _parseHTTPDate[0], parsedZone = _parseHTTPDate[1];
+        return parseDataToDateTime(vals, parsedZone, opts, "HTTP", opts);
+    } /**
+   * Create a DateTime from an input string and format string.
+   * Defaults to en-US if no locale has been specified, regardless of the system's locale. For a table of tokens and their interpretations, see [here](https://moment.github.io/luxon/#/parsing?id=table-of-tokens).
+   * @param {string} text - the string to parse
+   * @param {string} fmt - the format the string is expected to be in (see the link below for the formats)
+   * @param {Object} opts - options to affect the creation
+   * @param {string|Zone} [opts.zone='local'] - use this zone if no offset is specified in the input string itself. Will also convert the DateTime to this zone
+   * @param {boolean} [opts.setZone=false] - override the zone with a zone specified in the string itself, if it specifies one
+   * @param {string} [opts.locale='en-US'] - a locale string to use when parsing. Will also set the DateTime to this locale
+   * @param {string} opts.numberingSystem - the numbering system to use when parsing. Will also set the resulting DateTime to this numbering system
+   * @param {string} opts.outputCalendar - the output calendar to set on the resulting DateTime instance
+   * @return {DateTime}
+   */ ;
+    DateTime.fromFormat = function fromFormat(text, fmt, opts) {
+        if (opts === void 0) opts = {};
+        if (isUndefined(text) || isUndefined(fmt)) throw new InvalidArgumentError("fromFormat requires an input string and a format");
+        var _opts = opts, _opts$locale = _opts.locale, locale = _opts$locale === void 0 ? null : _opts$locale, _opts$numberingSystem = _opts.numberingSystem, numberingSystem = _opts$numberingSystem === void 0 ? null : _opts$numberingSystem, localeToUse = Locale.fromOpts({
+            locale: locale,
+            numberingSystem: numberingSystem,
+            defaultToEN: true
+        }), _parseFromTokens = parseFromTokens(localeToUse, text, fmt), vals = _parseFromTokens[0], parsedZone = _parseFromTokens[1], specificOffset = _parseFromTokens[2], invalid = _parseFromTokens[3];
+        if (invalid) return DateTime.invalid(invalid);
+        else return parseDataToDateTime(vals, parsedZone, opts, "format " + fmt, text, specificOffset);
+    } /**
+   * @deprecated use fromFormat instead
+   */ ;
+    DateTime.fromString = function fromString(text, fmt, opts) {
+        if (opts === void 0) opts = {};
+        return DateTime.fromFormat(text, fmt, opts);
+    } /**
+   * Create a DateTime from a SQL date, time, or datetime
+   * Defaults to en-US if no locale has been specified, regardless of the system's locale
+   * @param {string} text - the string to parse
+   * @param {Object} opts - options to affect the creation
+   * @param {string|Zone} [opts.zone='local'] - use this zone if no offset is specified in the input string itself. Will also convert the DateTime to this zone
+   * @param {boolean} [opts.setZone=false] - override the zone with a zone specified in the string itself, if it specifies one
+   * @param {string} [opts.locale='en-US'] - a locale string to use when parsing. Will also set the DateTime to this locale
+   * @param {string} opts.numberingSystem - the numbering system to use when parsing. Will also set the resulting DateTime to this numbering system
+   * @param {string} opts.outputCalendar - the output calendar to set on the resulting DateTime instance
+   * @example DateTime.fromSQL('2017-05-15')
+   * @example DateTime.fromSQL('2017-05-15 09:12:34')
+   * @example DateTime.fromSQL('2017-05-15 09:12:34.342')
+   * @example DateTime.fromSQL('2017-05-15 09:12:34.342+06:00')
+   * @example DateTime.fromSQL('2017-05-15 09:12:34.342 America/Los_Angeles')
+   * @example DateTime.fromSQL('2017-05-15 09:12:34.342 America/Los_Angeles', { setZone: true })
+   * @example DateTime.fromSQL('2017-05-15 09:12:34.342', { zone: 'America/Los_Angeles' })
+   * @example DateTime.fromSQL('09:12:34.342')
+   * @return {DateTime}
+   */ ;
+    DateTime.fromSQL = function fromSQL(text, opts) {
+        if (opts === void 0) opts = {};
+        var _parseSQL = parseSQL(text), vals = _parseSQL[0], parsedZone = _parseSQL[1];
+        return parseDataToDateTime(vals, parsedZone, opts, "SQL", text);
+    } /**
+   * Create an invalid DateTime.
+   * @param {DateTime} reason - simple string of why this DateTime is invalid. Should not contain parameters or anything else data-dependent
+   * @param {string} [explanation=null] - longer explanation, may include parameters and other useful debugging information
+   * @return {DateTime}
+   */ ;
+    DateTime.invalid = function invalid(reason, explanation) {
+        if (explanation === void 0) explanation = null;
+        if (!reason) throw new InvalidArgumentError("need to specify a reason the DateTime is invalid");
+        var invalid = reason instanceof Invalid ? reason : new Invalid(reason, explanation);
+        if (Settings.throwOnInvalid) throw new InvalidDateTimeError(invalid);
+        else return new DateTime({
+            invalid: invalid
+        });
+    } /**
+   * Check if an object is an instance of DateTime. Works across context boundaries
+   * @param {object} o
+   * @return {boolean}
+   */ ;
+    DateTime.isDateTime = function isDateTime(o) {
+        return o && o.isLuxonDateTime || false;
+    } /**
+   * Produce the format string for a set of options
+   * @param formatOpts
+   * @param localeOpts
+   * @returns {string}
+   */ ;
+    DateTime.parseFormatForOpts = function parseFormatForOpts(formatOpts, localeOpts) {
+        if (localeOpts === void 0) localeOpts = {};
+        var tokenList = formatOptsToTokens(formatOpts, Locale.fromObject(localeOpts));
+        return !tokenList ? null : tokenList.map(function(t) {
+            return t ? t.val : null;
+        }).join("");
+    } /**
+   * Produce the the fully expanded format token for the locale
+   * Does NOT quote characters, so quoted tokens will not round trip correctly
+   * @param fmt
+   * @param localeOpts
+   * @returns {string}
+   */ ;
+    DateTime.expandFormat = function expandFormat(fmt, localeOpts) {
+        if (localeOpts === void 0) localeOpts = {};
+        var expanded = expandMacroTokens(Formatter.parseFormat(fmt), Locale.fromObject(localeOpts));
+        return expanded.map(function(t) {
+            return t.val;
+        }).join("");
+    } /**
+   * Get the value of unit.
+   * @param {string} unit - a unit such as 'minute' or 'day'
+   * @example DateTime.local(2017, 7, 4).get('month'); //=> 7
+   * @example DateTime.local(2017, 7, 4).get('day'); //=> 4
+   * @return {number}
+   */ ;
+    var _proto = DateTime.prototype;
+    _proto.get = function get(unit) {
+        return this[unit];
+    } /**
+   * Returns whether the DateTime is valid. Invalid DateTimes occur when:
+   * * The DateTime was created from invalid calendar information, such as the 13th month or February 30
+   * * The DateTime was created by an operation on another invalid date
+   * @type {boolean}
+   */ ;
+    /**
+   * Returns the resolved Intl options for this DateTime.
+   * This is useful in understanding the behavior of formatting methods
+   * @param {Object} opts - the same options as toLocaleString
+   * @return {Object}
+   */ _proto.resolvedLocaleOptions = function resolvedLocaleOptions(opts) {
+        if (opts === void 0) opts = {};
+        var _Formatter$create$res = Formatter.create(this.loc.clone(opts), opts).resolvedOptions(this), locale = _Formatter$create$res.locale, numberingSystem = _Formatter$create$res.numberingSystem, calendar = _Formatter$create$res.calendar;
+        return {
+            locale: locale,
+            numberingSystem: numberingSystem,
+            outputCalendar: calendar
+        };
+    } /**
+   * "Set" the DateTime's zone to UTC. Returns a newly-constructed DateTime.
+   *
+   * Equivalent to {@link DateTime#setZone}('utc')
+   * @param {number} [offset=0] - optionally, an offset from UTC in minutes
+   * @param {Object} [opts={}] - options to pass to `setZone()`
+   * @return {DateTime}
+   */ ;
+    _proto.toUTC = function toUTC(offset, opts) {
+        if (offset === void 0) offset = 0;
+        if (opts === void 0) opts = {};
+        return this.setZone(FixedOffsetZone.instance(offset), opts);
+    } /**
+   * "Set" the DateTime's zone to the host's local zone. Returns a newly-constructed DateTime.
+   *
+   * Equivalent to `setZone('local')`
+   * @return {DateTime}
+   */ ;
+    _proto.toLocal = function toLocal() {
+        return this.setZone(Settings.defaultZone);
+    } /**
+   * "Set" the DateTime's zone to specified zone. Returns a newly-constructed DateTime.
+   *
+   * By default, the setter keeps the underlying time the same (as in, the same timestamp), but the new instance will report different local times and consider DSTs when making computations, as with {@link DateTime#plus}. You may wish to use {@link DateTime#toLocal} and {@link DateTime#toUTC} which provide simple convenience wrappers for commonly used zones.
+   * @param {string|Zone} [zone='local'] - a zone identifier. As a string, that can be any IANA zone supported by the host environment, or a fixed-offset name of the form 'UTC+3', or the strings 'local' or 'utc'. You may also supply an instance of a {@link DateTime#Zone} class.
+   * @param {Object} opts - options
+   * @param {boolean} [opts.keepLocalTime=false] - If true, adjust the underlying time so that the local time stays the same, but in the target zone. You should rarely need this.
+   * @return {DateTime}
+   */ ;
+    _proto.setZone = function setZone(zone, _temp) {
+        var _ref2 = _temp === void 0 ? {} : _temp, _ref2$keepLocalTime = _ref2.keepLocalTime, keepLocalTime = _ref2$keepLocalTime === void 0 ? false : _ref2$keepLocalTime, _ref2$keepCalendarTim = _ref2.keepCalendarTime, keepCalendarTime = _ref2$keepCalendarTim === void 0 ? false : _ref2$keepCalendarTim;
+        zone = normalizeZone(zone, Settings.defaultZone);
+        if (zone.equals(this.zone)) return this;
+        else if (!zone.isValid) return DateTime.invalid(unsupportedZone(zone));
+        else {
+            var newTS = this.ts;
+            if (keepLocalTime || keepCalendarTime) {
+                var offsetGuess = zone.offset(this.ts);
+                var asObj = this.toObject();
+                var _objToTS3 = objToTS(asObj, offsetGuess, zone);
+                newTS = _objToTS3[0];
+            }
+            return clone(this, {
+                ts: newTS,
+                zone: zone
+            });
+        }
+    } /**
+   * "Set" the locale, numberingSystem, or outputCalendar. Returns a newly-constructed DateTime.
+   * @param {Object} properties - the properties to set
+   * @example DateTime.local(2017, 5, 25).reconfigure({ locale: 'en-GB' })
+   * @return {DateTime}
+   */ ;
+    _proto.reconfigure = function reconfigure(_temp2) {
+        var _ref3 = _temp2 === void 0 ? {} : _temp2, locale = _ref3.locale, numberingSystem = _ref3.numberingSystem, outputCalendar = _ref3.outputCalendar;
+        var loc = this.loc.clone({
+            locale: locale,
+            numberingSystem: numberingSystem,
+            outputCalendar: outputCalendar
+        });
+        return clone(this, {
+            loc: loc
+        });
+    } /**
+   * "Set" the locale. Returns a newly-constructed DateTime.
+   * Just a convenient alias for reconfigure({ locale })
+   * @example DateTime.local(2017, 5, 25).setLocale('en-GB')
+   * @return {DateTime}
+   */ ;
+    _proto.setLocale = function setLocale(locale) {
+        return this.reconfigure({
+            locale: locale
+        });
+    } /**
+   * "Set" the values of specified units. Returns a newly-constructed DateTime.
+   * You can only set units with this method; for "setting" metadata, see {@link DateTime#reconfigure} and {@link DateTime#setZone}.
+   * @param {Object} values - a mapping of units to numbers
+   * @example dt.set({ year: 2017 })
+   * @example dt.set({ hour: 8, minute: 30 })
+   * @example dt.set({ weekday: 5 })
+   * @example dt.set({ year: 2005, ordinal: 234 })
+   * @return {DateTime}
+   */ ;
+    _proto.set = function set(values) {
+        if (!this.isValid) return this;
+        var normalized = normalizeObject(values, normalizeUnit), settingWeekStuff = !isUndefined(normalized.weekYear) || !isUndefined(normalized.weekNumber) || !isUndefined(normalized.weekday), containsOrdinal = !isUndefined(normalized.ordinal), containsGregorYear = !isUndefined(normalized.year), containsGregorMD = !isUndefined(normalized.month) || !isUndefined(normalized.day), containsGregor = containsGregorYear || containsGregorMD, definiteWeekDef = normalized.weekYear || normalized.weekNumber;
+        if ((containsGregor || containsOrdinal) && definiteWeekDef) throw new ConflictingSpecificationError("Can't mix weekYear/weekNumber units with year/month/day or ordinals");
+        if (containsGregorMD && containsOrdinal) throw new ConflictingSpecificationError("Can't mix ordinal dates with month/day");
+        var mixed;
+        if (settingWeekStuff) mixed = weekToGregorian(_extends({}, gregorianToWeek(this.c), normalized));
+        else if (!isUndefined(normalized.ordinal)) mixed = ordinalToGregorian(_extends({}, gregorianToOrdinal(this.c), normalized));
+        else {
+            mixed = _extends({}, this.toObject(), normalized);
+            // if we didn't set the day but we ended up on an overflow date,
+            // use the last day of the right month
+            if (isUndefined(normalized.day)) mixed.day = Math.min(daysInMonth(mixed.year, mixed.month), mixed.day);
+        }
+        var _objToTS4 = objToTS(mixed, this.o, this.zone), ts = _objToTS4[0], o = _objToTS4[1];
+        return clone(this, {
+            ts: ts,
+            o: o
+        });
+    } /**
+   * Add a period of time to this DateTime and return the resulting DateTime
+   *
+   * Adding hours, minutes, seconds, or milliseconds increases the timestamp by the right number of milliseconds. Adding days, months, or years shifts the calendar, accounting for DSTs and leap years along the way. Thus, `dt.plus({ hours: 24 })` may result in a different time than `dt.plus({ days: 1 })` if there's a DST shift in between.
+   * @param {Duration|Object|number} duration - The amount to add. Either a Luxon Duration, a number of milliseconds, the object argument to Duration.fromObject()
+   * @example DateTime.now().plus(123) //~> in 123 milliseconds
+   * @example DateTime.now().plus({ minutes: 15 }) //~> in 15 minutes
+   * @example DateTime.now().plus({ days: 1 }) //~> this time tomorrow
+   * @example DateTime.now().plus({ days: -1 }) //~> this time yesterday
+   * @example DateTime.now().plus({ hours: 3, minutes: 13 }) //~> in 3 hr, 13 min
+   * @example DateTime.now().plus(Duration.fromObject({ hours: 3, minutes: 13 })) //~> in 3 hr, 13 min
+   * @return {DateTime}
+   */ ;
+    _proto.plus = function plus(duration) {
+        if (!this.isValid) return this;
+        var dur = Duration.fromDurationLike(duration);
+        return clone(this, adjustTime(this, dur));
+    } /**
+   * Subtract a period of time to this DateTime and return the resulting DateTime
+   * See {@link DateTime#plus}
+   * @param {Duration|Object|number} duration - The amount to subtract. Either a Luxon Duration, a number of milliseconds, the object argument to Duration.fromObject()
+   @return {DateTime}
+   */ ;
+    _proto.minus = function minus(duration) {
+        if (!this.isValid) return this;
+        var dur = Duration.fromDurationLike(duration).negate();
+        return clone(this, adjustTime(this, dur));
+    } /**
+   * "Set" this DateTime to the beginning of a unit of time.
+   * @param {string} unit - The unit to go to the beginning of. Can be 'year', 'quarter', 'month', 'week', 'day', 'hour', 'minute', 'second', or 'millisecond'.
+   * @example DateTime.local(2014, 3, 3).startOf('month').toISODate(); //=> '2014-03-01'
+   * @example DateTime.local(2014, 3, 3).startOf('year').toISODate(); //=> '2014-01-01'
+   * @example DateTime.local(2014, 3, 3).startOf('week').toISODate(); //=> '2014-03-03', weeks always start on Mondays
+   * @example DateTime.local(2014, 3, 3, 5, 30).startOf('day').toISOTime(); //=> '00:00.000-05:00'
+   * @example DateTime.local(2014, 3, 3, 5, 30).startOf('hour').toISOTime(); //=> '05:00:00.000-05:00'
+   * @return {DateTime}
+   */ ;
+    _proto.startOf = function startOf(unit) {
+        if (!this.isValid) return this;
+        var o = {}, normalizedUnit = Duration.normalizeUnit(unit);
+        switch(normalizedUnit){
+            case "years":
+                o.month = 1;
+            // falls through
+            case "quarters":
+            case "months":
+                o.day = 1;
+            // falls through
+            case "weeks":
+            case "days":
+                o.hour = 0;
+            // falls through
+            case "hours":
+                o.minute = 0;
+            // falls through
+            case "minutes":
+                o.second = 0;
+            // falls through
+            case "seconds":
+                o.millisecond = 0;
+                break;
+        }
+        if (normalizedUnit === "weeks") o.weekday = 1;
+        if (normalizedUnit === "quarters") {
+            var q = Math.ceil(this.month / 3);
+            o.month = (q - 1) * 3 + 1;
+        }
+        return this.set(o);
+    } /**
+   * "Set" this DateTime to the end (meaning the last millisecond) of a unit of time
+   * @param {string} unit - The unit to go to the end of. Can be 'year', 'quarter', 'month', 'week', 'day', 'hour', 'minute', 'second', or 'millisecond'.
+   * @example DateTime.local(2014, 3, 3).endOf('month').toISO(); //=> '2014-03-31T23:59:59.999-05:00'
+   * @example DateTime.local(2014, 3, 3).endOf('year').toISO(); //=> '2014-12-31T23:59:59.999-05:00'
+   * @example DateTime.local(2014, 3, 3).endOf('week').toISO(); // => '2014-03-09T23:59:59.999-05:00', weeks start on Mondays
+   * @example DateTime.local(2014, 3, 3, 5, 30).endOf('day').toISO(); //=> '2014-03-03T23:59:59.999-05:00'
+   * @example DateTime.local(2014, 3, 3, 5, 30).endOf('hour').toISO(); //=> '2014-03-03T05:59:59.999-05:00'
+   * @return {DateTime}
+   */ ;
+    _proto.endOf = function endOf(unit) {
+        var _this$plus;
+        return this.isValid ? this.plus((_this$plus = {}, _this$plus[unit] = 1, _this$plus)).startOf(unit).minus(1) : this;
+    } /**
+   * Returns a string representation of this DateTime formatted according to the specified format string.
+   * **You may not want this.** See {@link DateTime#toLocaleString} for a more flexible formatting tool. For a table of tokens and their interpretations, see [here](https://moment.github.io/luxon/#/formatting?id=table-of-tokens).
+   * Defaults to en-US if no locale has been specified, regardless of the system's locale.
+   * @param {string} fmt - the format string
+   * @param {Object} opts - opts to override the configuration options on this DateTime
+   * @example DateTime.now().toFormat('yyyy LLL dd') //=> '2017 Apr 22'
+   * @example DateTime.now().setLocale('fr').toFormat('yyyy LLL dd') //=> '2017 avr. 22'
+   * @example DateTime.now().toFormat('yyyy LLL dd', { locale: "fr" }) //=> '2017 avr. 22'
+   * @example DateTime.now().toFormat("HH 'hours and' mm 'minutes'") //=> '20 hours and 55 minutes'
+   * @return {string}
+   */ ;
+    _proto.toFormat = function toFormat(fmt, opts) {
+        if (opts === void 0) opts = {};
+        return this.isValid ? Formatter.create(this.loc.redefaultToEN(opts)).formatDateTimeFromString(this, fmt) : INVALID;
+    } /**
+   * Returns a localized string representing this date. Accepts the same options as the Intl.DateTimeFormat constructor and any presets defined by Luxon, such as `DateTime.DATE_FULL` or `DateTime.TIME_SIMPLE`.
+   * The exact behavior of this method is browser-specific, but in general it will return an appropriate representation
+   * of the DateTime in the assigned locale.
+   * Defaults to the system's locale if no locale has been specified
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat
+   * @param formatOpts {Object} - Intl.DateTimeFormat constructor options and configuration options
+   * @param {Object} opts - opts to override the configuration options on this DateTime
+   * @example DateTime.now().toLocaleString(); //=> 4/20/2017
+   * @example DateTime.now().setLocale('en-gb').toLocaleString(); //=> '20/04/2017'
+   * @example DateTime.now().toLocaleString(DateTime.DATE_FULL); //=> 'April 20, 2017'
+   * @example DateTime.now().toLocaleString(DateTime.DATE_FULL, { locale: 'fr' }); //=> '28 août 2022'
+   * @example DateTime.now().toLocaleString(DateTime.TIME_SIMPLE); //=> '11:32 AM'
+   * @example DateTime.now().toLocaleString(DateTime.DATETIME_SHORT); //=> '4/20/2017, 11:32 AM'
+   * @example DateTime.now().toLocaleString({ weekday: 'long', month: 'long', day: '2-digit' }); //=> 'Thursday, April 20'
+   * @example DateTime.now().toLocaleString({ weekday: 'short', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' }); //=> 'Thu, Apr 20, 11:27 AM'
+   * @example DateTime.now().toLocaleString({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); //=> '11:32'
+   * @return {string}
+   */ ;
+    _proto.toLocaleString = function toLocaleString(formatOpts, opts) {
+        if (formatOpts === void 0) formatOpts = DATE_SHORT;
+        if (opts === void 0) opts = {};
+        return this.isValid ? Formatter.create(this.loc.clone(opts), formatOpts).formatDateTime(this) : INVALID;
+    } /**
+   * Returns an array of format "parts", meaning individual tokens along with metadata. This is allows callers to post-process individual sections of the formatted output.
+   * Defaults to the system's locale if no locale has been specified
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat/formatToParts
+   * @param opts {Object} - Intl.DateTimeFormat constructor options, same as `toLocaleString`.
+   * @example DateTime.now().toLocaleParts(); //=> [
+   *                                   //=>   { type: 'day', value: '25' },
+   *                                   //=>   { type: 'literal', value: '/' },
+   *                                   //=>   { type: 'month', value: '05' },
+   *                                   //=>   { type: 'literal', value: '/' },
+   *                                   //=>   { type: 'year', value: '1982' }
+   *                                   //=> ]
+   */ ;
+    _proto.toLocaleParts = function toLocaleParts(opts) {
+        if (opts === void 0) opts = {};
+        return this.isValid ? Formatter.create(this.loc.clone(opts), opts).formatDateTimeParts(this) : [];
+    } /**
+   * Returns an ISO 8601-compliant string representation of this DateTime
+   * @param {Object} opts - options
+   * @param {boolean} [opts.suppressMilliseconds=false] - exclude milliseconds from the format if they're 0
+   * @param {boolean} [opts.suppressSeconds=false] - exclude seconds from the format if they're 0
+   * @param {boolean} [opts.includeOffset=true] - include the offset, such as 'Z' or '-04:00'
+   * @param {boolean} [opts.extendedZone=false] - add the time zone format extension
+   * @param {string} [opts.format='extended'] - choose between the basic and extended format
+   * @example DateTime.utc(1983, 5, 25).toISO() //=> '1982-05-25T00:00:00.000Z'
+   * @example DateTime.now().toISO() //=> '2017-04-22T20:47:05.335-04:00'
+   * @example DateTime.now().toISO({ includeOffset: false }) //=> '2017-04-22T20:47:05.335'
+   * @example DateTime.now().toISO({ format: 'basic' }) //=> '20170422T204705.335-0400'
+   * @return {string}
+   */ ;
+    _proto.toISO = function toISO(_temp3) {
+        var _ref4 = _temp3 === void 0 ? {} : _temp3, _ref4$format = _ref4.format, format = _ref4$format === void 0 ? "extended" : _ref4$format, _ref4$suppressSeconds = _ref4.suppressSeconds, suppressSeconds = _ref4$suppressSeconds === void 0 ? false : _ref4$suppressSeconds, _ref4$suppressMillise = _ref4.suppressMilliseconds, suppressMilliseconds = _ref4$suppressMillise === void 0 ? false : _ref4$suppressMillise, _ref4$includeOffset = _ref4.includeOffset, includeOffset = _ref4$includeOffset === void 0 ? true : _ref4$includeOffset, _ref4$extendedZone = _ref4.extendedZone, extendedZone = _ref4$extendedZone === void 0 ? false : _ref4$extendedZone;
+        if (!this.isValid) return null;
+        var ext = format === "extended";
+        var c = _toISODate(this, ext);
+        c += "T";
+        c += _toISOTime(this, ext, suppressSeconds, suppressMilliseconds, includeOffset, extendedZone);
+        return c;
+    } /**
+   * Returns an ISO 8601-compliant string representation of this DateTime's date component
+   * @param {Object} opts - options
+   * @param {string} [opts.format='extended'] - choose between the basic and extended format
+   * @example DateTime.utc(1982, 5, 25).toISODate() //=> '1982-05-25'
+   * @example DateTime.utc(1982, 5, 25).toISODate({ format: 'basic' }) //=> '19820525'
+   * @return {string}
+   */ ;
+    _proto.toISODate = function toISODate(_temp4) {
+        var _ref5 = _temp4 === void 0 ? {} : _temp4, _ref5$format = _ref5.format, format = _ref5$format === void 0 ? "extended" : _ref5$format;
+        if (!this.isValid) return null;
+        return _toISODate(this, format === "extended");
+    } /**
+   * Returns an ISO 8601-compliant string representation of this DateTime's week date
+   * @example DateTime.utc(1982, 5, 25).toISOWeekDate() //=> '1982-W21-2'
+   * @return {string}
+   */ ;
+    _proto.toISOWeekDate = function toISOWeekDate() {
+        return toTechFormat(this, "kkkk-'W'WW-c");
+    } /**
+   * Returns an ISO 8601-compliant string representation of this DateTime's time component
+   * @param {Object} opts - options
+   * @param {boolean} [opts.suppressMilliseconds=false] - exclude milliseconds from the format if they're 0
+   * @param {boolean} [opts.suppressSeconds=false] - exclude seconds from the format if they're 0
+   * @param {boolean} [opts.includeOffset=true] - include the offset, such as 'Z' or '-04:00'
+   * @param {boolean} [opts.extendedZone=true] - add the time zone format extension
+   * @param {boolean} [opts.includePrefix=false] - include the `T` prefix
+   * @param {string} [opts.format='extended'] - choose between the basic and extended format
+   * @example DateTime.utc().set({ hour: 7, minute: 34 }).toISOTime() //=> '07:34:19.361Z'
+   * @example DateTime.utc().set({ hour: 7, minute: 34, seconds: 0, milliseconds: 0 }).toISOTime({ suppressSeconds: true }) //=> '07:34Z'
+   * @example DateTime.utc().set({ hour: 7, minute: 34 }).toISOTime({ format: 'basic' }) //=> '073419.361Z'
+   * @example DateTime.utc().set({ hour: 7, minute: 34 }).toISOTime({ includePrefix: true }) //=> 'T07:34:19.361Z'
+   * @return {string}
+   */ ;
+    _proto.toISOTime = function toISOTime(_temp5) {
+        var _ref6 = _temp5 === void 0 ? {} : _temp5, _ref6$suppressMillise = _ref6.suppressMilliseconds, suppressMilliseconds = _ref6$suppressMillise === void 0 ? false : _ref6$suppressMillise, _ref6$suppressSeconds = _ref6.suppressSeconds, suppressSeconds = _ref6$suppressSeconds === void 0 ? false : _ref6$suppressSeconds, _ref6$includeOffset = _ref6.includeOffset, includeOffset = _ref6$includeOffset === void 0 ? true : _ref6$includeOffset, _ref6$includePrefix = _ref6.includePrefix, includePrefix = _ref6$includePrefix === void 0 ? false : _ref6$includePrefix, _ref6$extendedZone = _ref6.extendedZone, extendedZone = _ref6$extendedZone === void 0 ? false : _ref6$extendedZone, _ref6$format = _ref6.format, format = _ref6$format === void 0 ? "extended" : _ref6$format;
+        if (!this.isValid) return null;
+        var c = includePrefix ? "T" : "";
+        return c + _toISOTime(this, format === "extended", suppressSeconds, suppressMilliseconds, includeOffset, extendedZone);
+    } /**
+   * Returns an RFC 2822-compatible string representation of this DateTime
+   * @example DateTime.utc(2014, 7, 13).toRFC2822() //=> 'Sun, 13 Jul 2014 00:00:00 +0000'
+   * @example DateTime.local(2014, 7, 13).toRFC2822() //=> 'Sun, 13 Jul 2014 00:00:00 -0400'
+   * @return {string}
+   */ ;
+    _proto.toRFC2822 = function toRFC2822() {
+        return toTechFormat(this, "EEE, dd LLL yyyy HH:mm:ss ZZZ", false);
+    } /**
+   * Returns a string representation of this DateTime appropriate for use in HTTP headers. The output is always expressed in GMT.
+   * Specifically, the string conforms to RFC 1123.
+   * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3.1
+   * @example DateTime.utc(2014, 7, 13).toHTTP() //=> 'Sun, 13 Jul 2014 00:00:00 GMT'
+   * @example DateTime.utc(2014, 7, 13, 19).toHTTP() //=> 'Sun, 13 Jul 2014 19:00:00 GMT'
+   * @return {string}
+   */ ;
+    _proto.toHTTP = function toHTTP() {
+        return toTechFormat(this.toUTC(), "EEE, dd LLL yyyy HH:mm:ss 'GMT'");
+    } /**
+   * Returns a string representation of this DateTime appropriate for use in SQL Date
+   * @example DateTime.utc(2014, 7, 13).toSQLDate() //=> '2014-07-13'
+   * @return {string}
+   */ ;
+    _proto.toSQLDate = function toSQLDate() {
+        if (!this.isValid) return null;
+        return _toISODate(this, true);
+    } /**
+   * Returns a string representation of this DateTime appropriate for use in SQL Time
+   * @param {Object} opts - options
+   * @param {boolean} [opts.includeZone=false] - include the zone, such as 'America/New_York'. Overrides includeOffset.
+   * @param {boolean} [opts.includeOffset=true] - include the offset, such as 'Z' or '-04:00'
+   * @param {boolean} [opts.includeOffsetSpace=true] - include the space between the time and the offset, such as '05:15:16.345 -04:00'
+   * @example DateTime.utc().toSQL() //=> '05:15:16.345'
+   * @example DateTime.now().toSQL() //=> '05:15:16.345 -04:00'
+   * @example DateTime.now().toSQL({ includeOffset: false }) //=> '05:15:16.345'
+   * @example DateTime.now().toSQL({ includeZone: false }) //=> '05:15:16.345 America/New_York'
+   * @return {string}
+   */ ;
+    _proto.toSQLTime = function toSQLTime(_temp6) {
+        var _ref7 = _temp6 === void 0 ? {} : _temp6, _ref7$includeOffset = _ref7.includeOffset, includeOffset = _ref7$includeOffset === void 0 ? true : _ref7$includeOffset, _ref7$includeZone = _ref7.includeZone, includeZone = _ref7$includeZone === void 0 ? false : _ref7$includeZone, _ref7$includeOffsetSp = _ref7.includeOffsetSpace, includeOffsetSpace = _ref7$includeOffsetSp === void 0 ? true : _ref7$includeOffsetSp;
+        var fmt = "HH:mm:ss.SSS";
+        if (includeZone || includeOffset) {
+            if (includeOffsetSpace) fmt += " ";
+            if (includeZone) fmt += "z";
+            else if (includeOffset) fmt += "ZZ";
+        }
+        return toTechFormat(this, fmt, true);
+    } /**
+   * Returns a string representation of this DateTime appropriate for use in SQL DateTime
+   * @param {Object} opts - options
+   * @param {boolean} [opts.includeZone=false] - include the zone, such as 'America/New_York'. Overrides includeOffset.
+   * @param {boolean} [opts.includeOffset=true] - include the offset, such as 'Z' or '-04:00'
+   * @param {boolean} [opts.includeOffsetSpace=true] - include the space between the time and the offset, such as '05:15:16.345 -04:00'
+   * @example DateTime.utc(2014, 7, 13).toSQL() //=> '2014-07-13 00:00:00.000 Z'
+   * @example DateTime.local(2014, 7, 13).toSQL() //=> '2014-07-13 00:00:00.000 -04:00'
+   * @example DateTime.local(2014, 7, 13).toSQL({ includeOffset: false }) //=> '2014-07-13 00:00:00.000'
+   * @example DateTime.local(2014, 7, 13).toSQL({ includeZone: true }) //=> '2014-07-13 00:00:00.000 America/New_York'
+   * @return {string}
+   */ ;
+    _proto.toSQL = function toSQL(opts) {
+        if (opts === void 0) opts = {};
+        if (!this.isValid) return null;
+        return this.toSQLDate() + " " + this.toSQLTime(opts);
+    } /**
+   * Returns a string representation of this DateTime appropriate for debugging
+   * @return {string}
+   */ ;
+    _proto.toString = function toString() {
+        return this.isValid ? this.toISO() : INVALID;
+    } /**
+   * Returns the epoch milliseconds of this DateTime. Alias of {@link DateTime#toMillis}
+   * @return {number}
+   */ ;
+    _proto.valueOf = function valueOf() {
+        return this.toMillis();
+    } /**
+   * Returns the epoch milliseconds of this DateTime.
+   * @return {number}
+   */ ;
+    _proto.toMillis = function toMillis() {
+        return this.isValid ? this.ts : NaN;
+    } /**
+   * Returns the epoch seconds of this DateTime.
+   * @return {number}
+   */ ;
+    _proto.toSeconds = function toSeconds() {
+        return this.isValid ? this.ts / 1000 : NaN;
+    } /**
+   * Returns the epoch seconds (as a whole number) of this DateTime.
+   * @return {number}
+   */ ;
+    _proto.toUnixInteger = function toUnixInteger() {
+        return this.isValid ? Math.floor(this.ts / 1000) : NaN;
+    } /**
+   * Returns an ISO 8601 representation of this DateTime appropriate for use in JSON.
+   * @return {string}
+   */ ;
+    _proto.toJSON = function toJSON() {
+        return this.toISO();
+    } /**
+   * Returns a BSON serializable equivalent to this DateTime.
+   * @return {Date}
+   */ ;
+    _proto.toBSON = function toBSON() {
+        return this.toJSDate();
+    } /**
+   * Returns a JavaScript object with this DateTime's year, month, day, and so on.
+   * @param opts - options for generating the object
+   * @param {boolean} [opts.includeConfig=false] - include configuration attributes in the output
+   * @example DateTime.now().toObject() //=> { year: 2017, month: 4, day: 22, hour: 20, minute: 49, second: 42, millisecond: 268 }
+   * @return {Object}
+   */ ;
+    _proto.toObject = function toObject(opts) {
+        if (opts === void 0) opts = {};
+        if (!this.isValid) return {};
+        var base = _extends({}, this.c);
+        if (opts.includeConfig) {
+            base.outputCalendar = this.outputCalendar;
+            base.numberingSystem = this.loc.numberingSystem;
+            base.locale = this.loc.locale;
+        }
+        return base;
+    } /**
+   * Returns a JavaScript Date equivalent to this DateTime.
+   * @return {Date}
+   */ ;
+    _proto.toJSDate = function toJSDate() {
+        return new Date(this.isValid ? this.ts : NaN);
+    } /**
+   * Return the difference between two DateTimes as a Duration.
+   * @param {DateTime} otherDateTime - the DateTime to compare this one to
+   * @param {string|string[]} [unit=['milliseconds']] - the unit or array of units (such as 'hours' or 'days') to include in the duration.
+   * @param {Object} opts - options that affect the creation of the Duration
+   * @param {string} [opts.conversionAccuracy='casual'] - the conversion system to use
+   * @example
+   * var i1 = DateTime.fromISO('1982-05-25T09:45'),
+   *     i2 = DateTime.fromISO('1983-10-14T10:30');
+   * i2.diff(i1).toObject() //=> { milliseconds: 43807500000 }
+   * i2.diff(i1, 'hours').toObject() //=> { hours: 12168.75 }
+   * i2.diff(i1, ['months', 'days']).toObject() //=> { months: 16, days: 19.03125 }
+   * i2.diff(i1, ['months', 'days', 'hours']).toObject() //=> { months: 16, days: 19, hours: 0.75 }
+   * @return {Duration}
+   */ ;
+    _proto.diff = function diff(otherDateTime, unit, opts) {
+        if (unit === void 0) unit = "milliseconds";
+        if (opts === void 0) opts = {};
+        if (!this.isValid || !otherDateTime.isValid) return Duration.invalid("created by diffing an invalid DateTime");
+        var durOpts = _extends({
+            locale: this.locale,
+            numberingSystem: this.numberingSystem
+        }, opts);
+        var units = maybeArray(unit).map(Duration.normalizeUnit), otherIsLater = otherDateTime.valueOf() > this.valueOf(), earlier = otherIsLater ? this : otherDateTime, later = otherIsLater ? otherDateTime : this, diffed = _diff(earlier, later, units, durOpts);
+        return otherIsLater ? diffed.negate() : diffed;
+    } /**
+   * Return the difference between this DateTime and right now.
+   * See {@link DateTime#diff}
+   * @param {string|string[]} [unit=['milliseconds']] - the unit or units units (such as 'hours' or 'days') to include in the duration
+   * @param {Object} opts - options that affect the creation of the Duration
+   * @param {string} [opts.conversionAccuracy='casual'] - the conversion system to use
+   * @return {Duration}
+   */ ;
+    _proto.diffNow = function diffNow(unit, opts) {
+        if (unit === void 0) unit = "milliseconds";
+        if (opts === void 0) opts = {};
+        return this.diff(DateTime.now(), unit, opts);
+    } /**
+   * Return an Interval spanning between this DateTime and another DateTime
+   * @param {DateTime} otherDateTime - the other end point of the Interval
+   * @return {Interval}
+   */ ;
+    _proto.until = function until(otherDateTime) {
+        return this.isValid ? Interval.fromDateTimes(this, otherDateTime) : this;
+    } /**
+   * Return whether this DateTime is in the same unit of time as another DateTime.
+   * Higher-order units must also be identical for this function to return `true`.
+   * Note that time zones are **ignored** in this comparison, which compares the **local** calendar time. Use {@link DateTime#setZone} to convert one of the dates if needed.
+   * @param {DateTime} otherDateTime - the other DateTime
+   * @param {string} unit - the unit of time to check sameness on
+   * @example DateTime.now().hasSame(otherDT, 'day'); //~> true if otherDT is in the same current calendar day
+   * @return {boolean}
+   */ ;
+    _proto.hasSame = function hasSame(otherDateTime, unit) {
+        if (!this.isValid) return false;
+        var inputMs = otherDateTime.valueOf();
+        var adjustedToZone = this.setZone(otherDateTime.zone, {
+            keepLocalTime: true
+        });
+        return adjustedToZone.startOf(unit) <= inputMs && inputMs <= adjustedToZone.endOf(unit);
+    } /**
+   * Equality check
+   * Two DateTimes are equal if and only if they represent the same millisecond, have the same zone and location, and are both valid.
+   * To compare just the millisecond values, use `+dt1 === +dt2`.
+   * @param {DateTime} other - the other DateTime
+   * @return {boolean}
+   */ ;
+    _proto.equals = function equals(other) {
+        return this.isValid && other.isValid && this.valueOf() === other.valueOf() && this.zone.equals(other.zone) && this.loc.equals(other.loc);
+    } /**
+   * Returns a string representation of a this time relative to now, such as "in two days". Can only internationalize if your
+   * platform supports Intl.RelativeTimeFormat. Rounds down by default.
+   * @param {Object} options - options that affect the output
+   * @param {DateTime} [options.base=DateTime.now()] - the DateTime to use as the basis to which this time is compared. Defaults to now.
+   * @param {string} [options.style="long"] - the style of units, must be "long", "short", or "narrow"
+   * @param {string|string[]} options.unit - use a specific unit or array of units; if omitted, or an array, the method will pick the best unit. Use an array or one of "years", "quarters", "months", "weeks", "days", "hours", "minutes", or "seconds"
+   * @param {boolean} [options.round=true] - whether to round the numbers in the output.
+   * @param {number} [options.padding=0] - padding in milliseconds. This allows you to round up the result if it fits inside the threshold. Don't use in combination with {round: false} because the decimal output will include the padding.
+   * @param {string} options.locale - override the locale of this DateTime
+   * @param {string} options.numberingSystem - override the numberingSystem of this DateTime. The Intl system may choose not to honor this
+   * @example DateTime.now().plus({ days: 1 }).toRelative() //=> "in 1 day"
+   * @example DateTime.now().setLocale("es").toRelative({ days: 1 }) //=> "dentro de 1 día"
+   * @example DateTime.now().plus({ days: 1 }).toRelative({ locale: "fr" }) //=> "dans 23 heures"
+   * @example DateTime.now().minus({ days: 2 }).toRelative() //=> "2 days ago"
+   * @example DateTime.now().minus({ days: 2 }).toRelative({ unit: "hours" }) //=> "48 hours ago"
+   * @example DateTime.now().minus({ hours: 36 }).toRelative({ round: false }) //=> "1.5 days ago"
+   */ ;
+    _proto.toRelative = function toRelative(options) {
+        if (options === void 0) options = {};
+        if (!this.isValid) return null;
+        var base = options.base || DateTime.fromObject({}, {
+            zone: this.zone
+        }), padding = options.padding ? this < base ? -options.padding : options.padding : 0;
+        var units = [
+            "years",
+            "months",
+            "days",
+            "hours",
+            "minutes",
+            "seconds"
+        ];
+        var unit = options.unit;
+        if (Array.isArray(options.unit)) {
+            units = options.unit;
+            unit = undefined;
+        }
+        return diffRelative(base, this.plus(padding), _extends({}, options, {
+            numeric: "always",
+            units: units,
+            unit: unit
+        }));
+    } /**
+   * Returns a string representation of this date relative to today, such as "yesterday" or "next month".
+   * Only internationalizes on platforms that supports Intl.RelativeTimeFormat.
+   * @param {Object} options - options that affect the output
+   * @param {DateTime} [options.base=DateTime.now()] - the DateTime to use as the basis to which this time is compared. Defaults to now.
+   * @param {string} options.locale - override the locale of this DateTime
+   * @param {string} options.unit - use a specific unit; if omitted, the method will pick the unit. Use one of "years", "quarters", "months", "weeks", or "days"
+   * @param {string} options.numberingSystem - override the numberingSystem of this DateTime. The Intl system may choose not to honor this
+   * @example DateTime.now().plus({ days: 1 }).toRelativeCalendar() //=> "tomorrow"
+   * @example DateTime.now().setLocale("es").plus({ days: 1 }).toRelative() //=> ""mañana"
+   * @example DateTime.now().plus({ days: 1 }).toRelativeCalendar({ locale: "fr" }) //=> "demain"
+   * @example DateTime.now().minus({ days: 2 }).toRelativeCalendar() //=> "2 days ago"
+   */ ;
+    _proto.toRelativeCalendar = function toRelativeCalendar(options) {
+        if (options === void 0) options = {};
+        if (!this.isValid) return null;
+        return diffRelative(options.base || DateTime.fromObject({}, {
+            zone: this.zone
+        }), this, _extends({}, options, {
+            numeric: "auto",
+            units: [
+                "years",
+                "months",
+                "days"
+            ],
+            calendary: true
+        }));
+    } /**
+   * Return the min of several date times
+   * @param {...DateTime} dateTimes - the DateTimes from which to choose the minimum
+   * @return {DateTime} the min DateTime, or undefined if called with no argument
+   */ ;
+    DateTime.min = function min() {
+        for(var _len = arguments.length, dateTimes = new Array(_len), _key = 0; _key < _len; _key++)dateTimes[_key] = arguments[_key];
+        if (!dateTimes.every(DateTime.isDateTime)) throw new InvalidArgumentError("min requires all arguments be DateTimes");
+        return bestBy(dateTimes, function(i) {
+            return i.valueOf();
+        }, Math.min);
+    } /**
+   * Return the max of several date times
+   * @param {...DateTime} dateTimes - the DateTimes from which to choose the maximum
+   * @return {DateTime} the max DateTime, or undefined if called with no argument
+   */ ;
+    DateTime.max = function max() {
+        for(var _len2 = arguments.length, dateTimes = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++)dateTimes[_key2] = arguments[_key2];
+        if (!dateTimes.every(DateTime.isDateTime)) throw new InvalidArgumentError("max requires all arguments be DateTimes");
+        return bestBy(dateTimes, function(i) {
+            return i.valueOf();
+        }, Math.max);
+    } /**
+   * Explain how a string would be parsed by fromFormat()
+   * @param {string} text - the string to parse
+   * @param {string} fmt - the format the string is expected to be in (see description)
+   * @param {Object} options - options taken by fromFormat()
+   * @return {Object}
+   */ ;
+    DateTime.fromFormatExplain = function fromFormatExplain(text, fmt, options) {
+        if (options === void 0) options = {};
+        var _options = options, _options$locale = _options.locale, locale = _options$locale === void 0 ? null : _options$locale, _options$numberingSys = _options.numberingSystem, numberingSystem = _options$numberingSys === void 0 ? null : _options$numberingSys, localeToUse = Locale.fromOpts({
+            locale: locale,
+            numberingSystem: numberingSystem,
+            defaultToEN: true
+        });
+        return explainFromTokens(localeToUse, text, fmt);
+    } /**
+   * @deprecated use fromFormatExplain instead
+   */ ;
+    DateTime.fromStringExplain = function fromStringExplain(text, fmt, options) {
+        if (options === void 0) options = {};
+        return DateTime.fromFormatExplain(text, fmt, options);
+    } /**
+   * {@link DateTime#toLocaleString} format like 10/14/1983
+   * @type {Object}
+   */ ;
+    _createClass(DateTime, [
+        {
+            key: "isValid",
+            get: function get() {
+                return this.invalid === null;
+            }
+        },
+        {
+            key: "invalidReason",
+            get: function get() {
+                return this.invalid ? this.invalid.reason : null;
+            }
+        },
+        {
+            key: "invalidExplanation",
+            get: function get() {
+                return this.invalid ? this.invalid.explanation : null;
+            }
+        },
+        {
+            key: "locale",
+            get: function get() {
+                return this.isValid ? this.loc.locale : null;
+            }
+        },
+        {
+            key: "numberingSystem",
+            get: function get() {
+                return this.isValid ? this.loc.numberingSystem : null;
+            }
+        },
+        {
+            key: "outputCalendar",
+            get: function get() {
+                return this.isValid ? this.loc.outputCalendar : null;
+            }
+        },
+        {
+            key: "zone",
+            get: function get() {
+                return this._zone;
+            }
+        },
+        {
+            key: "zoneName",
+            get: function get() {
+                return this.isValid ? this.zone.name : null;
+            }
+        },
+        {
+            key: "year",
+            get: function get() {
+                return this.isValid ? this.c.year : NaN;
+            }
+        },
+        {
+            key: "quarter",
+            get: function get() {
+                return this.isValid ? Math.ceil(this.c.month / 3) : NaN;
+            }
+        },
+        {
+            key: "month",
+            get: function get() {
+                return this.isValid ? this.c.month : NaN;
+            }
+        },
+        {
+            key: "day",
+            get: function get() {
+                return this.isValid ? this.c.day : NaN;
+            }
+        },
+        {
+            key: "hour",
+            get: function get() {
+                return this.isValid ? this.c.hour : NaN;
+            }
+        },
+        {
+            key: "minute",
+            get: function get() {
+                return this.isValid ? this.c.minute : NaN;
+            }
+        },
+        {
+            key: "second",
+            get: function get() {
+                return this.isValid ? this.c.second : NaN;
+            }
+        },
+        {
+            key: "millisecond",
+            get: function get() {
+                return this.isValid ? this.c.millisecond : NaN;
+            }
+        },
+        {
+            key: "weekYear",
+            get: function get() {
+                return this.isValid ? possiblyCachedWeekData(this).weekYear : NaN;
+            }
+        },
+        {
+            key: "weekNumber",
+            get: function get() {
+                return this.isValid ? possiblyCachedWeekData(this).weekNumber : NaN;
+            }
+        },
+        {
+            key: "weekday",
+            get: function get() {
+                return this.isValid ? possiblyCachedWeekData(this).weekday : NaN;
+            }
+        },
+        {
+            key: "ordinal",
+            get: function get() {
+                return this.isValid ? gregorianToOrdinal(this.c).ordinal : NaN;
+            }
+        },
+        {
+            key: "monthShort",
+            get: function get() {
+                return this.isValid ? Info.months("short", {
+                    locObj: this.loc
+                })[this.month - 1] : null;
+            }
+        },
+        {
+            key: "monthLong",
+            get: function get() {
+                return this.isValid ? Info.months("long", {
+                    locObj: this.loc
+                })[this.month - 1] : null;
+            }
+        },
+        {
+            key: "weekdayShort",
+            get: function get() {
+                return this.isValid ? Info.weekdays("short", {
+                    locObj: this.loc
+                })[this.weekday - 1] : null;
+            }
+        },
+        {
+            key: "weekdayLong",
+            get: function get() {
+                return this.isValid ? Info.weekdays("long", {
+                    locObj: this.loc
+                })[this.weekday - 1] : null;
+            }
+        },
+        {
+            key: "offset",
+            get: function get() {
+                return this.isValid ? +this.o : NaN;
+            }
+        },
+        {
+            key: "offsetNameShort",
+            get: function get() {
+                if (this.isValid) return this.zone.offsetName(this.ts, {
+                    format: "short",
+                    locale: this.locale
+                });
+                else return null;
+            }
+        },
+        {
+            key: "offsetNameLong",
+            get: function get() {
+                if (this.isValid) return this.zone.offsetName(this.ts, {
+                    format: "long",
+                    locale: this.locale
+                });
+                else return null;
+            }
+        },
+        {
+            key: "isOffsetFixed",
+            get: function get() {
+                return this.isValid ? this.zone.isUniversal : null;
+            }
+        },
+        {
+            key: "isInDST",
+            get: function get() {
+                if (this.isOffsetFixed) return false;
+                else return this.offset > this.set({
+                    month: 1,
+                    day: 1
+                }).offset || this.offset > this.set({
+                    month: 5
+                }).offset;
+            }
+        },
+        {
+            key: "isInLeapYear",
+            get: function get() {
+                return isLeapYear(this.year);
+            }
+        },
+        {
+            key: "daysInMonth",
+            get: function get() {
+                return daysInMonth(this.year, this.month);
+            }
+        },
+        {
+            key: "daysInYear",
+            get: function get() {
+                return this.isValid ? daysInYear(this.year) : NaN;
+            }
+        },
+        {
+            key: "weeksInWeekYear",
+            get: function get() {
+                return this.isValid ? weeksInWeekYear(this.weekYear) : NaN;
+            }
+        }
+    ], [
+        {
+            key: "DATE_SHORT",
+            get: function get() {
+                return DATE_SHORT;
+            }
+        },
+        {
+            key: "DATE_MED",
+            get: function get() {
+                return DATE_MED;
+            }
+        },
+        {
+            key: "DATE_MED_WITH_WEEKDAY",
+            get: function get() {
+                return DATE_MED_WITH_WEEKDAY;
+            }
+        },
+        {
+            key: "DATE_FULL",
+            get: function get() {
+                return DATE_FULL;
+            }
+        },
+        {
+            key: "DATE_HUGE",
+            get: function get() {
+                return DATE_HUGE;
+            }
+        },
+        {
+            key: "TIME_SIMPLE",
+            get: function get() {
+                return TIME_SIMPLE;
+            }
+        },
+        {
+            key: "TIME_WITH_SECONDS",
+            get: function get() {
+                return TIME_WITH_SECONDS;
+            }
+        },
+        {
+            key: "TIME_WITH_SHORT_OFFSET",
+            get: function get() {
+                return TIME_WITH_SHORT_OFFSET;
+            }
+        },
+        {
+            key: "TIME_WITH_LONG_OFFSET",
+            get: function get() {
+                return TIME_WITH_LONG_OFFSET;
+            }
+        },
+        {
+            key: "TIME_24_SIMPLE",
+            get: function get() {
+                return TIME_24_SIMPLE;
+            }
+        },
+        {
+            key: "TIME_24_WITH_SECONDS",
+            get: function get() {
+                return TIME_24_WITH_SECONDS;
+            }
+        },
+        {
+            key: "TIME_24_WITH_SHORT_OFFSET",
+            get: function get() {
+                return TIME_24_WITH_SHORT_OFFSET;
+            }
+        },
+        {
+            key: "TIME_24_WITH_LONG_OFFSET",
+            get: function get() {
+                return TIME_24_WITH_LONG_OFFSET;
+            }
+        },
+        {
+            key: "DATETIME_SHORT",
+            get: function get() {
+                return DATETIME_SHORT;
+            }
+        },
+        {
+            key: "DATETIME_SHORT_WITH_SECONDS",
+            get: function get() {
+                return DATETIME_SHORT_WITH_SECONDS;
+            }
+        },
+        {
+            key: "DATETIME_MED",
+            get: function get() {
+                return DATETIME_MED;
+            }
+        },
+        {
+            key: "DATETIME_MED_WITH_SECONDS",
+            get: function get() {
+                return DATETIME_MED_WITH_SECONDS;
+            }
+        },
+        {
+            key: "DATETIME_MED_WITH_WEEKDAY",
+            get: function get() {
+                return DATETIME_MED_WITH_WEEKDAY;
+            }
+        },
+        {
+            key: "DATETIME_FULL",
+            get: function get() {
+                return DATETIME_FULL;
+            }
+        },
+        {
+            key: "DATETIME_FULL_WITH_SECONDS",
+            get: function get() {
+                return DATETIME_FULL_WITH_SECONDS;
+            }
+        },
+        {
+            key: "DATETIME_HUGE",
+            get: function get() {
+                return DATETIME_HUGE;
+            }
+        },
+        {
+            key: "DATETIME_HUGE_WITH_SECONDS",
+            get: function get() {
+                return DATETIME_HUGE_WITH_SECONDS;
+            }
+        }
+    ]);
+    return DateTime;
+}();
+function friendlyDateTime(dateTimeish) {
+    if (DateTime.isDateTime(dateTimeish)) return dateTimeish;
+    else if (dateTimeish && dateTimeish.valueOf && isNumber(dateTimeish.valueOf())) return DateTime.fromJSDate(dateTimeish);
+    else if (dateTimeish && typeof dateTimeish === "object") return DateTime.fromObject(dateTimeish);
+    else throw new InvalidArgumentError("Unknown datetime argument: " + dateTimeish + ", of type " + typeof dateTimeish);
+}
+var VERSION = "3.3.0";
+exports.DateTime = DateTime;
+exports.Duration = Duration;
+exports.FixedOffsetZone = FixedOffsetZone;
+exports.IANAZone = IANAZone;
+exports.Info = Info;
+exports.Interval = Interval;
+exports.InvalidZone = InvalidZone;
+exports.Settings = Settings;
+exports.SystemZone = SystemZone;
+exports.VERSION = VERSION;
+exports.Zone = Zone;
+
+},{}],"4OGiN":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$73d1 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -41268,6 +53424,9 @@ const SignupView = ()=>{
                 children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.CardGroup), {
                     children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card), {
                         children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Body, {
+                            style: {
+                                color: "#C5C6C7"
+                            },
                             children: [
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Title, {
                                     children: "Register"
@@ -41290,6 +53449,9 @@ const SignupView = ()=>{
                                                     columnNumber: 21
                                                 }, undefined),
                                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Control, {
+                                                    style: {
+                                                        color: "#C5C6C7"
+                                                    },
                                                     type: "text",
                                                     value: username,
                                                     onChange: (e)=>setUsername(e.target.value),
@@ -41314,10 +53476,13 @@ const SignupView = ()=>{
                                                     children: "Password:"
                                                 }, void 0, false, {
                                                     fileName: "src/components/signup-view/signup-view.jsx",
-                                                    lineNumber: 61,
+                                                    lineNumber: 62,
                                                     columnNumber: 21
                                                 }, undefined),
                                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Control, {
+                                                    style: {
+                                                        color: "#C5C6C7"
+                                                    },
                                                     type: "password",
                                                     value: password,
                                                     onChange: (e)=>setPassword(e.target.value),
@@ -41326,13 +53491,13 @@ const SignupView = ()=>{
                                                     placeholder: "Password must be at least 7 characters"
                                                 }, void 0, false, {
                                                     fileName: "src/components/signup-view/signup-view.jsx",
-                                                    lineNumber: 62,
+                                                    lineNumber: 63,
                                                     columnNumber: 21
                                                 }, undefined)
                                             ]
                                         }, void 0, true, {
                                             fileName: "src/components/signup-view/signup-view.jsx",
-                                            lineNumber: 60,
+                                            lineNumber: 61,
                                             columnNumber: 19
                                         }, undefined),
                                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Group, {
@@ -41342,10 +53507,13 @@ const SignupView = ()=>{
                                                     children: "Email:"
                                                 }, void 0, false, {
                                                     fileName: "src/components/signup-view/signup-view.jsx",
-                                                    lineNumber: 72,
+                                                    lineNumber: 74,
                                                     columnNumber: 21
                                                 }, undefined),
                                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Control, {
+                                                    style: {
+                                                        color: "#C5C6C7"
+                                                    },
                                                     type: "email",
                                                     value: email,
                                                     onChange: (e)=>setEmail(e.target.value),
@@ -41353,13 +53521,13 @@ const SignupView = ()=>{
                                                     placeholder: "Please enter email address"
                                                 }, void 0, false, {
                                                     fileName: "src/components/signup-view/signup-view.jsx",
-                                                    lineNumber: 73,
+                                                    lineNumber: 75,
                                                     columnNumber: 21
                                                 }, undefined)
                                             ]
                                         }, void 0, true, {
                                             fileName: "src/components/signup-view/signup-view.jsx",
-                                            lineNumber: 71,
+                                            lineNumber: 73,
                                             columnNumber: 19
                                         }, undefined),
                                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Group, {
@@ -41369,32 +53537,36 @@ const SignupView = ()=>{
                                                     children: "Birthday:"
                                                 }, void 0, false, {
                                                     fileName: "src/components/signup-view/signup-view.jsx",
-                                                    lineNumber: 82,
+                                                    lineNumber: 85,
                                                     columnNumber: 21
                                                 }, undefined),
                                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Control, {
+                                                    style: {
+                                                        color: "#C5C6C7"
+                                                    },
                                                     type: "date",
                                                     value: birthday,
                                                     onChange: (e)=>setBirthday(e.target.value),
                                                     required: true
                                                 }, void 0, false, {
                                                     fileName: "src/components/signup-view/signup-view.jsx",
-                                                    lineNumber: 83,
+                                                    lineNumber: 86,
                                                     columnNumber: 21
                                                 }, undefined)
                                             ]
                                         }, void 0, true, {
                                             fileName: "src/components/signup-view/signup-view.jsx",
-                                            lineNumber: 81,
+                                            lineNumber: 84,
                                             columnNumber: 19
                                         }, undefined),
                                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
+                                            className: "mt-4",
                                             variant: "primary",
                                             type: "submit",
                                             children: "Submit"
                                         }, void 0, false, {
                                             fileName: "src/components/signup-view/signup-view.jsx",
-                                            lineNumber: 90,
+                                            lineNumber: 94,
                                             columnNumber: 19
                                         }, undefined)
                                     ]
@@ -41441,6 +53613,742 @@ var _c;
 $RefreshReg$(_c, "SignupView");
 
   $parcel$ReactRefreshHelpers$73d1.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-bootstrap":"3AD9A","@parcel/transformer-js/src/esmodule-helpers.js":"9FYyo","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"bsPVM":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$abf5 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$abf5.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "NavigationBar", ()=>NavigationBar);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _reactBootstrap = require("react-bootstrap");
+var _reactRouterDom = require("react-router-dom");
+const NavigationBar = ({ user , onLoggedOut , handleSearchInput  })=>{
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Navbar), {
+        style: {
+            backgroundColor: "#66FCF1",
+            width: "100%"
+        },
+        expand: "lg",
+        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Container), {
+            children: [
+                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Navbar).Brand, {
+                    style: {
+                        color: "#1F2833",
+                        fontSize: "30px",
+                        textAlign: "left"
+                    },
+                    as: (0, _reactRouterDom.Link),
+                    to: "/",
+                    children: "CineDEX"
+                }, void 0, false, {
+                    fileName: "src/components/navigation-bar/navigation-bar.jsx",
+                    lineNumber: 8,
+                    columnNumber: 9
+                }, undefined),
+                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Navbar).Toggle, {
+                    "aria-controls": "basic-navbar-nav"
+                }, void 0, false, {
+                    fileName: "src/components/navigation-bar/navigation-bar.jsx",
+                    lineNumber: 15,
+                    columnNumber: 9
+                }, undefined),
+                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Navbar).Collapse, {
+                    id: "basic-navbar=nav",
+                    children: [
+                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Nav), {
+                            className: "me-auto",
+                            children: [
+                                !user && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
+                                    children: [
+                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Nav).Link, {
+                                            as: (0, _reactRouterDom.Link),
+                                            to: "/login",
+                                            children: "Login"
+                                        }, void 0, false, {
+                                            fileName: "src/components/navigation-bar/navigation-bar.jsx",
+                                            lineNumber: 20,
+                                            columnNumber: 17
+                                        }, undefined),
+                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Nav).Link, {
+                                            as: (0, _reactRouterDom.Link),
+                                            to: "/signup",
+                                            children: "Register"
+                                        }, void 0, false, {
+                                            fileName: "src/components/navigation-bar/navigation-bar.jsx",
+                                            lineNumber: 23,
+                                            columnNumber: 17
+                                        }, undefined)
+                                    ]
+                                }, void 0, true),
+                                user && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
+                                    children: [
+                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Nav).Link, {
+                                            as: (0, _reactRouterDom.Link),
+                                            to: "/",
+                                            children: "Home"
+                                        }, void 0, false, {
+                                            fileName: "src/components/navigation-bar/navigation-bar.jsx",
+                                            lineNumber: 30,
+                                            columnNumber: 17
+                                        }, undefined),
+                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Nav).Link, {
+                                            as: (0, _reactRouterDom.Link),
+                                            to: "/users",
+                                            children: "Profile"
+                                        }, void 0, false, {
+                                            fileName: "src/components/navigation-bar/navigation-bar.jsx",
+                                            lineNumber: 33,
+                                            columnNumber: 17
+                                        }, undefined),
+                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Nav).Link, {
+                                            onClick: onLoggedOut,
+                                            children: "Logout"
+                                        }, void 0, false, {
+                                            fileName: "src/components/navigation-bar/navigation-bar.jsx",
+                                            lineNumber: 36,
+                                            columnNumber: 17
+                                        }, undefined)
+                                    ]
+                                }, void 0, true)
+                            ]
+                        }, void 0, true, {
+                            fileName: "src/components/navigation-bar/navigation-bar.jsx",
+                            lineNumber: 17,
+                            columnNumber: 11
+                        }, undefined),
+                        user && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form), {
+                            children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Control, {
+                                id: "search-bar",
+                                style: {
+                                    backgroundColor: "#0B0C10",
+                                    color: "#C5C6C7"
+                                },
+                                type: "text",
+                                placeholder: "Search...",
+                                className: "mr-sm-2 mx-2",
+                                onChange: handleSearchInput
+                            }, void 0, false, {
+                                fileName: "src/components/navigation-bar/navigation-bar.jsx",
+                                lineNumber: 42,
+                                columnNumber: 15
+                            }, undefined)
+                        }, void 0, false, {
+                            fileName: "src/components/navigation-bar/navigation-bar.jsx",
+                            lineNumber: 41,
+                            columnNumber: 13
+                        }, undefined)
+                    ]
+                }, void 0, true, {
+                    fileName: "src/components/navigation-bar/navigation-bar.jsx",
+                    lineNumber: 16,
+                    columnNumber: 9
+                }, undefined)
+            ]
+        }, void 0, true, {
+            fileName: "src/components/navigation-bar/navigation-bar.jsx",
+            lineNumber: 7,
+            columnNumber: 7
+        }, undefined)
+    }, void 0, false, {
+        fileName: "src/components/navigation-bar/navigation-bar.jsx",
+        lineNumber: 6,
+        columnNumber: 5
+    }, undefined);
+};
+_c = NavigationBar;
+var _c;
+$RefreshReg$(_c, "NavigationBar");
+
+  $parcel$ReactRefreshHelpers$abf5.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react-bootstrap":"3AD9A","react-router-dom":"9xmpe","@parcel/transformer-js/src/esmodule-helpers.js":"9FYyo","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"2vVqf":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$3c12 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$3c12.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "ProfileView", ()=>ProfileView);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _reactBootstrap = require("react-bootstrap");
+var _reactRouterDom = require("react-router-dom");
+// import "./profile-view.scss";
+var _userInfo = require("./user-info");
+var _favoriteMovies = require("./favorite-movies");
+var _updateUser = require("./update-user");
+var _s = $RefreshSig$();
+const ProfileView = ({ user , getUser , deleteFromFavorites , onLoggedOut  })=>{
+    _s();
+    const [userToUpdate, setUserToUpdate] = (0, _react.useState)({
+        Username: user.Username || "",
+        Email: user.Email || "",
+        Birthday: user.Birthday || ""
+    });
+    function updateUser(e) {
+        e.preventDefault();
+        const data = {
+            Username: userToUpdate.Username,
+            Password: userToUpdate.Password,
+            Email: userToUpdate.Email,
+            Birthday: userToUpdate.Birthday
+        };
+        fetch(`https://cinedex.herokuapp.com/users/${user.Username}`, {
+            method: "PUT",
+            body: JSON.stringify(data),
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+        }).then((res)=>res.json()).then((result)=>{
+            getUser();
+        });
+    }
+    function deleteUser() {
+        fetch(`https://cinedex.herokuapp.com/users/${user.Username}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+        }).then((res)=>res.json()).then((result)=>{
+            alert("User account was deleted");
+            onLoggedOut();
+            window.location.reload();
+        }).catch(()=>{
+            alert("User account was not deleted");
+        });
+    }
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Row), {
+            className: "mt-5",
+            children: [
+                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                    children: [
+                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _userInfo.UserInfo), {
+                            user: user,
+                            deleteUser: deleteUser
+                        }, void 0, false, {
+                            fileName: "src/components/profile-view/profile-view.jsx",
+                            lineNumber: 65,
+                            columnNumber: 11
+                        }, undefined),
+                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _favoriteMovies.FavoriteMovies), {
+                            favoriteMovies: user.FavoriteMovies,
+                            onRemoveFavorite: deleteFromFavorites
+                        }, void 0, false, {
+                            fileName: "src/components/profile-view/profile-view.jsx",
+                            lineNumber: 66,
+                            columnNumber: 11
+                        }, undefined)
+                    ]
+                }, void 0, true, {
+                    fileName: "src/components/profile-view/profile-view.jsx",
+                    lineNumber: 64,
+                    columnNumber: 9
+                }, undefined),
+                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                    children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _updateUser.UpdateUser), {
+                        user: userToUpdate,
+                        handleSubmit: updateUser,
+                        onHandleChange: setUserToUpdate
+                    }, void 0, false, {
+                        fileName: "src/components/profile-view/profile-view.jsx",
+                        lineNumber: 72,
+                        columnNumber: 11
+                    }, undefined)
+                }, void 0, false, {
+                    fileName: "src/components/profile-view/profile-view.jsx",
+                    lineNumber: 71,
+                    columnNumber: 9
+                }, undefined)
+            ]
+        }, void 0, true, {
+            fileName: "src/components/profile-view/profile-view.jsx",
+            lineNumber: 63,
+            columnNumber: 7
+        }, undefined)
+    }, void 0, false, {
+        fileName: "src/components/profile-view/profile-view.jsx",
+        lineNumber: 62,
+        columnNumber: 5
+    }, undefined);
+};
+_s(ProfileView, "ithO55tSgxorDj44yA3oQT3HLro=");
+_c = ProfileView;
+var _c;
+$RefreshReg$(_c, "ProfileView");
+
+  $parcel$ReactRefreshHelpers$3c12.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-bootstrap":"3AD9A","react-router-dom":"9xmpe","./user-info":"66eot","./favorite-movies":"dTTQH","./update-user":"2SBwg","@parcel/transformer-js/src/esmodule-helpers.js":"9FYyo","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"66eot":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$1330 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$1330.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "UserInfo", ()=>UserInfo);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _reactBootstrap = require("react-bootstrap");
+const UserInfo = ({ user , deleteUser  })=>{
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
+        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Container), {
+            children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Row), {
+                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                    children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.CardGroup), {
+                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card), {
+                            children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Body, {
+                                style: {
+                                    color: "#C5C6C7"
+                                },
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("h2", {
+                                        style: {
+                                            color: "#66FCF1",
+                                            paddingBottom: "10px"
+                                        },
+                                        children: "User Info"
+                                    }, void 0, false, {
+                                        fileName: "src/components/profile-view/user-info.jsx",
+                                        lineNumber: 13,
+                                        columnNumber: 19
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
+                                        children: [
+                                            "User: ",
+                                            user.Username
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "src/components/profile-view/user-info.jsx",
+                                        lineNumber: 14,
+                                        columnNumber: 19
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
+                                        children: [
+                                            "Email: ",
+                                            user.Email
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "src/components/profile-view/user-info.jsx",
+                                        lineNumber: 15,
+                                        columnNumber: 19
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
+                                        children: [
+                                            "Birthday: ",
+                                            user.Birthday
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "src/components/profile-view/user-info.jsx",
+                                        lineNumber: 16,
+                                        columnNumber: 19
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
+                                        className: "my-3",
+                                        variant: "light",
+                                        onClick: deleteUser,
+                                        children: "Delete User Account"
+                                    }, void 0, false, {
+                                        fileName: "src/components/profile-view/user-info.jsx",
+                                        lineNumber: 18,
+                                        columnNumber: 19
+                                    }, undefined)
+                                ]
+                            }, void 0, true, {
+                                fileName: "src/components/profile-view/user-info.jsx",
+                                lineNumber: 12,
+                                columnNumber: 17
+                            }, undefined)
+                        }, void 0, false, {
+                            fileName: "src/components/profile-view/user-info.jsx",
+                            lineNumber: 11,
+                            columnNumber: 15
+                        }, undefined)
+                    }, void 0, false, {
+                        fileName: "src/components/profile-view/user-info.jsx",
+                        lineNumber: 10,
+                        columnNumber: 13
+                    }, undefined)
+                }, void 0, false, {
+                    fileName: "src/components/profile-view/user-info.jsx",
+                    lineNumber: 9,
+                    columnNumber: 11
+                }, undefined)
+            }, void 0, false, {
+                fileName: "src/components/profile-view/user-info.jsx",
+                lineNumber: 8,
+                columnNumber: 9
+            }, undefined)
+        }, void 0, false, {
+            fileName: "src/components/profile-view/user-info.jsx",
+            lineNumber: 7,
+            columnNumber: 7
+        }, undefined)
+    }, void 0, false);
+};
+_c = UserInfo;
+var _c;
+$RefreshReg$(_c, "UserInfo");
+
+  $parcel$ReactRefreshHelpers$1330.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-bootstrap":"3AD9A","@parcel/transformer-js/src/esmodule-helpers.js":"9FYyo","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"dTTQH":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$8767 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$8767.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "FavoriteMovies", ()=>FavoriteMovies);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _reactRouterDom = require("react-router-dom");
+var _reactBootstrap = require("react-bootstrap");
+const FavoriteMovies = ({ favoriteMovies , onRemoveFavorite  })=>{
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Row), {
+        children: [
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("h2", {
+                className: "my-4",
+                style: {
+                    color: "#66FCF1",
+                    paddingLeft: "40px"
+                },
+                children: "Favorite Movies"
+            }, void 0, false, {
+                fileName: "src/components/profile-view/favorite-movies.jsx",
+                lineNumber: 8,
+                columnNumber: 7
+            }, undefined),
+            favoriteMovies.map((movie)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                    style: {
+                        paddingLeft: "40px"
+                    },
+                    md: 4,
+                    children: [
+                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                            children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("img", {
+                                src: movie.ImageURL,
+                                className: "img-thumbnail"
+                            }, void 0, false, {
+                                fileName: "src/components/profile-view/favorite-movies.jsx",
+                                lineNumber: 14,
+                                columnNumber: 13
+                            }, undefined)
+                        }, void 0, false, {
+                            fileName: "src/components/profile-view/favorite-movies.jsx",
+                            lineNumber: 13,
+                            columnNumber: 11
+                        }, undefined),
+                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Link), {
+                            style: {
+                                color: "#C5C6C7",
+                                textAlign: "center",
+                                marginTop: "5px"
+                            },
+                            to: `/movies/${movie.Title}`,
+                            children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("h4", {
+                                style: {
+                                    paddingTop: "10px",
+                                    fontSize: "20px"
+                                },
+                                children: movie.Title
+                            }, void 0, false, {
+                                fileName: "src/components/profile-view/favorite-movies.jsx",
+                                lineNumber: 20,
+                                columnNumber: 13
+                            }, undefined)
+                        }, void 0, false, {
+                            fileName: "src/components/profile-view/favorite-movies.jsx",
+                            lineNumber: 16,
+                            columnNumber: 11
+                        }, undefined),
+                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
+                            className: "my-4",
+                            variant: "primary",
+                            style: {
+                                backgroundColor: "#1F2833",
+                                color: "#66FCF1"
+                            },
+                            onClick: ()=>onRemoveFavorite(movie._id),
+                            children: "Remove from favorites"
+                        }, void 0, false, {
+                            fileName: "src/components/profile-view/favorite-movies.jsx",
+                            lineNumber: 24,
+                            columnNumber: 11
+                        }, undefined)
+                    ]
+                }, movie._id, true, {
+                    fileName: "src/components/profile-view/favorite-movies.jsx",
+                    lineNumber: 12,
+                    columnNumber: 9
+                }, undefined))
+        ]
+    }, void 0, true, {
+        fileName: "src/components/profile-view/favorite-movies.jsx",
+        lineNumber: 7,
+        columnNumber: 5
+    }, undefined);
+};
+_c = FavoriteMovies;
+var _c;
+$RefreshReg$(_c, "FavoriteMovies");
+
+  $parcel$ReactRefreshHelpers$8767.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-router-dom":"9xmpe","react-bootstrap":"3AD9A","@parcel/transformer-js/src/esmodule-helpers.js":"9FYyo","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"2SBwg":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$95d1 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$95d1.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "UpdateUser", ()=>UpdateUser);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _reactBootstrap = require("react-bootstrap");
+const UpdateUser = ({ handleSubmit , onHandleChange , user  })=>{
+    const onChange = (event)=>{
+        console.log("called", event.target.value);
+        onHandleChange((prevState)=>({
+                ...prevState,
+                [event.target.name]: event.target.value
+            }));
+    };
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Container), {
+        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Row), {
+            children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.CardGroup), {
+                    children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card), {
+                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Body, {
+                            children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form), {
+                                className: "profile-form",
+                                style: {
+                                    color: "#C5C6C7"
+                                },
+                                onSubmit: handleSubmit,
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("h2", {
+                                        style: {
+                                            color: "#66FCF1",
+                                            paddingBottom: "10px"
+                                        },
+                                        children: [
+                                            " ",
+                                            "Want to change your info?"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "src/components/profile-view/update-user.jsx",
+                                        lineNumber: 33,
+                                        columnNumber: 19
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                        className: "mb-3",
+                                        children: [
+                                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("label", {
+                                                children: "Username:"
+                                            }, void 0, false, {
+                                                fileName: "src/components/profile-view/update-user.jsx",
+                                                lineNumber: 38,
+                                                columnNumber: 21
+                                            }, undefined),
+                                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("input", {
+                                                className: "form-control",
+                                                style: {
+                                                    color: "#C5C6C7"
+                                                },
+                                                type: "text",
+                                                name: "Username",
+                                                defaultValue: user.Username,
+                                                onChange: onChange
+                                            }, void 0, false, {
+                                                fileName: "src/components/profile-view/update-user.jsx",
+                                                lineNumber: 39,
+                                                columnNumber: 21
+                                            }, undefined)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "src/components/profile-view/update-user.jsx",
+                                        lineNumber: 37,
+                                        columnNumber: 19
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                        className: "mb-3",
+                                        children: [
+                                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("label", {
+                                                children: "Password"
+                                            }, void 0, false, {
+                                                fileName: "src/components/profile-view/update-user.jsx",
+                                                lineNumber: 49,
+                                                columnNumber: 21
+                                            }, undefined),
+                                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("input", {
+                                                className: "form-control",
+                                                style: {
+                                                    color: "#C5C6C7"
+                                                },
+                                                type: "password",
+                                                name: "password",
+                                                value: user.Password,
+                                                onChange: onChange
+                                            }, void 0, false, {
+                                                fileName: "src/components/profile-view/update-user.jsx",
+                                                lineNumber: 50,
+                                                columnNumber: 21
+                                            }, undefined)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "src/components/profile-view/update-user.jsx",
+                                        lineNumber: 48,
+                                        columnNumber: 19
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                        className: "mb-3",
+                                        children: [
+                                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("label", {
+                                                children: "Email address"
+                                            }, void 0, false, {
+                                                fileName: "src/components/profile-view/update-user.jsx",
+                                                lineNumber: 60,
+                                                columnNumber: 21
+                                            }, undefined),
+                                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("input", {
+                                                className: "form-control",
+                                                style: {
+                                                    color: "#C5C6C7"
+                                                },
+                                                type: "email",
+                                                name: "email",
+                                                value: user.Email,
+                                                onChange: onChange
+                                            }, void 0, false, {
+                                                fileName: "src/components/profile-view/update-user.jsx",
+                                                lineNumber: 61,
+                                                columnNumber: 21
+                                            }, undefined)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "src/components/profile-view/update-user.jsx",
+                                        lineNumber: 59,
+                                        columnNumber: 19
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                        className: "mb-3",
+                                        children: [
+                                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("label", {
+                                                children: "Birthday"
+                                            }, void 0, false, {
+                                                fileName: "src/components/profile-view/update-user.jsx",
+                                                lineNumber: 71,
+                                                columnNumber: 21
+                                            }, undefined),
+                                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("input", {
+                                                className: "form-control",
+                                                style: {
+                                                    color: "#C5C6C7"
+                                                },
+                                                type: "date",
+                                                name: "Birthday",
+                                                value: user.Birthday,
+                                                onChange: onChange
+                                            }, void 0, false, {
+                                                fileName: "src/components/profile-view/update-user.jsx",
+                                                lineNumber: 72,
+                                                columnNumber: 21
+                                            }, undefined)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "src/components/profile-view/update-user.jsx",
+                                        lineNumber: 70,
+                                        columnNumber: 19
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
+                                        variant: "primary",
+                                        type: "submit",
+                                        onClick: ()=>{
+                                            onHandleChange(user);
+                                            alert("User has been updated");
+                                        },
+                                        children: "Edit"
+                                    }, void 0, false, {
+                                        fileName: "src/components/profile-view/update-user.jsx",
+                                        lineNumber: 81,
+                                        columnNumber: 19
+                                    }, undefined)
+                                ]
+                            }, void 0, true, {
+                                fileName: "src/components/profile-view/update-user.jsx",
+                                lineNumber: 28,
+                                columnNumber: 17
+                            }, undefined)
+                        }, void 0, false, {
+                            fileName: "src/components/profile-view/update-user.jsx",
+                            lineNumber: 27,
+                            columnNumber: 15
+                        }, undefined)
+                    }, void 0, false, {
+                        fileName: "src/components/profile-view/update-user.jsx",
+                        lineNumber: 26,
+                        columnNumber: 13
+                    }, undefined)
+                }, void 0, false, {
+                    fileName: "src/components/profile-view/update-user.jsx",
+                    lineNumber: 25,
+                    columnNumber: 11
+                }, undefined)
+            }, void 0, false, {
+                fileName: "src/components/profile-view/update-user.jsx",
+                lineNumber: 24,
+                columnNumber: 9
+            }, undefined)
+        }, void 0, false, {
+            fileName: "src/components/profile-view/update-user.jsx",
+            lineNumber: 23,
+            columnNumber: 7
+        }, undefined)
+    }, void 0, false, {
+        fileName: "src/components/profile-view/update-user.jsx",
+        lineNumber: 22,
+        columnNumber: 5
+    }, undefined);
+};
+_c = UpdateUser;
+var _c;
+$RefreshReg$(_c, "UpdateUser");
+
+  $parcel$ReactRefreshHelpers$95d1.postlude(module);
 } finally {
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;

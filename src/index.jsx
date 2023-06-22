@@ -10,9 +10,9 @@ import "./index.scss";
 // Main component (will eventually use all the others)
 const CinedexApplication = () => {
   return (
-    <Container>
+    //<Container className="container-fluid">
       <MainView />
-    </Container>
+   // </Container>
   );
 };
 // Finds the root of your app
