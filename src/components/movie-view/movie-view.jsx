@@ -37,26 +37,26 @@ export const MovieView = () => {
         />
       </div>
       <div>
-        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>Title: </span>
-        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>
+        <span style={{ color: "#45a29e", fontSize: "18px" }}>Title: </span>
+        <span style={{ color: "#ffffff", fontSize: "18px" }}>
           {movie.Title}
         </span>
       </div>
       <div>
-        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>Released: </span>
-        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>{movie.Released}</span>
+        <span style={{ color: "#45a29e", fontSize: "18px" }}>Released: </span>
+        <span style={{ color: "#ffffff", fontSize: "18px" }}>{movie.Released}</span>
       </div>
       <div>
-        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>Description: </span>
-        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>{movie.Description}</span>
+        <span style={{ color: "#45a29e", fontSize: "18px" }}>Description: </span>
+        <span style={{ color: "#ffffff", fontSize: "18px" }}>{movie.Description}</span>
       </div>
       <div>
-        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>Genre: </span>
-        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>{movie.Genre.Name}</span>
+        <span style={{ color: "#45a29e", fontSize: "18px" }}>Genre: </span>
+        <span style={{ color: "#ffffff", fontSize: "18px" }}>{movie.Genre.Name}</span>
       </div>
       <div>
-        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>Director: </span>
-        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>{movie.Director.Name}</span>
+        <span style={{ color: "#45a29e", fontSize: "18px" }}>Director: </span>
+        <span style={{ color: "#ffffff", fontSize: "18px" }}>{movie.Director.Name}</span>
       </div>
       <Link to={`/`}>
         <Button className="mt-4" variant="primary">Back</Button>
