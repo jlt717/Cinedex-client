@@ -30,30 +30,36 @@ export const MovieView = () => {
   return (
     <div>
       <div>
-        <img className="w-100" src={movie.ImageURL} />
+        <img
+          className="w-50"
+          style={{ alignItem: "center" }}
+          src={movie.ImageURL}
+        />
       </div>
       <div>
-        <span>Title: </span>
-        <span>{movie.Title}</span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>Title: </span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>
+          {movie.Title}
+        </span>
       </div>
       <div>
-        <span>Released: </span>
-        <span>{movie.Released}</span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>Released: </span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>{movie.Released}</span>
       </div>
       <div>
-        <span>Description: </span>
-        <span>{movie.Description}</span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>Description: </span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>{movie.Description}</span>
       </div>
       <div>
-        <span>Genre: </span>
-        <span>{movie.Genre.Name}</span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>Genre: </span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>{movie.Genre.Name}</span>
       </div>
       <div>
-        <span>Director: </span>
-        <span>{movie.Director.Name}</span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>Director: </span>
+        <span style={{ color: "#c5c6c7", fontSize: "18px" }}>{movie.Director.Name}</span>
       </div>
       <Link to={`/`}>
-        <Button variant="tertiary">Back</Button>
+        <Button className="mt-4" variant="primary">Back</Button>
       </Link>
     </div>
   );
