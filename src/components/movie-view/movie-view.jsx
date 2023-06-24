@@ -31,35 +31,128 @@ export const MovieView = () => {
     <div>
       <div>
         <img
-          className="w-50"
-          style={{ alignItem: "center" }}
+          className="rounded mx-auto d-block"
+          style={{
+            width: "400px",
+            height: "600px",
+            objectFit: "cover",
+            paddingTop: "50px",
+          }}
           src={movie.ImageURL}
         />
       </div>
       <div>
-        <span style={{ color: "#45a29e", fontSize: "18px" }}>Title: </span>
-        <span style={{ color: "#ffffff", fontSize: "18px" }}>
+        <span
+          style={{ color: "#ffffff", fontSize: "18px", paddingLeft: "150px" }}
+        >
+          Title:{" "}
+        </span>
+        <span
+          style={{ color: "#45a29e", fontSize: "18px", paddingLeft: "10px" }}
+        >
           {movie.Title}
         </span>
       </div>
       <div>
-        <span style={{ color: "#45a29e", fontSize: "18px" }}>Released: </span>
-        <span style={{ color: "#ffffff", fontSize: "18px" }}>{movie.Released}</span>
+        <span
+          style={{ color: "#ffffff", fontSize: "18px", paddingLeft: "150px" }}
+        >
+          Released:{" "}
+        </span>
+        <span
+          style={{ color: "#45a29e", fontSize: "18px", paddingLeft: "10px" }}
+        >
+          {movie.Released}
+        </span>
       </div>
       <div>
-        <span style={{ color: "#45a29e", fontSize: "18px" }}>Description: </span>
-        <span style={{ color: "#ffffff", fontSize: "18px" }}>{movie.Description}</span>
+        <span
+          style={{ color: "#ffffff", fontSize: "18px", paddingLeft: "150px" }}
+        >
+          Description:{" "}
+        </span>
+        <span
+          style={{ color: "#45a29e", fontSize: "18px", paddingLeft: "10px" }}
+        >
+          {movie.Description}
+        </span>
       </div>
       <div>
-        <span style={{ color: "#45a29e", fontSize: "18px" }}>Genre: </span>
-        <span style={{ color: "#ffffff", fontSize: "18px" }}>{movie.Genre.Name}</span>
+        <span
+          style={{ color: "#ffffff", fontSize: "18px", paddingLeft: "150px" }}
+        >
+          Genre:{" "}
+        </span>
+        <span
+          style={{ color: "#45a29e", fontSize: "18px", paddingLeft: "10px" }}
+        >
+          {movie.Genre.Name}
+        </span>
       </div>
       <div>
-        <span style={{ color: "#45a29e", fontSize: "18px" }}>Director: </span>
-        <span style={{ color: "#ffffff", fontSize: "18px" }}>{movie.Director.Name}</span>
+        <span
+          style={{ color: "#ffffff", fontSize: "18px", paddingLeft: "150px" }}
+        >
+          Genre Description:{" "}
+        </span>
+        <span
+          style={{ color: "#45a29e", fontSize: "18px", paddingLeft: "10px" }}
+        >
+          {movie.Genre.Description}
+        </span>
+      </div>
+      <div>
+        <span
+          style={{ color: "#ffffff", fontSize: "18px", paddingLeft: "150px" }}
+        >
+          Director:{" "}
+        </span>
+        <span
+          style={{ color: "#45a29e", fontSize: "18px", paddingLeft: "10px" }}
+        >
+          {movie.Director.Name}
+        </span>
+        <div>
+          <span
+            style={{ color: "#ffffff", fontSize: "18px", paddingLeft: "150px" }}
+          >
+            Director Bio:{" "}
+          </span>
+          <span
+            style={{ color: "#45a29e", fontSize: "18px", paddingLeft: "10px" }}
+          >
+            {movie.Director.Bio}
+          </span>
+        </div>
+        <div>
+          <span
+            style={{ color: "#ffffff", fontSize: "18px", paddingLeft: "150px" }}
+          >
+            Birthyear:{" "}
+          </span>
+          <span
+            style={{ color: "#45a29e", fontSize: "18px", paddingLeft: "10px" }}
+          >
+            {movie.Director.Birthyear}
+          </span>
+        </div>
+        <div>
+          {/* <span
+            style={{ color: "#ffffff", fontSize: "18px", paddingLeft: "150px" }}
+          >
+            Deathyear:{" "}
+          </span>
+          <span
+            style={{ color: "#45a29e", fontSize: "18px", paddingLeft: "10px" }}
+          >
+            {movie.Director.Deathyear}
+          </span> */}
+        </div>
       </div>
       <Link to={`/`}>
-        <Button className="mt-4" variant="primary">Back</Button>
+        <Button className="mt-4" variant="primary">
+          Back
+        </Button>
       </Link>
     </div>
   );
