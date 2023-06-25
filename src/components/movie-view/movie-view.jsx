@@ -28,15 +28,22 @@ export const MovieView = () => {
   }
 
   return (
-    <div>
+    <div
+      style={{
+        paddingLeft: "10px",
+        display: "inline-block",
+        marginLeft: "20px",
+      }}
+    >
       <div>
         <img
           className="rounded mx-auto d-block"
           style={{
-            width: "400px",
-            height: "600px",
-            objectFit: "cover",
+            width: "500px",
+            height: "700px",
+          objectFit: "contain",
             paddingTop: "50px",
+            paddingBottom: "50px",
           }}
           src={movie.ImageURL}
         />
@@ -67,16 +74,24 @@ export const MovieView = () => {
       </div>
       <div>
         <span
-          style={{ color: "#ffffff", fontSize: "18px", paddingLeft: "150px" }}
+          style={{ color: "#ffffff", fontSize: "18px", paddingLeft: "150px", textIndent:"30px" }}
         >
           Description:{" "}
         </span>
+
         <span
-          style={{ color: "#45a29e", fontSize: "18px", paddingLeft: "10px" }}
+          style={{
+            color: "#45a29e",
+            fontSize: "18px",
+            display: "inline-block",
+            marginLeft: "150px"
+          }}
         >
           {movie.Description}
         </span>
+        
       </div>
+
       <div>
         <span
           style={{ color: "#ffffff", fontSize: "18px", paddingLeft: "150px" }}
@@ -96,7 +111,8 @@ export const MovieView = () => {
           Genre Description:{" "}
         </span>
         <span
-          style={{ color: "#45a29e", fontSize: "18px", paddingLeft: "10px" }}
+          style={{ color: "#45a29e", fontSize: "18px", display: "inline-block",
+          marginLeft: "150px" }}
         >
           {movie.Genre.Description}
         </span>
@@ -119,7 +135,8 @@ export const MovieView = () => {
             Director Bio:{" "}
           </span>
           <span
-            style={{ color: "#45a29e", fontSize: "18px", paddingLeft: "10px" }}
+            style={{ color: "#45a29e", fontSize: "18px", display: "inline-block",
+            marginLeft: "150px" }}
           >
             {movie.Director.Bio}
           </span>
@@ -150,7 +167,11 @@ export const MovieView = () => {
         </div>
       </div>
       <Link to={`/`}>
-        <Button className="mt-4" variant="primary">
+        <Button
+          className="mt-4"
+          variant="primary"
+          style={{ marginLeft: "150px" }}
+        >
           Back
         </Button>
       </Link>
