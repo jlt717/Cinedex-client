@@ -36,19 +36,35 @@ export const MainView = () => {
       });
   }
   //search bar
+  
+  const handleSearchInput = (e) => {
+    const searchWord = e.target.value.toLowerCase();
+
+    const filteredArray = movies.filter((m) => {
+      const isTitleMatch = m.Title.toLowerCase().includes(searchWord);
+      const isGenreMatch = m.Genre.Name.toLowerCase().includes(searchWord);
+      const isDirectorMatch =
+        m.Director.Name.toLowerCase().includes(searchWord);
+
+      return isTitleMatch || isGenreMatch || isDirectorMatch;
+    });
+
+    setFilteredMovies(filteredArray);
+  };
+
   useEffect(() => {
     setFilteredMovies(movies);
   }, [movies]);
 
-  const handleSearchInput = (e) => {
-    console.log(e.target.value);
-    const searchWord = e.target.value.toLowerCase();
+  // const handleSearchInput = (e) => {
+  //   console.log(e.target.value);
+  //   const searchWord = e.target.value.toLowerCase();
 
-    let tempArray = movies.filter((m) =>
-      m.Title.toLowerCase().includes(searchWord)
-    );
-    setFilteredMovies(tempArray);
-  };
+  //   let tempArray = movies.filter((m) =>
+  //     m.Title.toLowerCase().includes(searchWord)
+  //   );
+  //   setFilteredMovies(tempArray);
+  // };
 
   function getUser() {
     fetch(`https://cinedex.herokuapp.com/users/`, {

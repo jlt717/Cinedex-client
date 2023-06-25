@@ -27211,17 +27211,29 @@ const MainView = ()=>{
         });
     }
     //search bar
+    const handleSearchInput = (e)=>{
+        const searchWord = e.target.value.toLowerCase();
+        const filteredArray = movies.filter((m)=>{
+            const isTitleMatch = m.Title.toLowerCase().includes(searchWord);
+            const isGenreMatch = m.Genre.Name.toLowerCase().includes(searchWord);
+            const isDirectorMatch = m.Director.Name.toLowerCase().includes(searchWord);
+            return isTitleMatch || isGenreMatch || isDirectorMatch;
+        });
+        setFilteredMovies(filteredArray);
+    };
     (0, _react.useEffect)(()=>{
         setFilteredMovies(movies);
     }, [
         movies
     ]);
-    const handleSearchInput = (e)=>{
-        console.log(e.target.value);
-        const searchWord = e.target.value.toLowerCase();
-        let tempArray = movies.filter((m)=>m.Title.toLowerCase().includes(searchWord));
-        setFilteredMovies(tempArray);
-    };
+    // const handleSearchInput = (e) => {
+    //   console.log(e.target.value);
+    //   const searchWord = e.target.value.toLowerCase();
+    //   let tempArray = movies.filter((m) =>
+    //     m.Title.toLowerCase().includes(searchWord)
+    //   );
+    //   setFilteredMovies(tempArray);
+    // };
     function getUser() {
         fetch(`https://cinedex.herokuapp.com/users/`, {
             headers: {
@@ -27284,7 +27296,7 @@ const MainView = ()=>{
                 handleSearchInput: handleSearchInput
             }, void 0, false, {
                 fileName: "src/components/main-view/main-view.jsx",
-                lineNumber: 126,
+                lineNumber: 142,
                 columnNumber: 7
             }, undefined),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Routes), {
@@ -27301,7 +27313,7 @@ const MainView = ()=>{
                         }, void 0, false)
                     }, void 0, false, {
                         fileName: "src/components/main-view/main-view.jsx",
-                        lineNumber: 132,
+                        lineNumber: 148,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
@@ -27318,7 +27330,7 @@ const MainView = ()=>{
                         }, void 0, false)
                     }, void 0, false, {
                         fileName: "src/components/main-view/main-view.jsx",
-                        lineNumber: 146,
+                        lineNumber: 162,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
@@ -27336,7 +27348,7 @@ const MainView = ()=>{
                         }, void 0, false)
                     }, void 0, false, {
                         fileName: "src/components/main-view/main-view.jsx",
-                        lineNumber: 161,
+                        lineNumber: 177,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
@@ -27354,7 +27366,7 @@ const MainView = ()=>{
                         }, void 0, false)
                     }, void 0, false, {
                         fileName: "src/components/main-view/main-view.jsx",
-                        lineNumber: 177,
+                        lineNumber: 193,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
@@ -27380,19 +27392,19 @@ const MainView = ()=>{
                         }, void 0, false)
                     }, void 0, false, {
                         fileName: "src/components/main-view/main-view.jsx",
-                        lineNumber: 194,
+                        lineNumber: 210,
                         columnNumber: 9
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/main-view/main-view.jsx",
-                lineNumber: 131,
+                lineNumber: 147,
                 columnNumber: 7
             }, undefined)
         ]
     }, void 0, true, {
         fileName: "src/components/main-view/main-view.jsx",
-        lineNumber: 125,
+        lineNumber: 141,
         columnNumber: 5
     }, undefined);
 };
@@ -46555,172 +46567,320 @@ const MovieView = ()=>{
         columnNumber: 12
     }, undefined);
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+        style: {
+            paddingLeft: "10px",
+            display: "inline-block",
+            marginLeft: "20px"
+        },
         children: [
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                 children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("img", {
-                    className: "w-50",
+                    className: "rounded mx-auto d-block",
                     style: {
-                        alignItem: "center"
+                        width: "500px",
+                        height: "700px",
+                        objectFit: "contain",
+                        paddingTop: "50px",
+                        paddingBottom: "50px"
                     },
                     src: movie.ImageURL
                 }, void 0, false, {
                     fileName: "src/components/movie-view/movie-view.jsx",
-                    lineNumber: 33,
+                    lineNumber: 39,
                     columnNumber: 9
                 }, undefined)
             }, void 0, false, {
                 fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 32,
+                lineNumber: 38,
                 columnNumber: 7
             }, undefined),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                 children: [
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
                         style: {
-                            color: "#45a29e",
-                            fontSize: "18px"
+                            color: "#ffffff",
+                            fontSize: "18px",
+                            paddingLeft: "150px"
                         },
-                        children: "Title: "
-                    }, void 0, false, {
+                        children: [
+                            "Title:",
+                            " "
+                        ]
+                    }, void 0, true, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 40,
+                        lineNumber: 52,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
                         style: {
-                            color: "#ffffff",
-                            fontSize: "18px"
+                            color: "#45a29e",
+                            fontSize: "18px",
+                            paddingLeft: "10px"
                         },
                         children: movie.Title
                     }, void 0, false, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 41,
+                        lineNumber: 57,
                         columnNumber: 9
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 39,
+                lineNumber: 51,
                 columnNumber: 7
             }, undefined),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                 children: [
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
                         style: {
-                            color: "#45a29e",
-                            fontSize: "18px"
+                            color: "#ffffff",
+                            fontSize: "18px",
+                            paddingLeft: "150px"
                         },
-                        children: "Released: "
-                    }, void 0, false, {
+                        children: [
+                            "Released:",
+                            " "
+                        ]
+                    }, void 0, true, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 46,
+                        lineNumber: 64,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
                         style: {
-                            color: "#ffffff",
-                            fontSize: "18px"
+                            color: "#45a29e",
+                            fontSize: "18px",
+                            paddingLeft: "10px"
                         },
                         children: movie.Released
                     }, void 0, false, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 47,
+                        lineNumber: 69,
                         columnNumber: 9
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 45,
+                lineNumber: 63,
                 columnNumber: 7
             }, undefined),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                 children: [
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
                         style: {
-                            color: "#45a29e",
-                            fontSize: "18px"
+                            color: "#ffffff",
+                            fontSize: "18px",
+                            paddingLeft: "150px",
+                            textIndent: "30px"
                         },
-                        children: "Description: "
-                    }, void 0, false, {
+                        children: [
+                            "Description:",
+                            " "
+                        ]
+                    }, void 0, true, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 50,
+                        lineNumber: 76,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
                         style: {
-                            color: "#ffffff",
-                            fontSize: "18px"
+                            color: "#45a29e",
+                            fontSize: "18px",
+                            display: "inline-block",
+                            marginLeft: "150px"
                         },
                         children: movie.Description
                     }, void 0, false, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 51,
+                        lineNumber: 82,
                         columnNumber: 9
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 49,
+                lineNumber: 75,
                 columnNumber: 7
             }, undefined),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                 children: [
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
                         style: {
-                            color: "#45a29e",
-                            fontSize: "18px"
+                            color: "#ffffff",
+                            fontSize: "18px",
+                            paddingLeft: "150px"
                         },
-                        children: "Genre: "
-                    }, void 0, false, {
+                        children: [
+                            "Genre:",
+                            " "
+                        ]
+                    }, void 0, true, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 54,
+                        lineNumber: 96,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
                         style: {
-                            color: "#ffffff",
-                            fontSize: "18px"
+                            color: "#45a29e",
+                            fontSize: "18px",
+                            paddingLeft: "10px"
                         },
                         children: movie.Genre.Name
                     }, void 0, false, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 55,
+                        lineNumber: 101,
                         columnNumber: 9
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 53,
+                lineNumber: 95,
                 columnNumber: 7
             }, undefined),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                 children: [
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
                         style: {
-                            color: "#45a29e",
-                            fontSize: "18px"
+                            color: "#ffffff",
+                            fontSize: "18px",
+                            paddingLeft: "150px"
                         },
-                        children: "Director: "
-                    }, void 0, false, {
+                        children: [
+                            "Genre Description:",
+                            " "
+                        ]
+                    }, void 0, true, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 58,
+                        lineNumber: 108,
                         columnNumber: 9
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
                         style: {
-                            color: "#ffffff",
-                            fontSize: "18px"
+                            color: "#45a29e",
+                            fontSize: "18px",
+                            display: "inline-block",
+                            marginLeft: "150px"
                         },
-                        children: movie.Director.Name
+                        children: movie.Genre.Description
                     }, void 0, false, {
                         fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 59,
+                        lineNumber: 113,
                         columnNumber: 9
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 57,
+                lineNumber: 107,
+                columnNumber: 7
+            }, undefined),
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                children: [
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                        style: {
+                            color: "#ffffff",
+                            fontSize: "18px",
+                            paddingLeft: "150px"
+                        },
+                        children: [
+                            "Director:",
+                            " "
+                        ]
+                    }, void 0, true, {
+                        fileName: "src/components/movie-view/movie-view.jsx",
+                        lineNumber: 121,
+                        columnNumber: 9
+                    }, undefined),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                        style: {
+                            color: "#45a29e",
+                            fontSize: "18px",
+                            paddingLeft: "10px"
+                        },
+                        children: movie.Director.Name
+                    }, void 0, false, {
+                        fileName: "src/components/movie-view/movie-view.jsx",
+                        lineNumber: 126,
+                        columnNumber: 9
+                    }, undefined),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                        children: [
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                                style: {
+                                    color: "#ffffff",
+                                    fontSize: "18px",
+                                    paddingLeft: "150px"
+                                },
+                                children: [
+                                    "Director Bio:",
+                                    " "
+                                ]
+                            }, void 0, true, {
+                                fileName: "src/components/movie-view/movie-view.jsx",
+                                lineNumber: 132,
+                                columnNumber: 11
+                            }, undefined),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                                style: {
+                                    color: "#45a29e",
+                                    fontSize: "18px",
+                                    display: "inline-block",
+                                    marginLeft: "150px"
+                                },
+                                children: movie.Director.Bio
+                            }, void 0, false, {
+                                fileName: "src/components/movie-view/movie-view.jsx",
+                                lineNumber: 137,
+                                columnNumber: 11
+                            }, undefined)
+                        ]
+                    }, void 0, true, {
+                        fileName: "src/components/movie-view/movie-view.jsx",
+                        lineNumber: 131,
+                        columnNumber: 9
+                    }, undefined),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                        children: [
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                                style: {
+                                    color: "#ffffff",
+                                    fontSize: "18px",
+                                    paddingLeft: "150px"
+                                },
+                                children: [
+                                    "Birthyear:",
+                                    " "
+                                ]
+                            }, void 0, true, {
+                                fileName: "src/components/movie-view/movie-view.jsx",
+                                lineNumber: 145,
+                                columnNumber: 11
+                            }, undefined),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                                style: {
+                                    color: "#45a29e",
+                                    fontSize: "18px",
+                                    paddingLeft: "10px"
+                                },
+                                children: movie.Director.Birthyear
+                            }, void 0, false, {
+                                fileName: "src/components/movie-view/movie-view.jsx",
+                                lineNumber: 150,
+                                columnNumber: 11
+                            }, undefined)
+                        ]
+                    }, void 0, true, {
+                        fileName: "src/components/movie-view/movie-view.jsx",
+                        lineNumber: 144,
+                        columnNumber: 9
+                    }, undefined),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {}, void 0, false, {
+                        fileName: "src/components/movie-view/movie-view.jsx",
+                        lineNumber: 156,
+                        columnNumber: 9
+                    }, undefined)
+                ]
+            }, void 0, true, {
+                fileName: "src/components/movie-view/movie-view.jsx",
+                lineNumber: 120,
                 columnNumber: 7
             }, undefined),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Link), {
@@ -46728,15 +46888,18 @@ const MovieView = ()=>{
                 children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
                     className: "mt-4",
                     variant: "primary",
+                    style: {
+                        marginLeft: "150px"
+                    },
                     children: "Back"
                 }, void 0, false, {
                     fileName: "src/components/movie-view/movie-view.jsx",
-                    lineNumber: 62,
+                    lineNumber: 170,
                     columnNumber: 9
                 }, undefined)
             }, void 0, false, {
                 fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 61,
+                lineNumber: 169,
                 columnNumber: 7
             }, undefined)
         ]
